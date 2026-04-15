@@ -43,33 +43,30 @@
         .movie-card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: 0.3s ease; position: relative; }
         .movie-card:hover { transform: translateY(-8px); border-color: var(--primary); }
 
-        .img-container { position: relative; overflow: hidden; aspect-ratio: 2/3; background: #1a1a1a; }
+        .img-container { position: relative; overflow: hidden; aspect-ratio: 2/3; background: #1a1a1a; cursor: pointer; }
         .movie-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         
-        .movie-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; opacity: 0; transition: 0.3s; box-sizing: border-box; }
+        .movie-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; opacity: 0; transition: 0.3s; box-sizing: border-box; }
         .movie-card:hover .movie-overlay { opacity: 1; }
-        .movie-overlay p { font-size: 12px; line-height: 1.4; }
+        .movie-overlay span { font-size: 11px; background: var(--primary); padding: 6px 12px; border-radius: 5px; font-weight: bold; }
 
         .quality-tag { position: absolute; top: 10px; left: 10px; background: var(--primary); color: white; font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px; z-index: 10; }
-        .new-tag { position: absolute; top: 38px; left: 10px; background: #ffc107; color: black; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 10; animation: blink 1.5s infinite; }
-        @keyframes blink { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
-
-        /* HEART POP EFFECT */
-        @keyframes heartPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.5); }
-            100% { transform: scale(1); }
-        }
+        
+        /* ΠΡΑΣΙΝΟ NEW ΓΙΑ ΤΙΣ ΠΡΟΣΦΑΤΕΣ ΠΡΟΣΘΗΚΕΣ */
+        .new-tag { position: absolute; top: 38px; left: 10px; background: #28a745; color: white; font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 10; animation: blink 2s infinite; }
+        @keyframes blink { 0% {opacity:1} 50% {opacity:0.6} 100% {opacity:1} }
 
         .wishlist-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); border: none; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; z-index: 11; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; }
-        .wishlist-btn.active { background: var(--primary); animation: heartPop 0.3s ease-out; }
+        .wishlist-btn.active { background: var(--primary); }
 
-        .info { padding: 15px; }
-        .info h3 { font-size: 14px; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .genre-tag { font-size: 10px; color: var(--primary); text-transform: uppercase; font-weight: bold; }
-        .rating { color: var(--gold); font-size: 11px; margin: 5px 0; }
-        .actors-text { font-size: 10px; color: #888; display: block; margin-bottom: 10px; }
-        .play-btn { background: var(--primary); color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; display: block; text-align: center; margin-top: 10px; }
+        .info { padding: 15px; text-align: center; }
+        .info h3 { font-size: 14px; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #eee; }
+        .rating { color: var(--gold); font-size: 11px; margin-bottom: 10px; }
+        .play-btn { background: var(--primary); color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; display: block; text-align: center; transition: 0.2s; }
+
+        #detailModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:4000; align-items:center; justify-content:center; backdrop-filter: blur(10px); }
+        .modal-box { background:var(--card); width:90%; max-width:450px; border-radius:20px; position:relative; border:1px solid var(--border); overflow:hidden; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -114,32 +111,42 @@
 
 <div class="movie-grid" id="movieGrid"></div>
 
+<div id="detailModal">
+    <div class="modal-box">
+        <button onclick="closeDetails()" style="position:absolute; top:15px; right:15px; background:rgba(0,0,0,0.6); border:none; color:white; font-size:20px; cursor:pointer; width:35px; height:35px; border-radius:50%; z-index:10;">&times;</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
 <script>
     const movies = [
-        { title: "The Matrix", year: 1999, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Keanu Reeves, L. Fishburne", rating: 5, poster: "matrix.jpg", link: "#", desc: "Η κλασική περιπέτεια που άλλαξε τον κινηματογράφο." },
-        { title: "Gladiator", year: 2000, country: "United States", quality: "HD", genre: "Action", actors: "Russell Crowe, Joaquin Phoenix", rating: 5, poster: "gladiator.jpg", link: "#", desc: "Ένας στρατηγός γίνεται μονομάχος για να πάρει εκδίκηση." },
-        { title: "Gladiator II", year: 2025, country: "United States", quality: "HD", genre: "Action", actors: "Paul Mescal, Pedro Pascal", rating: 4, poster: "gladiator2.jpg", link: "#", desc: "Η συνέχεια του επικού έπους, χρόνια μετά τον Μάξιμο." },
-        { title: "Inception", year: 2010, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Leonardo DiCaprio, Elliot Page", rating: 4, poster: "inception.jpg", link: "#", desc: "Κλέφτες ονείρων σε μια αποστολή χωρίς επιστροφή." },
-        { title: "1883", year: 2021, country: "United States", quality: "HD", genre: "Western", actors: "Sam Elliott, Tim McGraw", rating: 5, poster: "1883.jpg", link: "#", desc: "Η οικογένεια Dutton ξεκινά το ταξίδι προς τη Δύση." },
-        { title: "1899", year: 2022, country: "Germany", quality: "HD", genre: "Drama", actors: "Emily Beecham, Aneurin Barnard", rating: 4, poster: "1899.jpg", link: "#", desc: "Μυστήριο σε πλοίο με μετανάστες." },
-        { title: "1923", year: 2022, country: "United States", quality: "HD", genre: "Western", actors: "Harrison Ford, Helen Mirren", rating: 5, poster: "1923.jpg", link: "#", desc: "Μια νέα γενιά Dutton αντιμετωπίζει δυσκολίες." },
-        { title: "Alaska Daily", year: 2022, country: "United States", quality: "HD", genre: "Drama", actors: "Hilary Swank, Jeff Perry", rating: 4, poster: "alaska_daily.jpg", link: "#", desc: "Μια δημοσιογράφος στην Αλάσκα αναζητά την αλήθεια." },
-        { title: "American Horror Stories", year: 2021, country: "United States", quality: "HD", genre: "Drama", actors: "Sierra McCormick, Matt Bomer", rating: 3, poster: "ahs.jpg", link: "#", desc: "Αυτοτελείς ιστορίες τρόμου και μυστηρίου." },
-        { title: "Χίλια Χτυπήματα", year: 2025, country: "United Kingdom", quality: "HD", genre: "Drama", actors: "Stephen Graham, Erin Doherty", rating: 5, poster: "thousand_blows.jpg", link: "#", desc: "Υπόκοσμος του βικτοριανού Λονδίνου." },
-        { title: "Άννα με Α", year: 2017, country: "Canada", quality: "HD", genre: "Drama", actors: "Amybeth McNulty, Geraldine James", rating: 5, poster: "anne_with_a.jpg", link: "#", desc: "Η ζωή της ορφανής Άννας στο Άβονλι." },
-        { title: "Around the World in 80 Days", year: 2021, country: "Belgium", quality: "HD", genre: "Drama", actors: "David Tennant, Ibrahim Koma", rating: 4, poster: "80days.jpg", link: "#", desc: "Το κλασικό ταξίδι του Φιλέα Φογκ." },
-        { title: "Άβαταρ: Ο Μαχητής", year: 2024, country: "United States", quality: "HD", genre: "Drama", actors: "Gordon Cormier, Kiawentiio", rating: 4, poster: "avatar.jpg", link: "#", desc: "Η ζωντανή μεταφορά του θρυλικού animation." },
-        { title: "Balthazar", year: 2018, country: "France", quality: "HD", genre: "Drama", actors: "Tomer Sisley, Yannig Samot", rating: 4, poster: "balthazar.jpg", link: "#", desc: "Ιδιοφυής ιατροδικαστής λύνει εγκλήματα." },
-        { title: "Beef", year: 2023, country: "United States", quality: "HD", genre: "Drama", actors: "Steven Yeun, Ali Wong", rating: 5, poster: "beef.jpg", link: "#", desc: "Μια σύγκρουση στο δρόμο αλλάζει δύο ζωές." },
-        { title: "Blue Lights", year: 2023, country: "United Kingdom", quality: "HD", genre: "Drama", actors: "Siân Brooke, Martin McCann", rating: 4, poster: "blue_lights.jpg", link: "#", desc: "Η καθημερινότητα αστυνομικών στο Μπέλφαστ." },
-        { title: "Cobra Kai", year: 2018, country: "United States", quality: "HD", genre: "Drama", actors: "Ralph Macchio, William Zabka", rating: 5, poster: "cobra_kai.jpg", link: "#", desc: "Η κόντρα του Karate Kid συνεχίζεται." },
-        { title: "Dahmer", year: 2022, country: "United States", quality: "HD", genre: "Drama", actors: "Evan Peters, Niecy Nash", rating: 4, poster: "dahmer.jpg", link: "#", desc: "Η ανατριχιαστική ιστορία του Jeffrey Dahmer." },
-        { title: "Dark", year: 2017, country: "Germany", quality: "HD", genre: "Sci-Fi", actors: "Louis Hofmann, Lisa Vicari", rating: 5, poster: "dark.jpg", link: "#", desc: "Μυστήριο και παράλληλοι χρόνοι στη Γερμανία." },
-        { title: "Σκοτεινοί άνεμοι", year: 2022, country: "United States", quality: "HD", genre: "Drama", actors: "Zahn McClarnon, Kiowa Gordon", rating: 4, poster: "dark_winds.jpg", link: "#", desc: "Εγκλήματα σε καταυλισμό Ναβάχο." },
-        { title: "Game of Thrones", year: 2011, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Emilia Clarke, Kit Harington", rating: 5, poster: "got.jpg", link: "#", desc: "Ο επικός αγώνας για τον θρόνο του Westeros." },
-        { title: "Harrow", year: 2018, country: "Australia", quality: "HD", genre: "Drama", actors: "Ioan Gruffudd, Remy Hii", rating: 4, poster: "harrow.jpg", link: "#", desc: "Αντισυμβατικός ιατροδικαστής στην Αυστραλία." },
-        { title: "His Dark Materials", year: 2019, country: "United Kingdom", quality: "HD", genre: "Sci-Fi", actors: "Dafne Keen, Ruth Wilson", rating: 4, poster: "dark_materials.jpg", link: "#", desc: "Ταξίδι σε παράλληλους κόσμους." },
-        { title: "House of the Dragon", year: 2022, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Matt Smith, Emma D'Arcy", rating: 5, poster: "hotd.jpg", link: "#", desc: "Η άνοδος και η πτώση του οίκου Targaryen." }
+        // ΟΙ 5 ΠΡΩΤΕΣ ΤΑΙΝΙΕΣ ΕΔΩ ΘΑ ΕΧΟΥΝ ΤΟ ΤΑΜΠΕΛΑΚΙ "NEW"
+        { title: "Gladiator II", year: 2025, country: "United States", quality: "HD", genre: "Action", actors: "Paul Mescal, Pedro Pascal", rating: 4, poster: "gladiator2.jpg", link: "https://1024terabox.com/s/135SxotbKCDN0tk8PN7bKWA", desc: "Η συνέχεια του επικού έπους." },
+        { title: "Χίλια Χτυπήματα", year: 2025, country: "United Kingdom", quality: "HD", genre: "Drama", actors: "Stephen Graham, Erin Doherty", rating: 5, poster: "thousand_blows.jpg", link: "https://1024terabox.com/s/1wkU10L1jL8vCPsdlM5XrlQ", desc: "Υπόκοσμος του βικτοριανού Λονδίνου." },
+        { title: "Άβαταρ: Ο Μαχητής", year: 2024, country: "United States", quality: "HD", genre: "Drama", actors: "Gordon Cormier, Kiawentiio", rating: 4, poster: "avatar.jpg", link: "#", desc: "Η ζωντανή μεταφορά του animation." },
+        { title: "Beef", year: 2023, country: "United States", quality: "HD", genre: "Drama", actors: "Steven Yeun, Ali Wong", rating: 5, poster: "beef.jpg", link: "#", desc: "Μια σύγκρουση στο δρόμο αλλάζει ζωές." },
+        { title: "Blue Lights", year: 2023, country: "United Kingdom", quality: "HD", genre: "Drama", actors: "Siân Brooke, Martin McCann", rating: 4, poster: "blue_lights.jpg", link: "#", desc: "Αστυνομικοί στο Μπέλφαστ." },
+        
+        // ΟΙ ΥΠΟΛΟΙΠΕΣ ΤΑΙΝΙΕΣ
+        { title: "The Matrix", year: 1999, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Keanu Reeves, L. Fishburne", rating: 5, poster: "matrix.jpg", link: "#", desc: "Η κλασική περιπέτεια." },
+        { title: "Gladiator", year: 2000, country: "United States", quality: "HD", genre: "Action", actors: "Russell Crowe, Joaquin Phoenix", rating: 5, poster: "gladiator.jpg", link: "#", desc: "Εκδίκηση στην αρένα." },
+        { title: "Inception", year: 2010, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "L. DiCaprio, Elliot Page", rating: 4, poster: "inception.jpg", link: "#", desc: "Κλέφτες ονείρων." },
+        { title: "1883", year: 2021, country: "United States", quality: "HD", genre: "Western", actors: "Sam Elliott, Tim McGraw", rating: 5, poster: "1883.jpg", link: "#", desc: "Το ταξίδι των Dutton." },
+        { title: "1899", year: 2022, country: "Germany", quality: "HD", genre: "Drama", actors: "Emily Beecham, Aneurin Barnard", rating: 4, poster: "1899.jpg", link: "#", desc: "Μυστήριο σε πλοίο." },
+        { title: "1923", year: 2022, country: "United States", quality: "HD", genre: "Western", actors: "Harrison Ford, Helen Mirren", rating: 5, poster: "1923.jpg", link: "#", desc: "Νέα γενιά Dutton." },
+        { title: "Alaska Daily", year: 2022, country: "United States", quality: "HD", genre: "Drama", actors: "Hilary Swank, Jeff Perry", rating: 4, poster: "alaska_daily.jpg", link: "#", desc: "Δημοσιογραφία στην Αλάσκα." },
+        { title: "American Horror Stories", year: 2021, country: "United States", quality: "HD", genre: "Drama", actors: "Sierra McCormick", rating: 3, poster: "ahs.jpg", link: "#", desc: "Ιστορίες τρόμου." },
+        { title: "Άννα με Α", year: 2017, country: "Canada", quality: "HD", genre: "Drama", actors: "Amybeth McNulty", rating: 5, poster: "anne_with_a.jpg", link: "#", desc: "Η ζωή της Άννας." },
+        { title: "Around the World in 80 Days", year: 2021, country: "Belgium", quality: "HD", genre: "Drama", actors: "David Tennant", rating: 4, poster: "80days.jpg", link: "#", desc: "Ο Φιλέας Φογκ." },
+        { title: "Balthazar", year: 2018, country: "France", quality: "HD", genre: "Drama", actors: "Tomer Sisley", rating: 4, poster: "balthazar.jpg", link: "#", desc: "Ιατροδικαστική έρευνα." },
+        { title: "Cobra Kai", year: 2018, country: "United States", quality: "HD", genre: "Drama", actors: "Ralph Macchio", rating: 5, poster: "cobra_kai.jpg", link: "#", desc: "Karate Kid συνέχεια." },
+        { title: "Dahmer", year: 2022, country: "United States", quality: "HD", genre: "Drama", actors: "Evan Peters", rating: 4, poster: "dahmer.jpg", link: "#", desc: "Η ιστορία του Dahmer." },
+        { title: "Dark", year: 2017, country: "Germany", quality: "HD", genre: "Sci-Fi", actors: "Louis Hofmann", rating: 5, poster: "dark.jpg", link: "#", desc: "Παράλληλοι χρόνοι." },
+        { title: "Σκοτεινοί άνεμοι", year: 2022, country: "United States", quality: "HD", genre: "Drama", actors: "Zahn McClarnon", rating: 4, poster: "dark_winds.jpg", link: "#", desc: "Μυστήριο Ναβάχο." },
+        { title: "Game of Thrones", year: 2011, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Emilia Clarke", rating: 5, poster: "got.jpg", link: "#", desc: "Westeros." },
+        { title: "Harrow", year: 2018, country: "Australia", quality: "HD", genre: "Drama", actors: "Ioan Gruffudd", rating: 4, poster: "harrow.jpg", link: "#", desc: "Αυστραλιανό δράμα." },
+        { title: "His Dark Materials", year: 2019, country: "United Kingdom", quality: "HD", genre: "Sci-Fi", actors: "Dafne Keen", rating: 4, poster: "dark_materials.jpg", link: "#", desc: "Παράλληλοι κόσμοι." },
+        { title: "House of the Dragon", year: 2022, country: "United States", quality: "HD", genre: "Sci-Fi", actors: "Matt Smith", rating: 5, poster: "hotd.jpg", link: "#", desc: "Targaryen." }
     ];
 
     let filteredMovies = [...movies];
@@ -148,30 +155,54 @@
         document.getElementById('movieCount').innerText = `Σύνολο: ${list.length}`;
         const grid = document.getElementById('movieGrid');
         const favs = JSON.parse(localStorage.getItem('favorites')) || [];
+        
         grid.innerHTML = list.map(m => {
             const isFav = favs.includes(m.title);
-            const isNew = m.year >= 2025;
+            // Έλεγχος αν η ταινία είναι στις 5 πρώτες της λίστας
+            const isRecentlyAdded = movies.slice(0, 5).some(movie => movie.title === m.title);
+
             return `
             <div class="movie-card">
                 <div class="quality-tag">${m.quality}</div>
-                ${isNew ? '<div class="new-tag">NEW</div>' : ''}
-                <button class="wishlist-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${m.title}')">
-                    ${isFav ? '❤️' : '🤍'}
-                </button>
-                <div class="img-container">
+                ${isRecentlyAdded ? '<div class="new-tag">NEW</div>' : ''}
+                <button class="wishlist-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${m.title}')">❤️</button>
+                <div class="img-container" onclick="openDetails('${m.title}')">
                     <img src="${m.poster}" onerror="this.src='https://placehold.co'">
-                    <div class="movie-overlay"><p>${m.desc}</p></div>
+                    <div class="movie-overlay"><span>ΛΕΠΤΟΜΕΡΕΙΕΣ</span></div>
                 </div>
                 <div class="info">
-                    <span class="genre-tag">${m.genre} • ${m.year} • ${m.country}</span>
                     <h3>${m.title}</h3>
                     <div class="rating">${'★'.repeat(m.rating)}${'☆'.repeat(5-m.rating)}</div>
-                    <span class="actors-text">👥 ${m.actors}</span>
                     <a href="${m.link}" class="play-btn">ΠΡΟΒΟΛΗ</a>
                 </div>
             </div>
         `}).join('');
     }
+
+    function openDetails(title) {
+        const m = movies.find(movie => movie.title === title);
+        const content = document.getElementById('modalContent');
+        content.innerHTML = `
+            <img src="${m.poster}" style="width:100%; height:220px; object-fit:cover;">
+            <div style="padding:20px;">
+                <h2 style="margin:0 0 10px; color:var(--primary); font-size:20px;">${m.title}</h2>
+                <p style="font-size:12px; color:#ccc; line-height:1.6; margin-bottom:15px;">${m.desc}</p>
+                <div style="font-size:11px; color:#888; display:grid; grid-template-columns:1fr 1fr; gap:8px; border-top:1px solid #222; padding-top:15px;">
+                    <div><strong>🌍 Χώρα:</strong> ${m.country}</div>
+                    <div><strong>📅 Έτος:</strong> ${m.year}</div>
+                    <div><strong>🎭 Είδος:</strong> ${m.genre}</div>
+                    <div><strong>💎 Ποιότητα:</strong> ${m.quality}</div>
+                </div>
+                <div style="margin-top:10px; font-size:11px; color:#888;">
+                    <strong>👥 Ηθοποιοί:</strong> ${m.actors}
+                </div>
+                <a href="${m.link}" class="play-btn" style="margin-top:20px; padding:12px;">ΠΡΟΒΟΛΗ ΤΩΡΑ</a>
+            </div>
+        `;
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetails() { document.getElementById('detailModal').style.display = 'none'; }
 
     function handleSearchInput(e) {
         const val = e.target.value.toLowerCase();
