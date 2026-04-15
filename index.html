@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YIOLO Ultimate Database</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #e50914; --bg: #0a0a0a; --card: #141414; 
+            --text: #ffffff; --border: #222; --gold: #ffc107;
+            --input-bg: #1a1a1a;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f5f5; --card: #ffffff; --text: #1a1a1a; 
+            --border: #ddd; --input-bg: #ffffff;
+        }
+
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s; overflow-x: hidden; }
+
+        /* LOADING BAR */
+        #loadingBarContainer { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 2000; background: transparent; }
+        #loadingBar { width: 0%; height: 100%; background: var(--primary); transition: width 0.2s ease; box-shadow: 0 0 10px var(--primary); }
+
+        header { 
+            padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-index: 1000; 
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+        .logo { color: var(--primary); font-weight: 800; font-size: 24px; letter-spacing: 1px; }
+        .theme-switch { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; }
+
+        /* SEARCH & AUTOCOMPLETE */
+        .search-section { padding: 30px 5% 10px; text-align: center; }
+        .search-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; }
+        #movieSearch { 
+            width: 100%; padding: 14px 25px; border-radius: 30px; 
+            border: 1px solid var(--border); background: var(--input-bg); color: var(--text); 
+            outline: none; font-size: 16px; box-sizing: border-box;
+        }
+        .suggestions-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 15px; margin-top: 5px; max-height: 250px;
+            overflow-y: auto; z-index: 1500; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .suggestion-item { padding: 12px 20px; cursor: pointer; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .suggestion-item:last-child { border: none; }
+        .suggestion-item:hover { background: var(--primary); color: white; }
+
+        /* CATEGORIES */
+        .categories { display: flex; justify-content: center; gap: 10px; padding: 10px 5% 30px; flex-wrap: wrap; }
+        .cat-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.3s; }
+        .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* GRID & CARDS */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; padding: 0 5% 50px; }
+        .movie-card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: 0.3s ease; }
+        .movie-card:hover { transform: translateY(-8px); box-shadow: 0 12px 20px rgba(0,0,0,0.4); border-color: var(--primary); }
+        .movie-card img { width: 100%; height: 260px; object-fit: cover; background: #222; display: block; }
+        
+        .info { padding: 15px; }
+        .info h3 { font-size: 15px; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .genre-tag { font-size: 10px; color: var(--primary); text-transform: uppercase; font-weight: bold; margin-bottom: 5px; display: block; }
+        .rating { color: var(--gold); font-size: 12px; margin-bottom: 8px; }
+        .actors-list { font-size: 11px; color: #888; margin-bottom: 12px; display: block; height: 32px; overflow: hidden; line-height: 1.4; }
+        .play-btn { background: var(--primary); color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; display: block; text-align: center; transition: 0.2s; }
+        .play-btn:hover { background: #b20710; }
+
+        @media (max-width: 600px) { .movie-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 15px; } }
+    </style>
+</head>
+<body>
+
+<div id="loadingBarContainer"><div id="loadingBar"></div></div>
+
+<header>
+    <div class="logo">YIOLO</div>
+    <button class="theme-switch" onclick="toggleTheme()" id="themeBtn">☀️ Light Mode</button>
+</header>
+
+<div class="search-section">
+    <div class="search-container">
+        <input type="text" id="movieSearch" placeholder="Ταινία, ηθοποιός, είδος..." onkeyup="handleSearchInput(event)" autocomplete="off">
+        <div id="suggestions" class="suggestions-list"></div>
+    </div>
+</div>
+
+<div class="categories">
+    <button class="cat-btn active" onclick="handleCategory('All')">Όλα</button>
+    <button class="cat-btn" onclick="handleCategory('Action')">Action</button>
+    <button class="cat-btn" onclick="handleCategory('Sci-Fi')">Sci-Fi</button>
+    <button class="cat-btn" onclick="handleCategory('Drama')">Drama</button>
+    <button class="cat-btn" onclick="handleCategory('Western')">Western</button>
+</div>
+
+<div class="movie-grid" id="movieGrid"></div>
+
+<script>
+    // ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ (Εδώ προσθέτεις τις ταινίες σου)
+    const movies = [
+        { title: "The Matrix", genre: "Sci-Fi", actors: "Keanu Reeves, Laurence Fishburne", rating: 5, poster: "matrix.jpg", link: "#" },
+        { title: "Inception", genre: "Sci-Fi", actors: "Leonardo DiCaprio, Cillian Murphy", rating: 4, poster: "inception.jpg", link: "#" },
+        { title: "Gladiator", genre: "Action", actors: "Russell Crowe, Joaquin Phoenix", rating: 5, poster: "gladiator.jpg", link: "#" },
+        { title: "1883", genre: "Western", actors: "Sam Elliott, Tim McGraw", rating: 4, poster: "1883.jpg", link: "#" },
+        { title: "Interstellar", genre: "Sci-Fi", actors: "Matthew McConaughey", rating: 5, poster: "interstellar.jpg", link: "#" }
+    ];
+
+    let currentCategory = "All";
+
+    // ΕΦΕ ΦΟΡΤΩΣΗΣ
+    function triggerLoading(callback) {
+        const bar = document.getElementById('loadingBar');
+        bar.style.width = '40%';
+        setTimeout(() => {
+            bar.style.width = '100%';
+            callback();
+            setTimeout(() => { bar.style.width = '0%'; }, 300);
+        }, 150);
+    }
+
+    // DARK/LIGHT MODE
+    function toggleTheme() {
+        const body = document.documentElement;
+        const btn = document.getElementById('themeBtn');
+        if (body.getAttribute('data-theme') === 'light') {
+            body.removeAttribute('data-theme');
+            btn.innerText = "☀️ Light Mode";
+        } else {
+            body.setAttribute('data-theme', 'light');
+            btn.innerText = "🌙 Dark Mode";
+        }
+    }
+
+    // ΕΜΦΑΝΙΣΗ ΤΑΙΝΙΩΝ
+    function displayMovies(list) {
+        const grid = document.getElementById('movieGrid');
+        grid.innerHTML = list.map(m => `
+            <div class="movie-card">
+                <img src="${m.poster}" alt="${m.title}" loading="lazy" onerror="this.src='https://placeholder.com'">
+                <div class="info">
+                    <span class="genre-tag">${m.genre}</span>
+                    <h3>${m.title}</h3>
+                    <div class="rating">${'★'.repeat(m.rating)}${'☆'.repeat(5-m.rating)}</div>
+                    <span class="actors-list">👥 ${m.actors}</span>
+                    <a href="${m.link}" class="play-btn">ΠΡΟΒΟΛΗ</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // AUTOCOMPLETE LOGIC
+    function handleSearchInput(event) {
+        const val = event.target.value.toLowerCase();
+        const suggestionsBox = document.getElementById('suggestions');
+        
+        if (!val) {
+            suggestionsBox.style.display = 'none';
+            startSearch();
+            return;
+        }
+
+        let matches = new Set();
+        movies.forEach(m => {
+            if (m.title.toLowerCase().includes(val)) matches.add(m.title);
+            m.actors.split(',').forEach(a => {
+                if (a.trim().toLowerCase().includes(val)) matches.add(a.trim());
+            });
+        });
+
+        const results = Array.from(matches).slice(0, 6);
+        if (results.length > 0) {
+            suggestionsBox.innerHTML = results.map(text => 
+                `<div class="suggestion-item" onclick="selectSuggestion('${text}')">${text}</div>`
+            ).join('');
+            suggestionsBox.style.display = 'block';
+        } else {
+            suggestionsBox.style.display = 'none';
+        }
+
+        if (event.key === "Enter") selectSuggestion(event.target.value);
+    }
+
+    function selectSuggestion(text) {
+        document.getElementById('movieSearch').value = text;
+        document.getElementById('suggestions').style.display = 'none';
+        startSearch();
+    }
+
+    // ΦΙΛΤΡΑΡΙΣΜΑ
+    function startSearch() {
+        triggerLoading(() => {
+            const text = document.getElementById('movieSearch').value.toLowerCase();
+            const filtered = movies.filter(m => {
+                const matchText = m.title.toLowerCase().includes(text) || 
+                                  m.actors.toLowerCase().includes(text) ||
+                                  m.genre.toLowerCase().includes(text);
+                const matchGenre = (currentCategory === "All" || m.genre === currentCategory);
+                return matchText && matchGenre;
+            });
+            displayMovies(filtered);
+        });
+    }
+
+    function handleCategory(cat) {
+        currentCategory = cat;
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            const btnLabel = btn.innerText === 'Όλα' ? 'All' : btn.innerText;
+            btn.classList.toggle('active', btnLabel === cat);
+        });
+        startSearch();
+    }
+
+    // Αρχική εμφάνιση
+    displayMovies(movies);
+</script>
+
+</body>
+</html>
