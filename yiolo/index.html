@@ -1,0 +1,827 @@
+﻿﻿<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YIOIO Ultimate Database 2026</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --primary: #e50914; --bg: #0a0a0a; --card: #141414; --text: #ffffff; --border: #222; --gold: #ffc107; --input-bg: #1a1a1a; --modal-overlay: rgba(0,0,0,0.95); }
+[data-theme="light"] { --bg: #f5f5f5; --card: #ffffff; --text: #1a1a1a; --border: #ddd; --input-bg: #eeeeee; --modal-overlay: rgba(255,255,255,0.95); }
+body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+.logo { color: var(--primary); font-weight: 800; font-size: 24px; cursor: pointer; transition: opacity 0.2s; }
+.logo:hover { opacity: 0.8; }
+.header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.theme-btn { background: var(--primary); color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+.login-btn { background: #3498db; color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+.login-btn:hover { background: #2980b9; }
+.logout-user-btn { background: #e67e22; color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+.logout-user-btn:hover { background: #d35400; }
+.filter-type-btn { background: var(--input-bg); color: var(--text); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; }
+.filter-type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+#movieCount { font-size: 12px; background: var(--input-bg); padding: 5px 12px; border-radius: 15px; border: 1px solid var(--border); }
+.search-section { padding: 30px 5% 10px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+.search-wrapper { position: relative; width: 100%; max-width: 600px; margin: 0 auto; }
+#movieSearch { width: 100%; padding: 15px 45px 15px 25px; border-radius: 30px; border: 2px solid var(--border); background: var(--input-bg); color: var(--text); outline: none; font-size: 16px; }
+.clear-search-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; padding: 5px; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: all 0.2s; }
+.clear-search-btn:hover { opacity: 1; background: rgba(229,9,20,0.1); color: var(--primary); }
+.clear-search-btn.hidden { display: none; }
+.filter-group { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin: 20px 0; }
+.filter-group select { padding: 10px 20px; border-radius: 25px; background: var(--card); color: var(--text); border: 1px solid var(--border); cursor: pointer; font-size: 14px; min-width: 150px; }
+.movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; padding: 20px 5%; width: 100%; box-sizing: border-box; margin-left: 280px; transition: margin-left 0.3s ease; }
+.movie-grid.dashboard-hidden { margin-left: 0; }
+.movie-card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: transform 0.3s ease; cursor: pointer; }
+.movie-card:hover { transform: translateY(-8px); border-color: var(--primary); }
+.img-container { position: relative; aspect-ratio: 2 / 3; background: #1a1a1a; }
+.movie-card img { width: 100%; height: 100%; object-fit: cover; }
+.quality-tag { position: absolute; top: 10px; left: 10px; background: #2ecc71; color: white; font-size: 9px; font-weight: bold; padding: 3px 6px; border-radius: 4px; z-index: 1; }
+.quality-tag.sd-blue { background: #007bff; }
+.info { padding: 15px; text-align: center; }
+.info h3 { font-size: 14px; margin: 0 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.stars { color: var(--gold); font-size: 16px; margin-bottom: 10px; }
+.rating-number { font-size: 12px; margin-left: 8px; opacity: 0.8; }
+.play-btn { background: var(--primary); color: white; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: block; text-align: center; }
+#loadMoreBtn { display: block; margin: 20px auto 50px; padding: 12px 30px; background: var(--primary); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; }
+#detailModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 4000; align-items: center; justify-content: center; }
+.modal-box { background: var(--card); width: 90%; max-width: 900px; display: flex; position: relative; border-radius: 15px; overflow: hidden; animation: slideUp 0.4s ease; }
+.modal-poster { width: 35%; object-fit: cover; background: #000; }
+.modal-info { width: 65%; padding: 20px 25px; display: flex; flex-direction: column; gap: 8px; max-height: 80vh; overflow-y: auto; text-align: left; }
+.modal-info h2 { margin: 0 0 5px 0; color: var(--primary); font-size: 24px; }
+.info-label { color: var(--primary); font-weight: 800; font-size: 10px; text-transform: uppercase; margin-right: 5px; display: inline-block; min-width: 70px; }
+.info-row { margin-bottom: 5px; line-height: 1.4; font-size: 15px; }
+.modal-desc { font-size: 14px; line-height: 1.5; opacity: 0.8; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 8px; }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@media (max-width: 750px) { .modal-box { flex-direction: column; height: 100vh; border-radius: 0; width: 100%; } .modal-poster { width: 100%; height: 35%; object-fit: contain; } .modal-info { width: 100%; padding: 15px; } .movie-grid { margin-left: 0; } .dashboard { display: none; } }
+#backToTop { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; font-size: 20px; cursor: pointer; display: none; z-index: 3000; }
+.close-modal { position: absolute; top: 10px; right: 10px; background: rgba(229,9,20,0.8); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; z-index: 10; font-weight: bold; font-size: 16px; }
+.imdb-link, .tmdb-link, .delete-link { display: inline-block; padding: 4px 10px; border-radius: 15px; text-decoration: none; font-size: 10px; font-weight: bold; }
+.imdb-link { background: #f5c518; color: #000; }
+.tmdb-link { background: #01b4e4; color: white; }
+.delete-link { background: #e74c3c; color: white; cursor: pointer; }
+.delete-link:hover { background: #c0392b; }
+.download-link-big { 
+    background: #e50914; 
+    color: white; 
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s;
+    width: 80%;
+    max-width: 200px;
+}
+.download-link-big:hover { 
+    background: #c0392b; 
+    transform: scale(1.02);
+}
+.new-badge { background: #e50914; color: white; font-size: 9px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; display: inline-block; }
+
+.dashboard { 
+    position: fixed; 
+    left: 20px; 
+    top: 100px; 
+    width: 260px; 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 12px; 
+    padding: 15px; 
+    z-index: 100; 
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.dashboard-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--primary);
+}
+.close-dash-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.close-dash-btn:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+.dashboard-stats { display: flex; flex-direction: column; gap: 8px; }
+.stat-item { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.stat-label { font-weight: 600; opacity: 0.8; }
+.stat-value { font-weight: 700; color: var(--primary); }
+.dashboard-actions { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+.dash-btn { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 6px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+.dash-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+.edit-poster-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 20px; border-radius: 12px; z-index: 5000; width: 90%; max-width: 400px; border: 1px solid var(--border); }
+.edit-poster-modal input { width: 100%; padding: 10px; margin: 10px 0; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; }
+.edit-poster-modal button { padding: 8px 16px; margin-right: 10px; border: none; border-radius: 8px; cursor: pointer; background: var(--primary); color: white; }
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; visibility: hidden; }
+}
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">YIOIO</div>
+    <div class="header-controls">
+        <button class="theme-btn" onclick="toggleTheme()">Theme</button>
+        <button class="filter-type-btn active" data-type="all" onclick="filterByType('all')"> Όλα</button>
+        <button class="filter-type-btn" data-type="Movie" onclick="filterByType('Movie')"> Ταινίες</button>
+        <button class="filter-type-btn" data-type="Series" onclick="filterByType('Series')"> Σειρές</button>
+        <span id="userNameDisplay" style="margin-right: 10px; font-weight: bold; color: var(--primary);"></span>
+        <button id="loginUserBtn" class="login-btn" onclick="showUserLogin()">Είσοδος</button>
+        <button id="logoutUserBtn" class="logout-user-btn" onclick="logoutUser()" style="display:none;">Αποσύνδεση</button>
+        <div id="movieCount">Τίτλοι: 0</div>
+    </div>
+</header>
+
+<div class="dashboard" id="dashboard">
+    <div class="dashboard-header">
+        <h3>Στατιστικά</h3>
+        <button class="close-dash-btn" onclick="hideDashboard()" title="Κλείσιμο dashboard">✕</button>
+    </div>
+    <div class="dashboard-stats">
+        <div class="stat-item"><span class="stat-label">Σύνολο Τίτλων:</span><span class="stat-value" id="statTotal">0</span></div>
+        <div class="stat-item"><span class="stat-label">Ταινίες:</span><span class="stat-value" id="statMovies">0</span></div>
+        <div class="stat-item"><span class="stat-label">Σειρές:</span><span class="stat-value" id="statSeries">0</span></div>
+        <div class="stat-item"><span class="stat-label">Μ.Ο. Βαθμολογίας:</span><span class="stat-value" id="statAvgRating">0</span></div>
+        <div class="stat-item"><span class="stat-label">Πιο Δημοφιλές Genre:</span><span class="stat-value" id="statTopGenre">-</span></div>
+        <div class="stat-item"><span class="stat-label">Παλαιότερη:</span><span class="stat-value" id="statOldest">-</span></div>
+        <div class="stat-item"><span class="stat-label">Νεότερη:</span><span class="stat-value" id="statNewest">-</span></div>
+    </div>
+    <div class="dashboard-actions">
+        <button class="dash-btn" onclick="searchByID()" style="background:#2ecc71;color:white;">🔍 Αναζήτηση με ID</button>
+        <button class="dash-btn" onclick="openPosterEditor()">Επεξεργασία Poster</button>
+        <button class="dash-btn" onclick="exportToJSON()">Export JSON</button>
+        <button class="dash-btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importFromJSON(event)">
+        <button class="dash-btn" onclick="showMissingPostersList()" style="background:#e67e22;color:white;">Έλεγχος Poster</button>
+        <button class="dash-btn" id="logoutBtn" style="background:#e74c3c;color:white;display:none;" onclick="logoutAdmin()">Αποσύνδεση Διαχειριστή</button>
+    </div>
+</div>
+
+<div class="search-section">
+    <div class="search-wrapper">
+        <input type="text" id="movieSearch" placeholder="Αναζήτηση τίτλου, ηθοποιού, σκηνοθέτη...">
+        <button class="clear-search-btn hidden" id="clearSearchBtn" onclick="clearSearch()" title="Εκκαθάριση αναζήτησης">✕</button>
+    </div>
+    <div class="filter-group">
+        <select id="genreFilter" onchange="applyFilters()"><option value="All">Όλες οι Κατηγορίες</option></select>
+        <select id="sortSelect" onchange="applyFilters()">
+            <option value="title">Τίτλος (Α-Ω)</option>
+            <option value="yearDesc">Νεότερες πρώτα</option>
+            <option value="ratingDesc">Βαθμολογία (Υψηλή-Χαμηλή)</option>
+            <option value="yearAsc">Παλαιότερες πρώτα</option>
+            <option value="latest">Πρόσφατες Προσθήκες</option>
+        </select>
+        <select id="yearFilter" onchange="applyFilters()"><option value="All">Όλα τα έτη</option></select>
+        <select id="countryFilter" onchange="applyFilters()"><option value="All">Όλες οι Χώρες</option></select>
+        <select id="studioFilter" onchange="applyFilters()">
+            <option value="All"> Όλες οι Πλατφόρμες</option>
+        </select>
+    </div>
+</div>
+
+<div class="movie-grid" id="movieGrid"><div style="text-align:center;padding:50px;">Φόρτωση δεδομένων...</div></div>
+<button id="loadMoreBtn" style="display:none;" onclick="loadNextPage()">ΦΟΡΤΩΣΗ ΠΕΡΙΣΣΟΤΕΡΩΝ</button>
+
+<div id="detailModal" onclick="if(event.target===this) closeDetails()">
+    <div class="modal-box">
+        <button class="close-modal" onclick="closeDetails()">✕</button>
+        <img id="modalImg" class="modal-poster" src="" alt="Poster">
+        <div class="modal-info">
+            <div class="modal-buttons">
+                <h2 id="modalTitle" style="margin:0"></h2>
+                <a id="modalImdb" class="imdb-link" href="#" target="_blank">IMDB</a>
+                <a id="modalTmdb" class="tmdb-link" href="#" target="_blank">TMDB</a>
+                <a id="modalDeleteBtn" class="delete-link" onclick="deleteMovieFromModal()" style="cursor:pointer;">ΔΙΑΓΡΑΦΗ</a>
+            </div>
+            <div id="modalStars" class="stars"></div>
+            <div class="info-row"><span class="info-label">ΠΛΗΡΟΦΟΡΙΕΣ:</span> <span id="modalMeta"></span></div>
+            <div class="info-row"><span class="info-label">ΠΛΑΤΦΟΡΜΑ:</span> <span id="modalStudio"></span></div>
+            <div class="info-row"><span class="info-label">ΣΚΗΝΟΘΕΣΙΑ:</span> <span id="modalDirector"></span></div>
+            <div class="info-row"><span class="info-label">ΣΕΝΑΡΙΟ:</span> <span id="modalWriter"></span></div>
+            <div class="info-row"><span class="info-label">ΗΘΟΠΟΙΟΙ:</span> <span id="modalActors"></span></div>
+            <div id="modalDesc" class="modal-desc"></div>
+            <div id="downloadButtonContainer" style="margin-top: 15px; text-align: center;">
+                <a id="modalDownloadBtn" class="download-link-big" href="#" target="_blank" style="display:none;">ΛΗΨΗ</a>
+            </div>
+        </div>
+    </div>
+</div>
+<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'});">↑</button>
+
+<script>
+// ============ TMDB API ============
+const TMDB_API_KEY = "888d45d72a08e6adad1196a31ef13e85";
+const TMDB_BASE_IMG = "https://image.tmdb.org/t/p/w500";
+const posterCache = new Map();
+const LOADING_POSTER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' viewBox='0 0 300 450'%3E%3Crect width='300' height='450' fill='%231a1a1a'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23666' font-size='14'%3EΦΟΡΤΩΣΗ...%3C/text%3E%3C/svg%3E";
+
+// ============ ΕΝΣΩΜΑΤΩΜΕΝΑ ΔΕΔΟΜΕΝΑ ============
+const EMBEDDED_MOVIES = [
+  { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May, LaMonica Garrett", "director": "Ben Richardson, Christina Alexandra Voros, Taylor Sheridan", "writer": "", "link": "https://terabox.com/s/1-xhUKF86FVGqZSNb0TttIA", "imdb": "https://www.imdb.com/title/tt13756662/", "tmdb": "https://www.themoviedb.org/tv/118357", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ξεκινούν ένα ταξίδι δυτικά...", "dateAdded": "2023-02-14" },
+  { "id": 2, "title": "1899", "year": 2022, "country": "Germany", "genre": "Μυστηρίου, Δράμα", "type": "Series", "quality": "HD", "rating": 7.3, "actors": "Emily Beecham, Andreas Pietschmann, Aneurin Barnard, Isabella Wei, Maciej Musiał", "director": "Baran bo Odar", "writer": "Jantje Friese, Juliana Lima Dehne, Emma Ko, Darío Madrona, Emil Nygaard Albertsen", "link": "https://terabox.com/s/1a5c8AJjYf13nNHc_N1NZ1A", "imdb": "https://www.imdb.com/title/tt9319668/", "tmdb": "https://www.themoviedb.org/tv/90669", "desc": "Μετανάστες από διαφορετικές χώρες ταξιδεύουν...", "dateAdded": "2023-02-15" },
+  { "id": 3, "title": "1923", "year": 2022, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.3, "actors": "Harrison Ford, Helen Mirren, Brandon Sklenar, Julia Schlaepfer, Jerome Flynn", "director": "Ben Richardson, Guy Ferland", "writer": "Taylor Sheridan", "link": "https://terabox.com/s/1ulXsA68v8lxNUBU8s6nw8A", "imdb": "https://www.imdb.com/title/tt18335752/", "tmdb": "https://www.themoviedb.org/tv/157744", "desc": "Η σειρά ακολουθεί τον πατριάρχη της οικογένειας Dutton...", "dateAdded": "2023-02-16" }
+];
+
+let moviesData = [];
+let filteredMovies = [];
+let currentPage = 1;
+const itemsPerPage = 25;
+let currentTypeFilter = 'all';
+let currentModalMovieId = null;
+
+// ============ ΑΥΤΟΜΑΤΗ ΔΙΟΡΘΩΣΗ GENRES ============
+function normalizeGenre(genreStr) {
+    if (!genreStr) return genreStr;
+    let fixed = genreStr;
+    
+    // Αφαίρεση τελειών
+    fixed = fixed.replace(/\./g, '');
+    
+    // Συγχώνευση Επιστημονικής Φαντασίας
+    fixed = fixed.replace(/Επ\s*Φαντασίας/gi, 'Επιστημονική Φαντασία');
+    fixed = fixed.replace(/Επιστ[\.\s]*Φαντασίας?/gi, 'Επιστημονική Φαντασία');
+    fixed = fixed.replace(/Επιστ[\.\s]*Φαντασια/gi, 'Επιστημονική Φαντασία');
+    fixed = fixed.replace(/Sci[\-\s]*Fi/gi, 'Επιστημονική Φαντασία');
+    
+    // Συγχώνευση Κινούμενων Σχεδίων (διορθωμένο)
+    fixed = fixed.replace(/Κιν[\.\s]*[Σσ]χεδι[αων]?/gi, 'Κινούμενα Σχέδια');
+    
+    // Υπόλοιπες διορθώσεις
+    fixed = fixed.replace(/Δρασης/gi, 'Δράσης');
+    fixed = fixed.replace(/Θριλερ/gi, 'Θρίλερ');
+    fixed = fixed.replace(/Κωμωδια/gi, 'Κωμωδία');
+    fixed = fixed.replace(/Μυστηριου/gi, 'Μυστηρίου');
+    fixed = fixed.replace(/Εγκληματος/gi, 'Εγκλήματος');
+    fixed = fixed.replace(/Περιπετεια/gi, 'Περιπέτεια');
+    fixed = fixed.replace(/Ρομαντικη/gi, 'Ρομαντική');
+    
+    return fixed;
+}
+
+function fixAllGenres() {
+    if (!moviesData || !moviesData.length) return;
+    let fixedCount = 0;
+    moviesData.forEach(movie => {
+        if (movie.genre) {
+            const fixed = normalizeGenre(movie.genre);
+            if (movie.genre !== fixed) {
+                movie.genre = fixed;
+                fixedCount++;
+            }
+        }
+    });
+    if (fixedCount > 0) {
+        console.log(`✅ Διορθώθηκαν ${fixedCount} genres αυτόματα!`);
+        saveToLocalStorage();
+    }
+}
+
+// ============ ΣΥΣΤΗΜΑ ΧΡΗΣΤΩΝ ============
+const USERS = {
+    '4587': 'Δημήτρης (Admin)',
+    '1234': 'Μαρία',
+    '5678': 'Γιάννης',
+    '0000': 'Πέτρος'
+};
+
+let currentUserName = '';
+let isUserLoggedIn = false;
+
+function logUserLogin(userName) {
+    let loginLog = JSON.parse(localStorage.getItem('userLoginLog') || '[]');
+    if (loginLog.length > 100) loginLog = loginLog.slice(-100);
+    loginLog.push({ user: userName, time: new Date().toLocaleString('el-GR'), timestamp: Date.now() });
+    localStorage.setItem('userLoginLog', JSON.stringify(loginLog));
+}
+
+function showUserLogin() {
+    const password = prompt('Εισάγετε κωδικό χρήστη:');
+    if (!password) return;
+    if (USERS[password]) {
+        currentUserName = USERS[password];
+        isUserLoggedIn = true;
+        sessionStorage.setItem('userLoggedIn', 'true');
+        sessionStorage.setItem('userName', currentUserName);
+        document.getElementById('loginUserBtn').style.display = 'none';
+        document.getElementById('logoutUserBtn').style.display = 'inline-block';
+        document.getElementById('userNameDisplay').innerText = `👤 ${currentUserName}`;
+        showToast(`Καλώς ήρθες ${currentUserName}!`, '#2ecc71');
+        logUserLogin(currentUserName);
+        if (document.getElementById('detailModal').style.display === 'flex') {
+            const downloadBtn = document.getElementById('modalDownloadBtn');
+            const currentMovie = moviesData.find(m => m.id === currentModalMovieId);
+            if (currentMovie && currentMovie.link) { downloadBtn.style.display = 'inline-block'; downloadBtn.href = currentMovie.link; }
+        }
+    } else { showToast('Λάθος κωδικός!', '#e50914'); }
+}
+
+function logoutUser() {
+    isUserLoggedIn = false;
+    currentUserName = '';
+    sessionStorage.removeItem('userLoggedIn');
+    sessionStorage.removeItem('userName');
+    document.getElementById('loginUserBtn').style.display = 'inline-block';
+    document.getElementById('logoutUserBtn').style.display = 'none';
+    document.getElementById('userNameDisplay').innerText = '';
+    showToast('Αποσυνδεθήκατε', '#e67e22');
+    if (document.getElementById('detailModal').style.display === 'flex') { document.getElementById('modalDownloadBtn').style.display = 'none'; }
+}
+
+function loadUserSession() {
+    const saved = sessionStorage.getItem('userLoggedIn');
+    if (saved === 'true') {
+        isUserLoggedIn = true;
+        currentUserName = sessionStorage.getItem('userName') || 'Χρήστης';
+        document.getElementById('loginUserBtn').style.display = 'none';
+        document.getElementById('logoutUserBtn').style.display = 'inline-block';
+        document.getElementById('userNameDisplay').innerText = `👤 ${currentUserName}`;
+    }
+}
+
+// Αναζήτηση με ID
+function searchByID() {
+    const id = prompt('Εισάγετε τον αριθμό ID του τίτλου:');
+    if (!id) return;
+    const movie = moviesData.find(m => m.id == id);
+    if (movie) { openDetails(movie.title); showToast(`Βρέθηκε: ${movie.title}`, '#2ecc71'); }
+    else { showToast(`Δεν βρέθηκε τίτλος με ID: ${id}`, '#e50914'); }
+}
+
+// ============ ΑΥΤΟΜΑΤΗ ΑΝΙΧΝΕΥΣΗ STUDIO ============
+function detectStudio(movie) {
+    const title = (movie.title || "").toLowerCase();
+    const genre = (movie.genre || "").toLowerCase();
+    const actors = (movie.actors || "").toLowerCase();
+    const director = (movie.director || "").toLowerCase();
+    const fullText = `${title} ${genre} ${actors} ${director}`;
+    if (fullText.includes("marvel") || fullText.includes("avengers") || fullText.includes("disney") || fullText.includes("star wars") || fullText.includes("pixar")) return "Disney+";
+    if (fullText.includes("batman") || fullText.includes("superman") || fullText.includes("warner") || fullText.includes("hbo") || fullText.includes("game of thrones") || fullText.includes("harry potter") || fullText.includes("lord of the rings") || fullText.includes("matrix")) return "Max/HBO";
+    if (fullText.includes("top gun") || fullText.includes("mission impossible") || fullText.includes("transformers") || fullText.includes("star trek") || fullText.includes("yellowstone") || fullText.includes("1883") || fullText.includes("1923")) return "Paramount+";
+    if (fullText.includes("stranger things") || fullText.includes("the witcher") || fullText.includes("wednesday") || fullText.includes("netflix") || fullText.includes("squid game") || fullText.includes("the crown") || fullText.includes("1899")) return "Netflix";
+    if (fullText.includes("jack reacher") || fullText.includes("the boys") || fullText.includes("amazon")) return "Amazon Prime";
+    if (fullText.includes("coda") || fullText.includes("apple") || fullText.includes("greyhound")) return "Apple TV+";
+    if (fullText.includes("handmaid's tale") || fullText.includes("hulu")) return "Hulu";
+    return "Κανάλι";
+}
+
+// ============ ΑΣΦΑΛΗΣ ΕΙΣΟΔΟΣ ΔΙΑΧΕΙΡΙΣΤΗ ============
+const AdminAuth = (function() {
+    const ADMIN_PASSWORD = '123566Aa@#';
+    function verifyPassword(password) { return password === ADMIN_PASSWORD; }
+    function generateToken() { const randomPart = Math.random().toString(36).substring(2, 15); const timePart = Date.now().toString(36); return btoa(randomPart + ':' + timePart); }
+    function startSession() { const token = generateToken(); const expires = Date.now() + (24 * 60 * 60 * 1000); sessionStorage.setItem('adminToken', token); sessionStorage.setItem('adminExpires', expires.toString()); return true; }
+    function isSessionValid() { const token = sessionStorage.getItem('adminToken'); const expires = sessionStorage.getItem('adminExpires'); if (!token || !expires) return false; if (Date.now() > parseInt(expires)) { sessionStorage.removeItem('adminToken'); sessionStorage.removeItem('adminExpires'); return false; } return true; }
+    function endSession() { sessionStorage.removeItem('adminToken'); sessionStorage.removeItem('adminExpires'); }
+    return { verifyPassword, startSession, isSessionValid, endSession };
+})();
+
+let logoClickCount = 0;
+let logoClickTimer;
+
+function showToast(message, bgColor = '#2ecc71') {
+    const existingToast = document.querySelector('.toast-message');
+    if (existingToast) existingToast.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    toast.style.cssText = `position:fixed; bottom:20px; right:20px; background:${bgColor}; color:white; padding:12px 24px; border-radius:8px; z-index:10000; font-size:14px; font-weight:bold; box-shadow:0 2px 10px rgba(0,0,0,0.2); animation:slideInRight 0.3s ease;`;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.animation = 'slideOutRight 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+function askForPassword() {
+    const password = prompt('Εισάγετε κωδικό διαχειριστή για εμφάνιση dashboard:');
+    if (!password) return;
+    if (AdminAuth.verifyPassword(password)) { AdminAuth.startSession(); showDashboard(); showToast('Dashboard εμφανίστηκε!', '#2ecc71'); }
+    else { showToast('Λάθος κωδικός!', '#e50914'); }
+}
+
+function showDashboard() { const dashboard = document.getElementById('dashboard'); const grid = document.getElementById('movieGrid'); const logoutBtn = document.getElementById('logoutBtn'); if (dashboard) dashboard.style.display = 'block'; if (grid) grid.classList.remove('dashboard-hidden'); if (logoutBtn) logoutBtn.style.display = 'block'; localStorage.setItem('dashboardVisible', 'true'); }
+function hideDashboard() { const dashboard = document.getElementById('dashboard'); const grid = document.getElementById('movieGrid'); const logoutBtn = document.getElementById('logoutBtn'); if (dashboard) dashboard.style.display = 'none'; if (grid) grid.classList.add('dashboard-hidden'); if (logoutBtn) logoutBtn.style.display = 'none'; localStorage.setItem('dashboardVisible', 'false'); }
+function logoutAdmin() { AdminAuth.endSession(); hideDashboard(); showToast('Αποσυνδεθήκατε από το dashboard', '#e74c3c'); }
+function loadDashboardState() { const dashboard = document.getElementById('dashboard'); const grid = document.getElementById('movieGrid'); const logoutBtn = document.getElementById('logoutBtn'); const isAuthenticated = AdminAuth.isSessionValid(); const wasVisible = localStorage.getItem('dashboardVisible'); if (isAuthenticated && wasVisible === 'true') { if (dashboard) dashboard.style.display = 'block'; if (grid) grid.classList.remove('dashboard-hidden'); if (logoutBtn) logoutBtn.style.display = 'block'; } else { if (dashboard) dashboard.style.display = 'none'; if (grid) grid.classList.add('dashboard-hidden'); if (logoutBtn) logoutBtn.style.display = 'none'; } }
+
+function deleteMovieById(id) {
+    if (!AdminAuth.isSessionValid()) { showToast('Πρέπει πρώτα να συνδεθείτε ως διαχειριστής!', '#e50914'); return false; }
+    if (!confirm('Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτόν τον τίτλο;\n\nΗ ενέργεια αυτή είναι ΜΟΝΙΜΗ και δεν μπορεί να αναιρεθεί!')) return false;
+    const movieToDelete = moviesData.find(m => m.id === id);
+    if (!movieToDelete) return false;
+    const movieTitle = movieToDelete.title;
+    moviesData = moviesData.filter(m => m.id !== id);
+    moviesData.forEach((movie, index) => { movie.id = index + 1; });
+    saveToLocalStorage();
+    posterCache.clear();
+    initFilters();
+    applyFilters();
+    closeDetails();
+    showToast(`Ο τίτλος "${movieTitle}" διαγράφηκε και τα IDs αναριθμήθηκαν!`, '#2ecc71');
+    return true;
+}
+
+function deleteMovieFromModal() { if (currentModalMovieId) { deleteMovieById(currentModalMovieId); } }
+
+async function loadMoviesData() {
+    // Πρώτα προσπαθούμε να φορτώσουμε από movies_data.json (στον ίδιο φάκελο)
+    try {
+        const response = await fetch('./movies_data.json');
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+                moviesData = data;
+                console.log('✅ Φορτώθηκαν', moviesData.length, 'τίτλοι από movies_data.json');
+                saveToLocalStorage();
+                fixAllGenres();
+                initFilters();
+                applyFilters();
+                return;
+            }
+        }
+    } catch(e) {
+        console.log('Δεν βρέθηκε movies_data.json, ή σφάλμα φόρτωσης', e);
+    }
+    
+    // Αν δεν υπάρχει JSON, φόρτωσε από localStorage
+    const saved = localStorage.getItem('yioio_movies_data');
+    if (saved) {
+        try {
+            const savedData = JSON.parse(saved);
+            if (Array.isArray(savedData) && savedData.length > 0) {
+                moviesData = savedData;
+                console.log('✅ Φορτώθηκαν', moviesData.length, 'τίτλοι από localStorage');
+                let updatedCount = 0;
+                for (let i = 0; i < moviesData.length; i++) {
+                    if (!moviesData[i].studio) { moviesData[i].studio = detectStudio(moviesData[i]); updatedCount++; }
+                }
+                if (updatedCount > 0) { saveToLocalStorage(); console.log(`📀 Προστέθηκαν studios σε ${updatedCount} τίτλους!`); }
+                fixAllGenres();
+                initFilters();
+                applyFilters();
+                return;
+            }
+        } catch(e) { console.error('Σφάλμα φόρτωσης από localStorage', e); }
+    }
+    
+    // Τελευταία επιλογή: ενσωματωμένα δεδομένα
+    console.log('📀 Χρήση ενσωματωμένων δεδομένων (πρώτη εκτέλεση)');
+    moviesData = [...EMBEDDED_MOVIES];
+    for (let i = 0; i < moviesData.length; i++) { if (!moviesData[i].studio) { moviesData[i].studio = detectStudio(moviesData[i]); } }
+    saveToLocalStorage();
+    fixAllGenres();
+    initFilters();
+    applyFilters();
+}
+
+function saveToLocalStorage() { try { localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData)); } catch(e) { console.error(e); } }
+
+function getGenreColor(genre) {
+    if (!genre) return "34495e";
+    const g = genre.toLowerCase();
+    if (g.includes("κωμωδία")) return "e67e22";
+    if (g.includes("τρόμου")) return "8e44ad";
+    if (g.includes("δράμα")) return "2980b9";
+    if (g.includes("επιστ")) return "1abc9c";
+    if (g.includes("εγκλήματος")) return "c0392b";
+    if (g.includes("περιπέτεια")) return "27ae60";
+    if (g.includes("ρομαντική")) return "e84393";
+    if (g.includes("ντοκιμαντέρ")) return "7f8c8d";
+    return "34495e";
+}
+
+async function fetchPoster(title, year, type, movieId = null) {
+    const cacheKey = `${title}|${year}`;
+    if (movieId !== null) {
+        const movie = moviesData.find(m => m.id === movieId);
+        if (movie && movie.posterOverride && movie.posterOverride.trim() !== "") { posterCache.set(cacheKey, movie.posterOverride); return movie.posterOverride; }
+    }
+    if (posterCache.has(cacheKey)) return posterCache.get(cacheKey);
+    try {
+        let searchUrl = `https://api.themoviedb.org/3/search/${type}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&year=${year}`;
+        let response = await fetch(searchUrl);
+        let data = await response.json();
+        if ((!data.results || data.results.length === 0) && type === "tv") {
+            searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&year=${year}`;
+            response = await fetch(searchUrl);
+            data = await response.json();
+        }
+        if (data.results && data.results.length > 0 && data.results[0].poster_path) {
+            const posterUrl = `${TMDB_BASE_IMG}${data.results[0].poster_path}`;
+            posterCache.set(cacheKey, posterUrl);
+            return posterUrl;
+        }
+    } catch (e) { console.warn(e); }
+    const movieData = moviesData.find(m => m.title === title);
+    const genreColor = getGenreColor(movieData?.genre || "");
+    const fallbackUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='450' viewBox='0 0 300 450'%3E%3Crect width='300' height='450' fill='%23${genreColor}'/%3E%3Ctext x='50%25' y='45%25' text-anchor='middle' fill='white' font-size='14' font-weight='bold'%3E${encodeURIComponent((title || "?").substring(0, 25))}%3C/text%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' fill='rgba(255,255,255,0.7)' font-size='10'%3E${movieData?.year || ""}%3C/text%3E%3C/svg%3E`;
+    posterCache.set(cacheKey, fallbackUrl);
+    return fallbackUrl;
+}
+
+let currentEditingMovieId = null;
+
+function openPosterEditor() {
+    if (!AdminAuth.isSessionValid()) { showToast('Πρέπει πρώτα να συνδεθείτε ως διαχειριστής!', '#e50914'); return; }
+    const movieId = prompt("Εισάγετε το ID της ταινίας/σειράς που θέλετε να επεξεργαστείτε:");
+    if (!movieId) return;
+    const movie = moviesData.find(m => m.id == movieId);
+    if (!movie) { alert("Δεν βρέθηκε τίτλος με αυτό το ID"); return; }
+    currentEditingMovieId = movie.id;
+    const currentPoster = movie.posterOverride || "";
+    const modalHtml = `<div class="edit-poster-modal" id="posterEditorModal"><h3>Επεξεργασία Poster: ${movie.title}</h3><input type="text" id="posterUrlInput" placeholder="Εισάγετε URL poster (ή αφήστε κενό για αυτόματο)" value="${currentPoster}"><div style="margin-top: 15px;"><button onclick="savePosterOverride()">Αποθήκευση</button><button onclick="closePosterEditor()">Ακύρωση</button><button onclick="removePosterOverride()">Διαγραφή Override</button></div></div>`;
+    const existing = document.getElementById('posterEditorModal');
+    if (existing) existing.remove();
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function savePosterOverride() {
+    const url = document.getElementById('posterUrlInput').value.trim();
+    const movie = moviesData.find(m => m.id === currentEditingMovieId);
+    if (movie) {
+        if (url) { movie.posterOverride = url; }
+        else { delete movie.posterOverride; }
+        const cacheKey = `${movie.title}|${movie.year}`;
+        posterCache.delete(cacheKey);
+        saveToLocalStorage();
+        applyFilters();
+        alert("Το poster ενημερώθηκε!");
+    }
+    closePosterEditor();
+}
+
+function removePosterOverride() {
+    const movie = moviesData.find(m => m.id === currentEditingMovieId);
+    if (movie) {
+        delete movie.posterOverride;
+        const cacheKey = `${movie.title}|${movie.year}`;
+        posterCache.delete(cacheKey);
+        saveToLocalStorage();
+        applyFilters();
+        alert("Το override αφαιρέθηκε");
+    }
+    closePosterEditor();
+}
+
+function closePosterEditor() { const modal = document.getElementById('posterEditorModal'); if (modal) modal.remove(); currentEditingMovieId = null; }
+
+function updateDashboard() {
+    const total = filteredMovies.length;
+    const movies = filteredMovies.filter(m => m.type === "Movie").length;
+    const series = filteredMovies.filter(m => m.type === "Series").length;
+    const validRatings = filteredMovies.filter(m => m.rating > 0);
+    const avgRating = validRatings.length ? (validRatings.reduce((sum, m) => sum + m.rating, 0) / validRatings.length).toFixed(1) : "N/A";
+    const genreCount = {};
+    filteredMovies.forEach(m => { if (m.genre) { m.genre.split(', ').forEach(g => { genreCount[g] = (genreCount[g] || 0) + 1; }); } });
+    const topGenre = Object.entries(genreCount).sort((a,b) => b[1] - a[1])[0]?.[0] || "-";
+    const years = filteredMovies.map(m => m.year).filter(y => y);
+    const oldest = years.length ? Math.min(...years) : "-";
+    const newest = years.length ? Math.max(...years) : "-";
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statMovies').innerText = movies;
+    document.getElementById('statSeries').innerText = series;
+    document.getElementById('statAvgRating').innerText = avgRating;
+    document.getElementById('statTopGenre').innerText = topGenre;
+    document.getElementById('statOldest').innerText = oldest;
+    document.getElementById('statNewest').innerText = newest;
+}
+
+function isNewMovie(date) { if (!date) return false; return (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) <= 7; }
+function escapeHtml(s) { if (!s) return ''; return s.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+function getStars(r) { if (r === 0) return '☆☆☆☆☆'; let s = ''; const fullStars = Math.floor(r); const hasHalfStar = (r % 1) >= 0.5; for (let i = 0; i < fullStars; i++) s += '★'; if (hasHalfStar) s += '½'; for (let i = 0; i < 5 - Math.ceil(r); i++) s += '☆'; return s; }
+function toggleTheme() { if (document.documentElement.hasAttribute('data-theme')) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'dark'); } else { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); } }
+function loadTheme() { if (localStorage.getItem('theme') === 'light') { document.documentElement.setAttribute('data-theme', 'light'); } }
+
+function openDetails(title) {
+    const movie = moviesData.find(m => m.title === title);
+    if (!movie) return;
+    currentModalMovieId = movie.id;
+    const modal = document.getElementById('detailModal');
+    document.getElementById('modalTitle').innerText = movie.title;
+    document.getElementById('modalDesc').innerText = movie.desc || 'Δεν υπάρχει διαθέσιμη περιγραφή.';
+    document.getElementById('modalDirector').innerText = movie.director || 'N/A';
+    document.getElementById('modalWriter').innerText = movie.writer || 'N/A';
+    document.getElementById('modalActors').innerText = movie.actors || 'N/A';
+    document.getElementById('modalStudio').innerText = movie.studio || 'Κανάλι';
+    const meta = `${movie.year} • ${movie.country || 'N/A'} • ${movie.genre || 'N/A'} • ${movie.quality || 'HD'}`;
+    document.getElementById('modalMeta').innerText = meta;
+    const starsHtml = getStars(movie.rating);
+    document.getElementById('modalStars').innerHTML = `${starsHtml} <span class="rating-number">${movie.rating}</span>`;
+    const imdbLink = document.getElementById('modalImdb');
+    const tmdbLink = document.getElementById('modalTmdb');
+    const deleteBtn = document.getElementById('modalDeleteBtn');
+    const downloadBtn = document.getElementById('modalDownloadBtn');
+    imdbLink.href = movie.imdb || '#';
+    imdbLink.style.display = movie.imdb ? 'inline-block' : 'none';
+    tmdbLink.href = movie.tmdb || '#';
+    tmdbLink.style.display = movie.tmdb ? 'inline-block' : 'none';
+    deleteBtn.style.display = AdminAuth.isSessionValid() ? 'inline-block' : 'none';
+    if (isUserLoggedIn && movie.link) { downloadBtn.style.display = 'inline-block'; downloadBtn.href = movie.link; }
+    else { downloadBtn.style.display = 'none'; downloadBtn.href = '#'; }
+    const modalImg = document.getElementById('modalImg');
+    modalImg.src = LOADING_POSTER;
+    fetchPoster(movie.title, movie.year, movie.type === 'Series' ? 'tv' : 'movie', movie.id).then(posterUrl => { modalImg.src = posterUrl; }).catch(() => { modalImg.src = LOADING_POSTER; });
+    modal.style.display = 'flex';
+}
+
+function closeDetails() { document.getElementById('detailModal').style.display = 'none'; currentModalMovieId = null; }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDetails(); });
+function filterByType(type) { currentTypeFilter = type; document.querySelectorAll('.filter-type-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.type === type); }); applyFilters(); }
+
+function initFilters() {
+    if (!moviesData.length) return;
+    const yearSel = document.getElementById('yearFilter');
+    const countrySel = document.getElementById('countryFilter');
+    const genreSel = document.getElementById('genreFilter');
+    while (yearSel.options.length > 1) yearSel.remove(1);
+    while (countrySel.options.length > 1) countrySel.remove(1);
+    while (genreSel.options.length > 1) genreSel.remove(1);
+    const years = [...new Set(moviesData.map(m => m.year).filter(y => y))].sort((a,b) => b - a);
+    years.forEach(y => yearSel.add(new Option(y, y)));
+    const countries = [...new Set(moviesData.map(m => m.country).filter(c => c && c !== 'N/A'))].sort();
+    countries.forEach(c => countrySel.add(new Option(c, c)));
+    const allGenres = [];
+    moviesData.forEach(m => {
+        if (m.genre) {
+            m.genre.split(',').forEach(g => {
+                let clean = g.trim().replace(/\./g, '');
+                if (clean.match(/Επιστ[\.\s]*Φαντασια/i) || clean.match(/Sci[\-\s]*Fi/i)) { clean = 'Επιστημονική Φαντασία'; }
+                clean = clean.replace(/Δρασης/gi, 'Δράσης').replace(/Θριλερ/gi, 'Θρίλερ').replace(/Κωμωδια/gi, 'Κωμωδία').replace(/Ρομαντικη/gi, 'Ρομαντική');
+                allGenres.push(clean);
+            });
+        }
+    });
+    // Συγχώνευση διπλών genres
+const normalizedGenres = allGenres.map(g => normalizeGenre(g));
+const uniqueGenres = [...new Set(normalizedGenres.filter(g => g && g !== 'N/A' && g !== 'Unknown'))];
+    uniqueGenres.sort((a, b) => a.localeCompare(b, 'el'));
+    uniqueGenres.forEach(g => { genreSel.add(new Option(g, g)); });
+    const studioSel = document.getElementById('studioFilter');
+    if (studioSel) {
+        const studios = [...new Set(moviesData.map(m => m.studio).filter(s => s && s !== 'Κανάλι'))].sort();
+        while (studioSel.options.length > 1) studioSel.remove(1);
+        studios.forEach(s => { studioSel.add(new Option(s, s)); });
+    }
+}
+
+function toggleClearButton() { const searchInput = document.getElementById('movieSearch'); const clearBtn = document.getElementById('clearSearchBtn'); if (searchInput.value.length > 0) { clearBtn.classList.remove('hidden'); } else { clearBtn.classList.add('hidden'); } }
+function clearSearch() { const searchInput = document.getElementById('movieSearch'); const clearBtn = document.getElementById('clearSearchBtn'); searchInput.value = ''; clearBtn.classList.add('hidden'); applyFilters(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+function applyFilters() {
+    if (!moviesData.length) return;
+    toggleClearButton();
+    let searchTerm = document.getElementById('movieSearch').value.toLowerCase().trim();
+    let results = [...moviesData];
+    if (searchTerm) {
+        const searchWords = searchTerm.split(/\s+/);
+        results = results.filter(movie => {
+            const searchableText = [movie.title, movie.original_title || '', movie.actors || '', movie.director || '', movie.writer || '', movie.genre || '', movie.country || '', movie.desc || ''].join(' ').toLowerCase();
+            return searchWords.every(word => searchableText.includes(word));
+        });
+    }
+    if (currentTypeFilter !== 'all') { results = results.filter(m => m.type === currentTypeFilter); }
+    const genreFilter = document.getElementById('genreFilter').value;
+    if (genreFilter !== 'All') { results = results.filter(m => m.genre && m.genre.includes(genreFilter)); }
+    const yearFilter = document.getElementById('yearFilter').value;
+    if (yearFilter !== 'All') { results = results.filter(m => m.year == yearFilter); }
+    const countryFilter = document.getElementById('countryFilter').value;
+    if (countryFilter !== 'All') { results = results.filter(m => m.country === countryFilter); }
+    const studioFilter = document.getElementById('studioFilter').value;
+    if (studioFilter !== 'All') { results = results.filter(m => m.studio === studioFilter); }
+    const sortBy = document.getElementById('sortSelect').value;
+    if (sortBy === 'title') { results.sort((a, b) => a.title.localeCompare(b.title)); }
+    else if (sortBy === 'yearDesc') { results.sort((a, b) => b.year - a.year); }
+    else if (sortBy === 'ratingDesc') { results.sort((a, b) => b.rating - a.rating); }
+    else if (sortBy === 'yearAsc') { results.sort((a, b) => a.year - b.year); }
+    else if (sortBy === 'latest') { results.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded)); }
+    filteredMovies = results;
+    currentPage = 1;
+    let countText = `${filteredMovies.length} τίτλοι`;
+    if (searchTerm) countText += ` (αναζήτηση: "${searchTerm}")`;
+    if (currentTypeFilter === 'Movie') countText = `Ταινίες: ${filteredMovies.length}`;
+    else if (currentTypeFilter === 'Series') countText = `Σειρές: ${filteredMovies.length}`;
+    document.getElementById('movieCount').innerText = countText;
+    updateDashboard();
+    renderMovies();
+}
+
+async function renderMovies() {
+    const grid = document.getElementById('movieGrid');
+    const end = currentPage * itemsPerPage;
+    const pageItems = filteredMovies.slice(0, end);
+    const searchTerm = document.getElementById('movieSearch').value.trim();
+    if (pageItems.length === 0) {
+        grid.innerHTML = `<div style="text-align: center; padding: 50px;">Δεν βρέθηκαν αποτελέσματα για "${searchTerm || 'αυτά τα κριτήρια'}"<br><br><button onclick="clearSearch()" style="padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:25px; cursor:pointer;">Εκκαθάριση αναζήτησης</button></div>`;
+        document.getElementById('loadMoreBtn').style.display = 'none';
+        return;
+    }
+    document.getElementById('loadMoreBtn').style.display = end >= filteredMovies.length ? 'none' : 'block';
+    grid.innerHTML = pageItems.map(m => `<div class="movie-card" data-id="${m.id}" onclick="openDetails('${escapeHtml(m.title).replace(/'/g, "\\'")}')"><div class="img-container"><div class="quality-tag ${m.quality === 'SD' ? 'sd-blue' : ''}">${m.quality || 'HD'}</div><img src="${LOADING_POSTER}" data-title="${escapeHtml(m.title)}" data-year="${m.year}" data-type="${m.type === 'Series' ? 'tv' : 'movie'}" data-id="${m.id}" class="poster-load" loading="lazy"></div><div class="info"><h3>${escapeHtml(m.title)}${isNewMovie(m.dateAdded) ? '<span class="new-badge">ΝΕΟ</span>' : ''}</h3><div style="font-size: 10px; opacity: 0.6; margin-bottom: 5px;">ID: ${m.id}</div><div class="stars">${getStars(m.rating)} <span class="rating-number">${m.rating}</span></div><div class="play-btn">ΛΕΠΤΟΜΕΡΕΙΕΣ</div></div></div>`).join('');
+    const posterPromises = Array.from(grid.querySelectorAll('.poster-load')).map(async (img) => { const movieId = parseInt(img.dataset.id); const poster = await fetchPoster(img.dataset.title, img.dataset.year, img.dataset.type, movieId); img.src = poster; });
+    await Promise.all(posterPromises);
+}
+
+function loadNextPage() { currentPage++; renderMovies(); }
+
+function exportToJSON() {
+    if (!AdminAuth.isSessionValid()) { showToast('Πρέπει πρώτα να συνδεθείτε ως διαχειριστής!', '#e50914'); return; }
+    const dataStr = JSON.stringify(moviesData, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `movies_data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('Το αρχείο movies_data.json αποθηκεύτηκε! Βάλτο στο USB μαζί με το index.html');
+}
+
+function importFromJSON(event) {
+    if (!AdminAuth.isSessionValid()) { showToast('Πρέπει πρώτα να συνδεθείτε ως διαχειριστής!', '#e50914'); event.target.value = ''; return; }
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (Array.isArray(importedData)) {
+                moviesData = importedData;
+                saveToLocalStorage();
+                posterCache.clear();
+                initFilters();
+                applyFilters();
+                alert(`Εισήχθησαν ${moviesData.length} τίτλοι!`);
+            } else {
+                throw new Error('Μη έγκυρη μορφή αρχείου');
+            }
+        } catch (error) { console.error(error); alert('Σφάλμα: Το αρχείο δεν είναι έγκυρο JSON'); }
+        event.target.value = '';
+    };
+    reader.readAsText(file);
+}
+
+function showMissingPostersList() {
+    if (!AdminAuth.isSessionValid()) { showToast('Πρέπει πρώτα να συνδεθείτε ως διαχειριστής!', '#e50914'); return; }
+    const missing = moviesData.filter(m => !m.posterOverride);
+    if (missing.length === 0) { alert('Όλες οι ταινίες έχουν poster override!'); }
+    else {
+        let msg = `${missing.length} ταινίες χωρίς custom poster:\n\n`;
+        missing.slice(0, 30).forEach(m => { msg += `ID: ${m.id} | ${m.title} (${m.year})\n`; });
+        if (missing.length > 30) msg += `\n... και ${missing.length - 30} ακόμα`;
+        msg += '\n\nΘες να αντιγράψεις τα IDs στο clipboard;';
+        if (confirm(msg)) { const ids = missing.map(m => m.id).join(', '); navigator.clipboard.writeText(ids); alert(`${missing.length} IDs αντιγράφηκαν!`); }
+    }
+}
+
+// ============ ΑΡΧΙΚΟΠΟΙΗΣΗ ============
+window.addEventListener('DOMContentLoaded', async () => {
+    loadTheme();
+    await loadMoviesData();
+    loadDashboardState();
+    loadUserSession();
+    const searchInput = document.getElementById('movieSearch');
+    searchInput.addEventListener('input', function() { toggleClearButton(); applyFilters(); });
+    searchInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') applyFilters(); });
+    const backBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => { backBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+    const logoElement = document.querySelector('.logo');
+    if (logoElement) {
+        logoElement.addEventListener('click', function(e) {
+            logoClickCount++;
+            clearTimeout(logoClickTimer);
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => { if(logoElement) logoElement.style.transform = 'scale(1)'; }, 150);
+            if (logoClickCount === 3) { logoClickCount = 0; askForPassword(); }
+            logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1000);
+        });
+    }
+});
+</script>
+</body>
+</html>
