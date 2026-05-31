@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YIOIO Ultimate Database 2026 - Secure</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+</head>
+<body>
+
+<header>
+    <div class="logo">YIOIO</div>
+    <div class="header-controls">
+        <button class="theme-btn">Theme</button>
+        <button class="filter-type-btn active" data-type="all" id="allMoviesBtn">Ολα</button>
+        <button class="filter-type-btn" data-type="Movie">Ταινίες</button>
+        <button class="filter-type-btn" data-type="Series">Σειρές</button>
+        <span id="userNameDisplay" style="margin-right: 10px; font-weight: bold; color: var(--primary);"></span>
+        <button id="loginUserBtn" class="login-btn">Εισοδος</button>
+        <button id="logoutUserBtn" class="logout-user-btn" style="display:none;">Αποσύνδεση</button>
+        <div class="count-wrapper">
+            <div id="movieCount">Τίτλοι: 0</div>
+            <button class="update-btn-header">Ενημέρωση</button>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard" id="dashboard" style="display:none;">
+    <div class="dashboard-header"><h3>Στατιστικά</h3><button class="close-dash-btn">X</button></div>
+    <div class="dashboard-stats">
+        <div class="stat-item"><span class="stat-label">Σύνολο Τίτλων:</span><span class="stat-value" id="statTotal">0</span></div>
+        <div class="stat-item"><span class="stat-label">Ταινίες:</span><span class="stat-value" id="statMovies">0</span></div>
+        <div class="stat-item"><span class="stat-label">Σειρές:</span><span class="stat-value" id="statSeries">0</span></div>
+        <div class="stat-item"><span class="stat-label">Μ.Ο. Βαθμολογίας:</span><span class="stat-value" id="statAvgRating">0</span></div>
+        <div class="stat-item"><span class="stat-label">Πιο Δημοφιλές Genre:</span><span class="stat-value" id="statTopGenre">-</span></div>
+        <div class="stat-item"><span class="stat-label">Παλαιότερη:</span><span class="stat-value" id="statOldest">-</span></div>
+        <div class="stat-item"><span class="stat-label">Νεότερη:</span><span class="stat-value" id="statNewest">-</span></div>
+    </div>
+    <div class="dashboard-actions">
+        <button class="dash-btn" id="searchByIdBtn" style="background:#2ecc71;color:white;">Αναζήτηση με ID</button>
+        <button class="dash-btn" id="quickAddBtn" style="background:#2ecc71;color:white;">Γρήγορη Προσθήκη από Email</button>
+        <button class="dash-btn" id="addMovieFormBtn" style="background:#2ecc71;color:white;">Προσθήκη Ταινίας/Σειράς</button>
+        <button class="dash-btn" id="posterEditorBtn">Επεξεργασία Poster</button>
+        <button class="dash-btn" id="addByTmdbBtn" style="background:#9b59b6;color:white;">Προσθήκη από TMDB ID</button>
+        <button class="dash-btn" id="viewRequestsBtn" style="background:#9b59b6;color:white;">Αιτήματα Ταινιών</button>
+        <button class="dash-btn" id="enrichBiographiesBtn" style="background:#e67e22;color:white;">Ενημέρωση Βιογραφικών</button>
+        <button class="dash-btn" id="exportBtn">Export JSON</button>
+        <button class="dash-btn" id="removeLinksBtn" style="background:#e67e22;color:white;">Αφαίρεση όλων των Link & Export</button>
+        <button class="dash-btn" id="importBtn">Import JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;">
+        <button class="dash-btn" id="missingPostersBtn" style="background:#e67e22;color:white;">Ελεγχος Poster</button>
+        <button class="dash-btn" id="logoutBtn" style="background:#e74c3c;color:white;display:none;">Αποσύνδεση Διαχειριστή</button>
+    </div>
+</div>
+
+<div class="search-section">
+    <div class="search-wrapper">
+        <input type="text" id="movieSearch" placeholder="Αναζήτηση τίτλου, ηθοποιού, σκηνοθέτη...">
+        <button class="clear-search-btn hidden" id="clearSearchBtn">X</button>
+    </div>
+    <div class="filter-group">
+        <select id="genreFilter">
+            <option value="All">Ολες οι Κατηγορίες</option>
+            <option value="Biography">Βιογραφικές</option>
+            <option value="Oscar Winner">Νικητές Οσκαρ</option>
+        </select>
+        <select id="sortSelect">
+            <option value="title">Τίτλος (Α-Ω)</option>
+            <option value="idDesc">ID (Νεότερα πρώτα)</option>
+            <option value="idAsc">ID (Παλαιότερα πρώτα)</option>
+            <option value="yearDesc">Νεότερες πρώτα</option>
+            <option value="ratingDesc">Βαθμολογία (Υψηλή-Χαμηλή)</option>
+            <option value="yearAsc">Παλαιότερες πρώτα</option>
+            <option value="latest">Πρόσφατες Προσθήκες</option>
+            <option value="qualityHD">Ποιότητα (HD/4K πρώτα)</option>
+            <option value="qualitySD">Ποιότητα (SD πρώτα)</option>
+            <option value="pendingOnly">Σε Αναμονή</option>
+            <option value="collection_favorites">Favorites</option>
+            <option value="collection_watchlist">Watchlist</option>
+            
+        </select>
+        <select id="yearFilter"><option value="All">Ολα τα ετη</option></select>
+        <select id="countryFilter"><option value="All">Ολες οι Χωρες</option></select>
+        <select id="studioFilter"><option value="All">Ολες οι Πλατφορμες</option></select>
+    </div>
+</div>
+
+<div class="movie-grid dashboard-hidden" id="movieGrid"><div style="text-align:center;padding:50px;">Φόρτωση δεδομένων...</div></div>
+<button id="loadMoreBtn" style="display:none;">ΦΟΡΤΩΣΗ ΠΕΡΙΣΣΟΤΕΡΩΝ</button>
+
+<div id="detailModal">
+    <div class="modal-box">
+        <button class="close-modal">X</button>
+        <img id="modalImg" class="modal-poster" src="" alt="Poster">
+        <div class="modal-info">
+            <h2 id="modalTitle"></h2>
+            <div class="modal-meta-bar" id="modalMetaBar">
+                <span class="year-badge" id="modalYear"></span>
+                <span id="modalQualityBadge"></span>
+                <span id="modalTypeBadge"></span>
+                <span id="modalCountryBadge"></span>
+                <span id="modalGenreBadge"></span>
+            </div>
+            <div class="rating-section" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="rating-stars-big" id="modalStarsBig">★★★★★</div>
+                    <div class="rating-value-big" id="modalRatingValue">0</div>
+                    <div class="rating-count">/10</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button id="modalDownloadBtn" class="download-btn-yts" style="display:none;">ΠΡΟΒΟΛΗ</button>
+                    <a id="modalImdb" class="modal-icon-btn" href="#" target="_blank" style="background:#f5c518;color:#000;">IMDB</a>
+                    <a id="modalTmdb" class="modal-icon-btn" href="#" target="_blank" style="background:#01b4e4;">TMDB</a>
+                    <button id="modalEditBtn" class="modal-icon-btn" style="display:none;">Επεξεργασία</button>
+                    <button id="modalDeleteBtn" class="modal-icon-btn danger" style="display:none;">Διαγραφή</button>
+                    <button id="modalAddBtn" class="modal-icon-btn" style="display:none; background:#2ecc71;">Προσθήκη</button>
+                    <button id="modalRequestBtn" class="modal-icon-btn" style="background:#9b59b6;display:none;">Ζήτησε Ταινία</button>
+                </div>
+            </div>
+            <div class="modal-description" id="modalDesc"></div>
+            <div class="info-grid">
+                <div class="info-grid-item"><span class="info-grid-label">Σκηνοθεσία</span><span class="info-grid-value" id="modalDirector" style="cursor: pointer; color: var(--primary);">-</span></div>
+                <div class="info-grid-item"><span class="info-grid-label">Σενάριο</span><span class="info-grid-value" id="modalWriter" style="cursor: pointer; color: var(--primary);">-</span></div>
+                <div class="info-grid-item"><span class="info-grid-label">Πλατφόρμα</span><span class="info-grid-value" id="modalStudio">-</span></div>
+                <div class="info-grid-item"><span class="info-grid-label">Ποιότητα</span><span class="info-grid-value" id="modalQualityText">-</span></div>
+            </div>
+            
+            <div class="collections-section" style="margin: 15px 0; padding: 10px; background: var(--input-bg); border-radius: 12px;">
+                <div class="collections-label" style="font-size: 18px; font-weight: bold; margin-bottom: 12px; text-align: left;">Συλλογές</div>
+                <div id="modalCollections" class="collections-buttons" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            </div>
+            
+            <div style="width: 100%;">
+                <div class="info-grid-label" style="margin-bottom: 8px; padding-left: 12px;">Ηθοποιοί</div>
+                <div id="modalActorsContainer" class="actors-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="backToTop">↑</button>
+<div class="version-badge" id="versionBadge">Εκδοση: 1.0.0</div>
+<!-- ============ ΝΟΜΙΚΕΣ ΣΕΛΙΔΕΣ (MODALS) ============ -->
+
+<!-- Terms of Service Modal -->
+<div id="termsModal" class="legal-modal">
+    <div class="legal-modal-content">
+        <span class="legal-close">&times;</span>
+        <h2>Όροι Χρήσης</h2>
+        <div class="legal-scroll">
+            <h3>1. Αποδοχή Όρων</h3>
+            <p>Χρησιμοποιώντας το YIOIO, αποδέχεστε τους παρόντες όρους χρήσης.</p>
+            
+            <h3>2. Υπευθυνότητα Χρήστη</h3>
+            <p>Ο χρήστης είναι αποκλειστικά υπεύθυνος για:</p>
+            <ul>
+                <li>Τα αρχεία βίντεο που διαχειρίζεται μέσω της εφαρμογής</li>
+                <li>Τα links που αποθηκεύει στις συλλογές του</li>
+                <li>Την τήρηση των πνευματικών δικαιωμάτων</li>
+            </ul>
+            
+            <h3>3. Απαγόρευση Παράνομου Περιεχομένου</h3>
+            <p>Απαγορεύεται αυστηρά η χρήση του YIOIO για:</p>
+            <ul>
+                <li>Διανομή ή αποθήκευση πειρατικού υλικού</li>
+                <li>Links που οδηγούν σε παράνομο περιεχόμενο</li>
+                <li>Παραβίαση πνευματικών δικαιωμάτων τρίτων</li>
+            </ul>
+            
+            <h3>4. Αποποίηση Ευθύνης</h3>
+            <p>Το YIOIO είναι ένα εργαλείο οργάνωσης προσωπικών συλλογών. Δεν φιλοξενούμε, δεν διανέμουμε και δεν συνδέουμε άμεσα με παράνομο περιεχόμενο. Οι χρήστες είναι αποκλειστικά υπεύθυνοι για το πώς χρησιμοποιούν την εφαρμογή.</p>
+            
+            <h3>5. Αλλαγές Όρων</h3>
+            <p>Διατηρούμε το δικαίωμα να τροποποιούμε τους όρους ανά πάσα στιγμή. Η συνεχής χρήση της εφαρμογής αποτελεί αποδοχή των νέων όρων.</p>
+            
+            <p class="legal-date">Τελευταία ενημέρωση: 31 Μαΐου 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacyModal" class="legal-modal">
+    <div class="legal-modal-content">
+        <span class="legal-close">&times;</span>
+        <h2>Πολιτική Απορρήτου (GDPR)</h2>
+        <div class="legal-scroll">
+            <h3>1. Ποια δεδομένα συλλέγουμε</h3>
+            <p>Το YIOIO αποθηκεύει τοπικά (στο πρόγραμμα περιήγησής σας):</p>
+            <ul>
+                <li>Τις λίστες ταινιών και σειρών σας</li>
+                <li>Τις συλλογές σας (Favorites, Watchlist)</li>
+                <li>Τα metadata των ταινιών που προσθέτετε</li>
+                <li>Τα αιτήματα ταινιών που υποβάλλετε</li>
+            </ul>
+            
+            <h3>2. Πού αποθηκεύονται τα δεδομένα</h3>
+            <p>Όλα τα δεδομένα σας αποθηκεύονται αποκλειστικά στο <strong>localStorage</strong> του browser σας. Δεν διατηρούμε server, δεν συλλέγουμε προσωπικά δεδομένα, και δεν στέλνουμε δεδομένα σε τρίτους (εκτός από τα αιτήματα στο TMDB API για αναζήτηση ταινιών).</p>
+            
+            <h3>3. Δικαίωμα Πρόσβασης & Διαγραφής (GDPR)</h3>
+            <p>Έχετε το δικαίωμα να:</p>
+            <ul>
+                <li>Εξαγάγετε όλα τα δεδομένα σας (κουμπί "Εξαγωγή Δεδομένων" στο προφίλ σας)</li>
+                <li>Διαγράψετε οριστικά όλα τα δεδομένα σας (κουμπί "Διαγραφή Λογαριασμού")</li>
+            </ul>
+            
+            <h3>4. Cookies</h3>
+            <p>Χρησιμοποιούμε μόνο essential cookies (localStorage) για τη λειτουργία της εφαρμογής. Δεν χρησιμοποιούμε tracking cookies ή analytics.</p>
+            
+            <h3>5. Επικοινωνία</h3>
+            <p>Για αιτήματα GDPR, επικοινωνήστε στο: <strong>yioiorequests@gmail.com</strong></p>
+            
+            <p class="legal-date">Τελευταία ενημέρωση: 31 Μαΐου 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- DMCA / Copyright Modal -->
+<div id="dmcaModal" class="legal-modal">
+    <div class="legal-modal-content">
+        <span class="legal-close">&times;</span>
+        <h2>Πολιτική Πνευματικών Δικαιωμάτων (DMCA)</h2>
+        <div class="legal-scroll">
+            <h3>1. Σεβασμός στα Πνευματικά Δικαιώματα</h3>
+            <p>Το YIOIO σέβεται απόλυτα τα πνευματικά δικαιώματα. Αν πιστεύετε ότι περιεχόμενο που εμφανίζεται μέσω της εφαρμογής μας παραβιάζει τα δικαιώματά σας, παρακαλούμε επικοινωνήστε μαζί μας.</p>
+            
+            <h3>2. Υποβολή Καταγγελίας (DMCA Notice)</h3>
+            <p>Για να υποβάλετε καταγγελία, στείλτε email με τα εξής στοιχεία:</p>
+            <ul>
+                <li>Ταυτοποίηση του έργου που παραβιάζεται</li>
+                <li>Ταυτοποίηση του υλικού που πρέπει να αφαιρεθεί (title, year, link)</li>
+                <li>Στοιχεία επικοινωνίας σας (email, τηλέφωνο)</li>
+                <li>Δήλωση καλής πίστης ότι η χρήση δεν επιτρέπεται</li>
+                <li>Υπογραφή (ηλεκτρονική ή φυσική)</li>
+            </ul>
+            
+            <h3>3. Αποστολή Καταγγελίας</h3>
+            <p><strong>Email DMCA Agent:</strong> yioiorequests@gmail.com</p>
+            
+            <h3>4. Διαδικασία Αφαίρεσης</h3>
+            <p>Μόλις λάβουμε έγκυρη καταγγελία, θα αφαιρέσουμε το επίμαχο περιεχόμενο εντός 48 ωρών. Οι χρήστες που επανειλημμένα παραβιάζουν τα πνευματικά δικαιώματα θα αποκλείονται.</p>
+            
+            <p class="legal-date">Τελευταία ενημέρωση: 31 Μαΐου 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- GDPR Data Management Modal -->
+<div id="gdprModal" class="legal-modal">
+    <div class="legal-modal-content">
+        <span class="legal-close">&times;</span>
+        <h2>Διαχείριση Δεδομένων (GDPR)</h2>
+        <div class="legal-scroll">
+            <p>Εδώ μπορείτε να ασκήσετε τα δικαιώματά σας βάσει του Γενικού Κανονισμού Προστασίας Δεδομένων (GDPR).</p>
+            
+            <div style="margin: 20px 0;">
+                <button id="gdprExportBtn" style="background: #2196f3; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 10px;">
+                    📥 Εξαγωγή όλων των δεδομένων μου (JSON)
+                </button>
+                <button id="gdprDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%;">
+                    🗑️ Διαγραφή όλων των δεδομένων μου (ανεπιστρεπτί)
+                </button>
+            </div>
+            
+            <p style="font-size: 12px; opacity: 0.7;">
+            ⚠️ Η διαγραφή δεδομένων είναι μόνιμη και δεν μπορεί να ανακληθεί.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-links">
+        <a href="#" id="termsLink">Όροι Χρήσης</a>
+        <a href="#" id="privacyLink">Πολιτική Απορρήτου</a>
+        <a href="#" id="dmcaLink">DMCA / Copyright</a>
+        <a href="#" id="gdprLink">GDPR (Δεδομένα)</a>
+    </div>
+    <div class="footer-disclaimer">
+        ⚠️ Το YIOIO είναι εργαλείο οργάνωσης προσωπικών συλλογών. Οι χρήστες είναι υπεύθυνοι για τη νομιμότητα του περιεχομένου τους. 
+        Τα metadata προέρχονται από το <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB</a> (CC BY-NC 4.0).
+    </div>
+    <div class="footer-copyright">
+        © 2026 YIOIO - Με επιφύλαξη παντός δικαιώματος
+    </div>
+</footer>
+<script src="config.js"></script>
+<script src="app_fixed.js"></script>
+</body>
+</html>
