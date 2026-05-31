@@ -1,0 +1,21 @@
+{
+  "short_name": "YIOIO",
+  "name": "YIOIO Ultimate Database",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-large.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#111111",
+  "theme_color": "#00adb5",
+  "display": "standalone",
+  "orientation": "portrait"
+}

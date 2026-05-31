@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YIOIO Ultimate Database 2026 - Secure</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
 </head>
 <body>
@@ -43,7 +45,7 @@
         <button class="dash-btn" id="addMovieFormBtn" style="background:#2ecc71;color:white;">Προσθήκη Ταινίας/Σειράς</button>
         <button class="dash-btn" id="posterEditorBtn">Επεξεργασία Poster</button>
         <button class="dash-btn" id="addByTmdbBtn" style="background:#9b59b6;color:white;">Προσθήκη από TMDB ID</button>
-        <button class="dash-btn" id="viewRequestsBtn" style="background:#9b59b6;color:white;">Αιτήματα Ταινιών</button>
+        <button class="dash-btn" id="viewRequestsBtn" style="background:#9b59b6;color:white;">Προτάσεις Χρηστών</button>
         <button class="dash-btn" id="enrichBiographiesBtn" style="background:#e67e22;color:white;">Ενημέρωση Βιογραφικών</button>
         <button class="dash-btn" id="exportBtn">Export JSON</button>
         <button class="dash-btn" id="removeLinksBtn" style="background:#e67e22;color:white;">Αφαίρεση όλων των Link & Export</button>
@@ -115,7 +117,7 @@
                     <button id="modalEditBtn" class="modal-icon-btn" style="display:none;">Επεξεργασία</button>
                     <button id="modalDeleteBtn" class="modal-icon-btn danger" style="display:none;">Διαγραφή</button>
                     <button id="modalAddBtn" class="modal-icon-btn" style="display:none; background:#2ecc71;">Προσθήκη</button>
-                    <button id="modalRequestBtn" class="modal-icon-btn" style="background:#9b59b6;display:none;">Ζήτησε Ταινία</button>
+                    <button id="modalRequestBtn" class="modal-icon-btn" style="background:#9b59b6;display:none;">Πρότεινε Ταινία</button>
                 </div>
             </div>
             <div class="modal-description" id="modalDesc"></div>
