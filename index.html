@@ -6,7 +6,6 @@
 <title>YIOIO Ultimate Database 2026 - Secure</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.json">
-
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
 </head>
 <body>
@@ -49,9 +48,10 @@
         <button class="dash-btn" id="enrichBiographiesBtn" style="background:#e67e22;color:white;">Ενημέρωση Βιογραφικών</button>
         <button class="dash-btn" id="exportBtn">Export JSON</button>
         <button class="dash-btn" id="removeLinksBtn" style="background:#e67e22;color:white;">Αφαίρεση όλων των Link & Export</button>
-        <button class="dash-btn" id="importBtn">Import JSON</button>
+        <button class="dash-btn" id="importBtn" style="background:#2ecc71;color:white;">Import JSON</button>
         <input type="file" id="importFile" accept=".json" style="display: none;">
         <button class="dash-btn" id="missingPostersBtn" style="background:#e67e22;color:white;">Ελεγχος Poster</button>
+        <button class="dash-btn" id="enrichOscarBtn" style="background:#f1c40f;color:#000;font-weight:bold;">🏆 ΠΡΟΣΘΗΚΗ OSCAR WINNER</button>
         <button class="dash-btn" id="logoutBtn" style="background:#e74c3c;color:white;display:none;">Αποσύνδεση Διαχειριστή</button>
     </div>
 </div>
@@ -80,7 +80,6 @@
             <option value="pendingOnly">Σε Αναμονή</option>
             <option value="collection_favorites">Favorites</option>
             <option value="collection_watchlist">Watchlist</option>
-            
         </select>
         <select id="yearFilter"><option value="All">Ολα τα ετη</option></select>
         <select id="countryFilter"><option value="All">Ολες οι Χωρες</option></select>
@@ -99,12 +98,13 @@
             <h2 id="modalTitle"></h2>
             <div class="modal-meta-bar" id="modalMetaBar">
                 <span class="year-badge" id="modalYear"></span>
+                <span class="year-badge" id="modalId" style="background:#555; margin-left:5px; display:none;"></span>
                 <span id="modalQualityBadge"></span>
                 <span id="modalTypeBadge"></span>
                 <span id="modalCountryBadge"></span>
                 <span id="modalGenreBadge"></span>
             </div>
-            <div class="rating-section" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+            <div class="rating-section">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div class="rating-stars-big" id="modalStarsBig">★★★★★</div>
                     <div class="rating-value-big" id="modalRatingValue">0</div>
@@ -122,19 +122,17 @@
             </div>
             <div class="modal-description" id="modalDesc"></div>
             <div class="info-grid">
-                <div class="info-grid-item"><span class="info-grid-label">Σκηνοθεσία</span><span class="info-grid-value" id="modalDirector" style="cursor: pointer; color: var(--primary);">-</span></div>
-                <div class="info-grid-item"><span class="info-grid-label">Σενάριο</span><span class="info-grid-value" id="modalWriter" style="cursor: pointer; color: var(--primary);">-</span></div>
+                <div class="info-grid-item"><span class="info-grid-label">Σκηνοθεσία</span><span class="info-grid-value" id="modalDirector" style="cursor:pointer;color:var(--primary);">-</span></div>
+                <div class="info-grid-item"><span class="info-grid-label">Σενάριο</span><span class="info-grid-value" id="modalWriter" style="cursor:pointer;color:var(--primary);">-</span></div>
                 <div class="info-grid-item"><span class="info-grid-label">Πλατφόρμα</span><span class="info-grid-value" id="modalStudio">-</span></div>
                 <div class="info-grid-item"><span class="info-grid-label">Ποιότητα</span><span class="info-grid-value" id="modalQualityText">-</span></div>
             </div>
-            
-            <div class="collections-section" style="margin: 15px 0; padding: 10px; background: var(--input-bg); border-radius: 12px;">
-                <div class="collections-label" style="font-size: 18px; font-weight: bold; margin-bottom: 12px; text-align: left;">Συλλογές</div>
-                <div id="modalCollections" class="collections-buttons" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+            <div class="collections-section" style="margin:15px 0;padding:10px;background:var(--input-bg);border-radius:12px;">
+                <div class="collections-label" style="font-size:18px;font-weight:bold;margin-bottom:12px;text-align:left;">Συλλογές</div>
+                <div id="modalCollections" class="collections-buttons" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
             </div>
-            
-            <div style="width: 100%;">
-                <div class="info-grid-label" style="margin-bottom: 8px; padding-left: 12px;">Ηθοποιοί</div>
+            <div style="width:100%;">
+                <div class="info-grid-label" style="margin-bottom:8px;padding-left:12px;">Ηθοποιοί</div>
                 <div id="modalActorsContainer" class="actors-container"></div>
             </div>
         </div>
@@ -142,7 +140,8 @@
 </div>
 
 <button id="backToTop">↑</button>
-<div class="version-badge" id="versionBadge">Εκδοση: 1.0.0</div>
+<div class="version-badge" id="versionBadge">Εκδοση: 2.1.1</div>
+
 <!-- ============ ΝΟΜΙΚΕΣ ΣΕΛΙΔΕΣ (MODALS) ============ -->
 
 <!-- Terms of Service Modal -->
@@ -287,7 +286,65 @@
         © 2026 YIOIO - Με επιφύλαξη παντός δικαιώματος
     </div>
 </footer>
+
 <script src="config.js"></script>
 <script src="app_fixed.js"></script>
+
+<!-- ΜΟΝΙΜΟ FIX ΓΙΑ ΟΛΑ ΤΑ ΚΟΥΜΠΙΑ -->
+<script>
+(function() {
+    setTimeout(function() {
+        // FIX for OSCAR button
+        var oscar = document.getElementById('enrichOscarBtn');
+        if (oscar && !oscar._fixed) {
+            oscar._fixed = true;
+            oscar.onclick = function() {
+                var title = prompt('Εισάγετε τον ΑΚΡΙΒΗ τίτλο της ταινίας για προσθήκη ετικέτας OSCAR Winner:');
+                if (!title) return;
+                if (typeof moviesData === 'undefined') { alert('Η βάση δεδομένων δεν είναι ακόμα έτοιμη.'); return; }
+                var movie = moviesData.find(function(m) { return m.title.toLowerCase() === title.toLowerCase(); });
+                if (!movie) { alert('Δεν βρέθηκε ταινία με τίτλο: ' + title); return; }
+                if (movie.genre && movie.genre.includes('Oscar Winner')) { alert('Η ταινία "' + movie.title + '" έχει ήδη ετικέτα OSCAR!'); return; }
+                movie.genre = movie.genre ? movie.genre + ', Oscar Winner' : 'Oscar Winner';
+                if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
+                if (typeof initFilters === 'function') initFilters();
+                if (typeof applyFilters === 'function') applyFilters();
+                alert('✅ Επιτυχία! Προστέθηκε "Oscar Winner" στην ταινία: ' + movie.title);
+            };
+            console.log('OSCAR button fixed');
+        }
+        
+        // FIX for Biography button
+        var bio = document.getElementById('enrichBiographiesBtn');
+        if (bio && !bio._fixed) {
+            bio._fixed = true;
+            bio.onclick = function() {
+                if (typeof AdminAuth === 'undefined' || !AdminAuth.isSessionValid()) {
+                    if (typeof showToast === 'function') showToast('Μόνο διαχειριστής!', '#e50914');
+                    else alert('Μόνο διαχειριστής!');
+                    return;
+                }
+                if (typeof addBiographyTag === 'function') addBiographyTag();
+                else alert('addBiographyTag function not found');
+            };
+            console.log('Biography button fixed');
+        }
+        
+        // FIX for Import button
+        var imp = document.getElementById('importBtn');
+        if (imp && !imp._fixed) {
+            imp._fixed = true;
+            imp.onclick = function() {
+                var fileInput = document.getElementById('importFile');
+                if (fileInput) fileInput.click();
+            };
+            console.log('Import button fixed');
+        }
+        
+        console.log('✅ ALL BUTTONS PERMANENTLY FIXED');
+    }, 2000);
+})();
+</script>
+
 </body>
 </html>

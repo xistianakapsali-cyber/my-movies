@@ -966,39 +966,56 @@ function saveToLocalStorage() {
     localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData)); 
 }
 
-let CURRENT_VERSION = "1.0.0";
+let CURRENT_VERSION = "2.1.1";
 
 async function loadMoviesData() {
     const savedVersion = localStorage.getItem('app_version');
     if (savedVersion) CURRENT_VERSION = savedVersion;
-    document.getElementById('versionBadge').innerHTML = `Εκδοση: ${CURRENT_VERSION}${isUserLoggedIn ? ' ' : ''}`;
+    document.getElementById('versionBadge').innerHTML = `Έκδοση: ${CURRENT_VERSION}${isUserLoggedIn ? ' ' : ''}`;
     
-    const saved = localStorage.getItem('yioio_movies_data');
-    if (saved) {
-        try {
-            moviesData = JSON.parse(saved);
-            if (moviesData.length) {
-                updateRecentMoviesList();
-                initFilters();
-                initFuseSearch();
-                loadCollections();
-                applyFilters();
-                return;
-            }
-        } catch(e) {}
+    // ΝΕΟΣ ΤΡΟΠΟΣ: Διάβασμα από GitHub
+    const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/xistianakapsali-cyber/my-movies/main/my-movies-clean/movies.json';
+    
+    try {
+        showToast('📥 Λήψη βάσης δεδομένων...', '#2196f3');
+        const response = await fetch(GITHUB_JSON_URL);
+        moviesData = await response.json();
+        
+        moviesData.forEach((m, i) => {
+            m.id = i + 1;
+            if (!m.status) m.status = 'active';
+            if (!m.poster_url) m.poster_url = null;
+            if (!m.original_title) m.original_title = m.title;
+        });
+        
+        // Αποθήκευση cache για offline
+        localStorage.setItem('yioio_movies_cache', JSON.stringify(moviesData));
+        
+        updateRecentMoviesList();
+        initFilters();
+        initFuseSearch();
+        loadCollections();
+        applyFilters();
+        
+        showToast(`✅ Φορτώθηκαν ${moviesData.length} τίτλοι!`, '#2ecc71');
+        
+    } catch(error) {
+        console.error('GitHub load failed:', error);
+        
+        // Fallback στο cache αν υπάρχει
+        const cached = localStorage.getItem('yioio_movies_cache');
+        if (cached) {
+            moviesData = JSON.parse(cached);
+            showToast('⚠️ Λειτουργία offline (cache)', '#e67e22');
+            updateRecentMoviesList();
+            initFilters();
+            initFuseSearch();
+            loadCollections();
+            applyFilters();
+        } else {
+            showToast('❌ Χρειάζεται σύνδεση στο internet', '#e50914');
+        }
     }
-    
-    moviesData = [
-        { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ταξιδεύουν προς τη Δύση.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1883" },
-        { "id": 2, "title": "1899", "year": 2022, "country": "Germany", "genre": "Μυστηρίου, Δράμα", "type": "Series", "quality": "HD", "rating": 7.3, "actors": "Emily Beecham, Andreas Pietschmann", "director": "Baran bo Odar", "writer": "Baran bo Odar", "link": "", "imdb": "", "tmdb": "", "desc": "Μετανάστες ταξιδεύουν από την Ευρώπη στην Αμερική.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Netflix", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1899" },
-        { "id": 3, "title": "1923", "year": 2022, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.3, "actors": "Harrison Ford, Helen Mirren", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η συνέχεια του 1883.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1923" }
-    ];
-    updateRecentMoviesList();
-    saveToLocalStorage();
-    initFilters();
-    initFuseSearch();
-    loadCollections();
-    applyFilters();
 }
 
 async function checkForGitHubUpdates() {
@@ -1084,8 +1101,37 @@ function initFilters() {
     allGenres.sort((a,b)=>a.localeCompare(b,'el'));
     allGenres.forEach(g => genreSel.add(new Option(g,g)));
     
-    const studios = [...new Set(moviesData.map(m => m.studio).filter(s=>s&&s!=='Κανάλι'))].sort();
-    studios.forEach(s => studioSel.add(new Option(s,s)));
+        // TOP 10 ΠΛΑΤΦΟΡΜΕΣ + ΑΛΛΕΣ
+    const studioCount = {};
+    moviesData.forEach(m => {
+        if (m.studio && m.studio !== 'Κανάλι' && m.studio !== 'N/A') {
+            let studioName = m.studio;
+            // Κανονικοποίηση ονομάτων
+            if (studioName.toLowerCase().includes('netflix')) studioName = 'Netflix';
+            else if (studioName.toLowerCase().includes('amazon') || studioName.toLowerCase().includes('prime video')) studioName = 'Amazon Prime Video';
+            else if (studioName.toLowerCase().includes('disney')) studioName = 'Disney+';
+            else if (studioName.toLowerCase().includes('apple')) studioName = 'Apple TV+';
+            else if (studioName.toLowerCase().includes('max') || studioName.toLowerCase().includes('hbo')) studioName = 'Max';
+            else if (studioName.toLowerCase().includes('paramount')) studioName = 'Paramount+';
+            else if (studioName.toLowerCase().includes('peacock')) studioName = 'Peacock';
+            else if (studioName.toLowerCase().includes('hulu')) studioName = 'Hulu';
+            else if (studioName.toLowerCase().includes('youtube')) studioName = 'YouTube';
+            studioCount[studioName] = (studioCount[studioName] || 0) + 1;
+        }
+    });
+    
+    const sortedStudios = Object.entries(studioCount).sort((a, b) => b[1] - a[1]);
+    const topStudios = ['Netflix', 'Amazon Prime Video', 'Disney+', 'Apple TV+', 'Max', 'Paramount+', 'Peacock', 'Hulu', 'YouTube'];
+    
+    topStudios.forEach(studio => {
+        studioSel.add(new Option(studio, studio));
+    });
+    
+    if (sortedStudios.length > 10) {
+        studioSel.add(new Option('Άλλες', 'Άλλες'));
+    }
+    
+    console.log(`Studio filter: ${topStudios.length} top platforms + "Άλλες" (${sortedStudios.length - topStudios.length} συγχωνεύτηκαν)`);
 }
 
 function toggleClearButton() { 
@@ -1139,7 +1185,39 @@ function performSearch() {
     if (country !== 'All') results = results.filter(m => m.country === country);
     
     const studio = document.getElementById('studioFilter').value;
-    if (studio !== 'All') results = results.filter(m => m.studio === studio);
+    if (studio !== 'All') {
+        if (studio === 'Άλλες') {
+            const topStudios = ['Netflix', 'Amazon Prime', 'Disney+', 'Apple TV+', 'Max', 'Paramount+', 'Peacock', 'Hulu'];
+            results = results.filter(m => {
+                if (!m.studio || m.studio === 'Κανάλι' || m.studio === 'N/A') return false;
+                let studioName = m.studio;
+                if (studioName.toLowerCase().includes('netflix')) studioName = 'Netflix';
+                else if (studioName.toLowerCase().includes('amazon')) studioName = 'Amazon Prime';
+                else if (studioName.toLowerCase().includes('disney')) studioName = 'Disney+';
+                else if (studioName.toLowerCase().includes('apple')) studioName = 'Apple TV+';
+                else if (studioName.toLowerCase().includes('max') || studioName.toLowerCase().includes('hbo')) studioName = 'Max';
+                else if (studioName.toLowerCase().includes('paramount')) studioName = 'Paramount+';
+                else if (studioName.toLowerCase().includes('peacock')) studioName = 'Peacock';
+                else if (studioName.toLowerCase().includes('hulu')) studioName = 'Hulu';
+                return !topStudios.includes(studioName);
+            });
+        } else {
+            results = results.filter(m => {
+                if (!m.studio) return false;
+                let studioName = m.studio;
+                if (studioName.toLowerCase().includes('netflix')) studioName = 'Netflix';
+                else if (studioName.toLowerCase().includes('amazon')) studioName = 'Amazon Prime';
+                else if (studioName.toLowerCase().includes('disney')) studioName = 'Disney+';
+                else if (studioName.toLowerCase().includes('apple')) studioName = 'Apple TV+';
+                else if (studioName.toLowerCase().includes('max') || studioName.toLowerCase().includes('hbo')) studioName = 'Max';
+                else if (studioName.toLowerCase().includes('paramount')) studioName = 'Paramount+';
+                else if (studioName.toLowerCase().includes('peacock')) studioName = 'Peacock';
+                else if (studioName.toLowerCase().includes('hulu')) studioName = 'Hulu';
+                else studioName = m.studio;
+                return studioName === studio;
+            });
+        }
+    }
     
     const sort = document.getElementById('sortSelect').value;
     
@@ -1454,6 +1532,11 @@ function openDetailsById(id) {
     document.getElementById('modalAddBtn').style.display = isUserLoggedIn ? 'inline-flex' : 'none';
     document.getElementById('modalTitle').innerHTML = escapeHtml(movie.title);
     document.getElementById('modalYear').innerHTML = movie.year;
+    const idSpan = document.getElementById('modalId');
+    if (idSpan) {
+        idSpan.innerHTML = `ID: ${movie.id}`;
+        idSpan.style.display = 'inline';
+    }
     document.getElementById('modalDesc').innerHTML = movie.desc || 'Δεν υπάρχει περιγραφή.';
     
     const directorEl = document.getElementById('modalDirector');
@@ -1538,57 +1621,189 @@ function closeDetails() {
 
 // ============ ΠΛΗΡΗΣ ΠΡΟΤΑΣΗ ΠΡΟΒΟΛΗΣ ============
 async function suggestFreeMovie(movie) {
-    if (!TMDB_API_KEY) {
-        if (movie.link && movie.link !== '') {
-            showCompleteSuggestion(movie, [], [], []);
-        } else {
-            showToast('Δεν υπάρχει link προβολής', '#e67e22');
-        }
-        return;
+    // Δημιουργία overlay μπάρας προόδου
+    const overlay = document.createElement('div');
+    overlay.id = 'aiProgressOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:30000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;';
+    
+    // Κείμενο AI
+    const aiText = document.createElement('div');
+    aiText.style.cssText = 'color:white;font-size:20px;margin-bottom:20px;text-align:center;font-weight:bold;';
+    aiText.innerHTML = 'Αναζήτηση μέσω AI σε όλο το web.....';
+    
+    // Μπάρα προόδου
+    const barContainer = document.createElement('div');
+    barContainer.style.cssText = 'width:500px;max-width:80%;background:#333;border-radius:10px;overflow:hidden;margin-bottom:20px;';
+    const progressBar = document.createElement('div');
+    progressBar.style.cssText = 'width:0%;height:14px;background:#e50914;transition:width 0.05s linear;';
+    barContainer.appendChild(progressBar);
+    
+    // Υπότιτλος μπάρας
+    const progressSubtext = document.createElement('div');
+    progressSubtext.style.cssText = 'color:rgba(255,255,255,0.7);font-size:12px;margin-top:5px;';
+    progressSubtext.innerHTML = 'Σύνδεση με TMDB... 0%';
+    
+    // Περιοχή για τα αποτελέσματα πλατφορμών
+    const resultsDiv = document.createElement('div');
+    resultsDiv.style.cssText = 'width:500px;max-width:80%;background:rgba(0,0,0,0.7);border-radius:12px;padding:20px;color:white;font-size:14px;margin-top:20px;border:1px solid #e50914;min-height:120px;';
+    resultsDiv.innerHTML = '🔍 Σύνδεση με TMDB API...';
+    
+    overlay.appendChild(aiText);
+    overlay.appendChild(barContainer);
+    overlay.appendChild(progressSubtext);
+    overlay.appendChild(resultsDiv);
+    document.body.appendChild(overlay);
+    
+    // ΠΡΑΓΜΑΤΙΚΗ ΑΝΑΖΗΤΗΣΗ
+    let foundPlatforms = [];
+    let tmdbId = null;
+    
+    // Βήμα 1: Εύρεση TMDB ID
+    resultsDiv.innerHTML = '🔎 Αναζήτηση ταινίας στη βάση TMDB...';
+    progressSubtext.innerHTML = 'Αναζήτηση TMDB ID... 25%';
+    progressBar.style.width = '25%';
+    
+    if (movie.tmdb && movie.tmdb.includes('/movie/')) {
+        tmdbId = movie.tmdb.split('/movie/')[1].split('/')[0];
     }
     
-    showToast('Αναζήτηση για δωρεάν προβολή...', '#2196f3');
-    
-    try {
-        let tmdbId = null;
-        
-        if (movie.tmdb && movie.tmdb.includes('/movie/')) {
-            tmdbId = movie.tmdb.split('/movie/')[1].split('/')[0];
-        }
-        
-        if (!tmdbId) {
+    if (!tmdbId && TMDB_API_KEY) {
+        try {
             const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movie.title)}&year=${movie.year}`;
             const searchRes = await fetch(searchUrl);
             const searchData = await searchRes.json();
-            if (searchData.results && searchData.results.length > 0) tmdbId = searchData.results[0].id;
+            if (searchData.results && searchData.results.length > 0) {
+                tmdbId = searchData.results[0].id;
+            }
+        } catch(e) {
+            console.error('Search error:', e);
         }
+    }
+    
+    if (!tmdbId) {
+        resultsDiv.innerHTML = '❌ Δεν βρέθηκε το TMDB ID για αυτή την ταινία';
+        progressSubtext.innerHTML = 'Αποτυχία αναζήτησης 100%';
+        progressBar.style.width = '100%';
+        setTimeout(() => {
+            overlay.remove();
+            showSuggestionResult(movie, []);
+        }, 1000);
+        return;
+    }
+    
+    // Βήμα 2: Λήψη πλατφορμών από TMDB
+    resultsDiv.innerHTML = `📡 Λήψη διαθέσιμων πλατφορμών για TMDB ID: ${tmdbId}`;
+    progressSubtext.innerHTML = 'Λήψη πλατφορμών... 60%';
+    progressBar.style.width = '60%';
+    
+    try {
+        const watchUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`;
+        const watchRes = await fetch(watchUrl);
+        const watchData = await watchRes.json();
         
-        let freePlatforms = [];
-        let freeWithAds = [];
-        let subscriptionPlatforms = [];
+        // Προτιμούμε Ελλάδα (GR), αλλιώς ΗΠΑ (US)
+        const providers = watchData.results?.GR || watchData.results?.US;
         
-        if (tmdbId) {
-            const watchUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`;
-            const watchRes = await fetch(watchUrl);
-            const watchData = await watchRes.json();
-            const providers = watchData.results?.GR || watchData.results?.US;
-            
-            if (providers) {
-                if (providers.free) freePlatforms = providers.free.map(p => ({ name: p.provider_name, logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null, link: `https://www.themoviedb.org/movie/${tmdbId}/watch`, type: 'free' }));
-                if (providers.ads) freeWithAds = providers.ads.map(p => ({ name: p.provider_name, logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null, link: `https://www.themoviedb.org/movie/${tmdbId}/watch`, type: 'ads' }));
-                if (providers.flatrate) subscriptionPlatforms = providers.flatrate.map(p => ({ name: p.provider_name, logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null, link: `https://www.themoviedb.org/movie/${tmdbId}/watch`, type: 'subscription' }));
+        if (providers) {
+            if (providers.flatrate) {
+                foundPlatforms.push(...providers.flatrate.map(p => p.provider_name));
+                resultsDiv.innerHTML = `✅ Βρέθηκε σε συνδρομητικές: ${providers.flatrate.map(p => p.provider_name).join(', ')}`;
+            }
+            if (providers.free) {
+                foundPlatforms.push(...providers.free.map(p => p.provider_name));
+                resultsDiv.innerHTML = `✅ Βρέθηκε δωρεάν σε: ${providers.free.map(p => p.provider_name).join(', ')}`;
+            }
+            if (providers.ads) {
+                foundPlatforms.push(...providers.ads.map(p => p.provider_name));
+                resultsDiv.innerHTML = `✅ Βρέθηκε με διαφημίσεις σε: ${providers.ads.map(p => p.provider_name).join(', ')}`;
             }
         }
         
-        showCompleteSuggestion(movie, freePlatforms, freeWithAds, subscriptionPlatforms);
+        // Αφαίρεση διπλότυπων
+        foundPlatforms = [...new Set(foundPlatforms)];
+        
     } catch(e) {
-        console.error('Streaming check failed:', e);
-        if (movie.link && movie.link !== '') {
-            showCompleteSuggestion(movie, [], [], []);
-        } else {
-            showToast('Δεν υπάρχει link προβολής', '#e67e22');
-        }
+        console.error('Error fetching providers:', e);
+        resultsDiv.innerHTML = '⚠️ Σφάλμα κατά την ανάκτηση πλατφορμών';
     }
+    
+    // Βήμα 3: Ολοκλήρωση
+    progressSubtext.innerHTML = 'Ολοκλήρωση αναζήτησης... 100%';
+    progressBar.style.width = '100%';
+    
+    if (foundPlatforms.length === 0) {
+        resultsDiv.innerHTML = '🔍 Η τεχνητή νοημοσύνη δεν εντόπισε το έργο σε καμία πλατφόρμα streaming.';
+    } else {
+        resultsDiv.innerHTML = `🎯 Βρέθηκε σε ${foundPlatforms.length} πλατφόρμες: ${foundPlatforms.join(', ')}`;
+    }
+    
+    setTimeout(() => {
+        overlay.remove();
+        showSuggestionResult(movie, foundPlatforms);
+    }, 1500);
+}
+
+function showSuggestionResult(movie, foundPlatforms) {
+    const popup = document.createElement('div');
+    popup.id = 'suggestionResultPopup';
+    popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border-radius:20px;padding:30px;max-width:550px;width:90%;z-index:30001;border:2px solid #e50914;box-shadow:0 20px 60px rgba(0,0,0,0.5);font-family:sans-serif;text-align:center;';
+    
+    const hasTeraboxLink = movie.link && movie.link !== '';
+    const hasPlatforms = foundPlatforms.length > 0;
+    
+    let content = `<h2 style="color:#e50914;margin-top:0;margin-bottom:15px;">${escapeHtml(movie.title)} (${movie.year})</h2>`;
+    
+    if (hasPlatforms) {
+        content += `<p style="margin:15px 0;font-size:16px;">Βρέθηκε μέσω AI στις παρακάτω πλατφόρμες:</p>`;
+        content += `<div style="margin:15px 0;padding:12px;background:rgba(46,204,113,0.1);border-radius:12px;">`;
+        content += foundPlatforms.map(p => `<span style="display:inline-block;background:#2ecc71;color:#000;padding:6px 12px;margin:4px;border-radius:20px;font-size:13px;font-weight:bold;">${p}</span>`).join('');
+        content += `</div>`;
+    } else {
+        content += `<p style="margin:15px 0;font-size:16px;color:#e67e22;">⚠️ Κατόπιν αυτοματοποιημένου ελέγχου μέσω συστημάτων Τεχνητής Νοημοσύνης, δεν εντοπίστηκε διαθεσιμότητα του συγκεκριμένου έργου σε καμία από τις γνωστές πλατφόρμες ροής (streaming).</p>`;
+    }
+    
+    content += `<div style="margin:20px 0;padding:15px;background:rgba(229,9,20,0.1);border-radius:12px;border-left:4px solid #e50914;">`;
+    content += `<p style="margin:0;font-size:15px;"><strong>☁️ Μπορείτε επίσης να δείτε το έργο σε κορυφαία ποιότητα μέσα από το δικό σας TeraBox Cloud, όπου διατηρείτε τη νόμιμη ψηφιακή σας ταινιοθήκη.</p>`;
+    content += `</div>`;
+    
+    content += `<div style="margin-top:20px;">`;
+    
+    if (hasTeraboxLink) {
+        content += `<button id="goToTeraboxBtn" style="background:#2ecc71;color:#000;border:none;padding:14px 24px;border-radius:40px;cursor:pointer;font-weight:bold;width:100%;font-size:16px;margin-bottom:12px;">Μετάβαση στο Terabox</button>`;
+    } else {
+        content += `<p style="color:#e67e22;margin:10px 0;">⚠️ Δεν υπάρχει διαθέσιμο link Terabox για αυτή την ταινία</p>`;
+    }
+    
+    content += `<button id="closeResultPopup" style="background:#e50914;color:white;border:none;padding:10px 20px;border-radius:40px;cursor:pointer;width:100%;font-size:14px;">Κλείσιμο</button></div>`;
+    
+    popup.innerHTML = content;
+    document.body.appendChild(popup);
+    
+    const teraboxBtn = document.getElementById('goToTeraboxBtn');
+    if (teraboxBtn) {
+        teraboxBtn.addEventListener('click', () => {
+            if (movie.link && movie.link !== '') {
+                if (movie.link.startsWith('http')) {
+                    window.open(movie.link, '_blank');
+                } else {
+                    window.open('https://' + movie.link, '_blank');
+                }
+            }
+            popup.remove();
+        });
+    }
+    
+    document.getElementById('closeResultPopup').addEventListener('click', () => {
+        popup.remove();
+    });
+    
+    const closeOnEsc = (e) => {
+        if (e.key === 'Escape') {
+            popup.remove();
+            document.removeEventListener('keydown', closeOnEsc);
+        }
+    };
+    document.addEventListener('keydown', closeOnEsc);
 }
 
 function showCompleteSuggestion(movie, freePlatforms, freeWithAds, subscriptionPlatforms) {
