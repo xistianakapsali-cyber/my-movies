@@ -10,7 +10,7 @@
     
     github: {
         username: "xistianakapsali-cyber",
-        repo: "my-movies-clean",
+        repo: "my-movies",
         branch: "main",
         path: "my-movies-clean"    // ← Ο φάκελος με τα αρχεία
     },
