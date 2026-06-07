@@ -334,7 +334,6 @@ function renderCollectionButtons(movieId) {
     if (!container) return;
     
     container.innerHTML = '';
-    // Μόνο Favorites και Watchlist - ΑΦΑΙΡΕΘΗΚΕ το OSCAR
     const collectionKeys = ['favorites', 'watchlist'];
     
     collectionKeys.forEach(key => {
@@ -410,9 +409,8 @@ async function addBiographyTag() {
     }
     console.log(`Biography tag: ${count} ταινίες ενημερώθηκαν`);
 }
-// ============ GDPR & LEGAL FUNCTIONS ============
 
-// Εξαγωγή όλων των δεδομένων χρήστη
+// ============ GDPR & LEGAL FUNCTIONS ============
 function exportUserData() {
     const userData = {
         exportedAt: new Date().toISOString(),
@@ -437,30 +435,25 @@ function exportUserData() {
     showToast('Τα δεδομένα σας εξήχθησαν!', '#2ecc71');
 }
 
-// Διαγραφή όλων των δεδομένων χρήστη
 function deleteAllUserData() {
-    if (!confirm('Αυτή η ενέργεια θα ΔΙΑΓΡΑΨΕΙ ΟΛΑ τα δεδομένα σας (ταινίες, συλλογές, αιτήματα). Δεν μπορεί να ανακληθεί. Συνέχεια;')) {
+    if (!confirm('Αυτή η ενέργεια θα ΔΙΑΓΡΑΨΕΙ ΟΛΑ τα δεδομένα σας. Δεν μπορεί να ανακληθεί. Συνέχεια;')) {
         return;
     }
     
-    // Διαγραφή όλων
     moviesData = [];
     userCollections = { favorites: { name: "Favorites", movies: [] }, watchlist: { name: "Watchlist", movies: [] } };
     movieRequests = [];
     filteredMovies = [];
     
-    // Επαναφορά localStorage
     localStorage.removeItem('yioio_movies_data');
     localStorage.removeItem('yioio_collections');
     localStorage.removeItem('yioio_movie_requests');
     sessionStorage.clear();
     
-    // Αποσύνδεση χρήστη
     if (isUserLoggedIn) {
         logoutUser();
     }
     
-    // Επαναφόρτωση demo data (3 βασικές σειρές)
     moviesData = [
         { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ταξιδεύουν προς τη Δύση.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1883" },
         { "id": 2, "title": "1899", "year": 2022, "country": "Germany", "genre": "Μυστηρίου, Δράμα", "type": "Series", "quality": "HD", "rating": 7.3, "actors": "Emily Beecham, Andreas Pietschmann", "director": "Baran bo Odar", "writer": "Baran bo Odar", "link": "", "imdb": "", "tmdb": "", "desc": "Μετανάστες ταξιδεύουν από την Ευρώπη στην Αμερική.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Netflix", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1899" },
@@ -476,77 +469,35 @@ function deleteAllUserData() {
     showToast('Όλα τα δεδομένα διαγράφηκαν!', '#2ecc71');
 }
 
-// Νομικά Modals
 function showLegalModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'flex';
-    }
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeLegalModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-    }
+    if (modal) modal.style.display = 'none';
 }
 
 function initLegalModals() {
-    // Terms link
     const termsLink = document.getElementById('termsLink');
-    if (termsLink) {
-        termsLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showLegalModal('termsModal');
-        });
-    }
+    if (termsLink) termsLink.addEventListener('click', (e) => { e.preventDefault(); showLegalModal('termsModal'); });
     
-    // Privacy link
     const privacyLink = document.getElementById('privacyLink');
-    if (privacyLink) {
-        privacyLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showLegalModal('privacyModal');
-        });
-    }
+    if (privacyLink) privacyLink.addEventListener('click', (e) => { e.preventDefault(); showLegalModal('privacyModal'); });
     
-    // DMCA link
     const dmcaLink = document.getElementById('dmcaLink');
-    if (dmcaLink) {
-        dmcaLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showLegalModal('dmcaModal');
-        });
-    }
+    if (dmcaLink) dmcaLink.addEventListener('click', (e) => { e.preventDefault(); showLegalModal('dmcaModal'); });
     
-    // GDPR link
     const gdprLink = document.getElementById('gdprLink');
-    if (gdprLink) {
-        gdprLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showLegalModal('gdprModal');
-        });
-    }
+    if (gdprLink) gdprLink.addEventListener('click', (e) => { e.preventDefault(); showLegalModal('gdprModal'); });
     
-    // GDPR Export button
     const exportBtn = document.getElementById('gdprExportBtn');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', () => {
-            exportUserData();
-            closeLegalModal('gdprModal');
-        });
-    }
+    if (exportBtn) exportBtn.addEventListener('click', () => { exportUserData(); closeLegalModal('gdprModal'); });
     
-    // GDPR Delete button
     const deleteBtn = document.getElementById('gdprDeleteBtn');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', () => {
-            closeLegalModal('gdprModal');
-            deleteAllUserData();
-        });
-    }
+    if (deleteBtn) deleteBtn.addEventListener('click', () => { closeLegalModal('gdprModal'); deleteAllUserData(); });
     
-    // Close buttons for all modals
     document.querySelectorAll('.legal-close').forEach(closeBtn => {
         closeBtn.addEventListener('click', () => {
             const modal = closeBtn.closest('.legal-modal');
@@ -554,17 +505,12 @@ function initLegalModals() {
         });
     });
     
-    // Close modal when clicking outside
     document.querySelectorAll('.legal-modal').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
     });
 }
 
-// ============ ΠΡΟΣΘΗΚΗ OSCAR WINNER (ΧΕΙΡΟΚΙΝΗΤΑ) ============
+// ============ ΠΡΟΣΘΗΚΗ OSCAR WINNER ============
 async function manualOscar() {
     if (!AdminAuth.isSessionValid()) {
         showToast('Μόνο διαχειριστής!', '#e50914');
@@ -664,25 +610,20 @@ function loadRequestsFromLocalStorage() {
     }
 }
 
-// ============ ΦΟΡΜΑ ΑΙΤΗΜΑΤΟΣ ============
 function showRequestForm(title = '', year = '') {
     const modalHtml = `
         <div id="requestModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:20000; display:flex; align-items:center; justify-content:center;">
             <div style="background: var(--card); border-radius: 20px; max-width: 600px; width: 90%; padding: 30px; border: 1px solid var(--primary); max-height: 85vh; overflow-y: auto;">
                 <h3 style="color: var(--primary); margin-bottom: 20px;">Αίτημα Προσθήκης Νέας Ταινίας/Σειράς</h3>
-                
                 <div class="form-group">
                     <label>Τίτλος *</label>
                     <input type="text" id="reqTitle" placeholder="π.χ. Oppenheimer, Poor Things" value="${escapeHtml(title)}">
                 </div>
-                
                 <div class="form-group">
                     <label>Ετος *</label>
                     <input type="number" id="reqYear" placeholder="π.χ. 2023" value="${year}">
                 </div>
-                
                 <button id="fetchFromTmdbBtn" class="btn-tmdb" style="width:100%; margin-bottom:15px;">Αυτόματη Συμπλήρωση από TMDB</button>
-                
                 <div id="tmdbPreview" style="display:none; background: var(--input-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px;">
                     <div style="display: flex; gap: 15px;">
                         <img id="previewPoster" src="" style="width: 80px; height: 120px; object-fit: cover; border-radius: 8px;">
@@ -694,17 +635,14 @@ function showRequestForm(title = '', year = '') {
                         </div>
                     </div>
                 </div>
-                
                 <div class="form-group">
                     <label>Το όνομα σου (προαιρετικό)</label>
                     <input type="text" id="reqRequester" placeholder="π.χ. ${currentUserName || 'Χρήστης'}">
                 </div>
-                
                 <div class="form-group">
                     <label>Σημείωση (προαιρετική)</label>
                     <textarea id="reqNote" rows="3" placeholder="Πρόσθετες πληροφορίες..."></textarea>
                 </div>
-                
                 <div class="modal-buttons" style="margin-top: 20px;">
                     <button id="submitRequestBtn" class="btn-save">Υποβολή Αιτήματος</button>
                     <button id="cancelRequestBtn" class="btn-cancel">Ακύρωση</button>
@@ -846,37 +784,19 @@ async function submitRequestWithData(tmdbData) {
     saveToLocalStorage();
     
     try {
-        const response = await fetch('https://api.web3forms.com/submit', {
+        await fetch('https://api.web3forms.com/submit', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({
                 access_key: '67f6e36b-a2d2-447e-954f-752a0407d237',
                 subject: `ΝΕΟ ΑΙΤΗΜΑ ΤΑΙΝΙΑΣ: ${title}`,
                 from_name: requester,
-                message: `
-ΝΕΟ ΑΙΤΗΜΑ ΤΑΙΝΙΑΣ!
-
-Τίτλος: ${title}
-Ετος: ${year}
-Ζήτησε: ${requester}
-Σημείωση: ${note || 'Κανένα'}
-Ημερομηνία: ${new Date().toLocaleString('el-GR')}
-
-Μπες στο dashboard για έγκριση!`,
+                message: `ΝΕΟ ΑΙΤΗΜΑ ΤΑΙΝΙΑΣ!\n\nΤίτλος: ${title}\nΕτος: ${year}\nΖήτησε: ${requester}\nΣημείωση: ${note || 'Κανένα'}\nΗμερομηνία: ${new Date().toLocaleString('el-GR')}`,
                 replyto: "no-reply@yioio.com"
             })
         });
-        
-        if (response.ok) {
-            showToast(`Το αίτημα για "${title}" εστάλη!`, '#2ecc71');
-        } else {
-            showToast(`Το αίτημα αποθηκεύτηκε (χωρίς email)`, '#e67e22');
-        }
+        showToast(`Το αίτημα για "${title}" εστάλη!`, '#2ecc71');
     } catch (error) {
-        console.error('Email error:', error);
         showToast(`Το αίτημα αποθηκεύτηκε (χωρίς email)`, '#e67e22');
     }
     
@@ -884,11 +804,9 @@ async function submitRequestWithData(tmdbData) {
     initFilters();
     initFuseSearch();
     applyFilters();
-    
     document.getElementById('requestModal').remove();
 }
 
-// ============ ΠΙΝΑΚΑΣ ΔΙΑΧΕΙΡΙΣΗΣ ΑΙΤΗΜΑΤΩΝ ============
 function showRequestsPanel() {
     if (!AdminAuth.isSessionValid()) {
         showToast('Μόνο διαχειριστής!', '#e50914');
@@ -901,32 +819,19 @@ function showRequestsPanel() {
     
     let html = `
         <div id="requestsPanel" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background: var(--card); border-radius: 20px; width: 95%; max-width: 1200px; max-height: 85vh; overflow-y: auto; z-index: 20000; padding: 20px; border: 2px solid var(--primary);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="color: var(--primary);">Διαχείριση Αιτημάτων Ταινιών</h2>
-                <div>
-                    <button id="closeRequestsBtn" style="background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer;">X</button>
-                </div>
+                <button id="closeRequestsBtn" style="background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer;">X</button>
             </div>
-            
             <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border);">
                 <button class="request-tab-btn active" data-tab="pending">Εκκρεμή (${pendingRequests.length})</button>
                 <button class="request-tab-btn" data-tab="approved">Εγκεκριμένα (${approvedRequests.length})</button>
                 <button class="request-tab-btn" data-tab="rejected">Απορριφθέντα (${rejectedRequests.length})</button>
             </div>
-            
-            <div id="pendingTab" class="request-tab">
-                ${renderPendingRequestsTable(pendingRequests)}
-            </div>
-            
-            <div id="approvedTab" class="request-tab" style="display:none;">
-                ${renderApprovedRequestsTable(approvedRequests)}
-            </div>
-            
-            <div id="rejectedTab" class="request-tab" style="display:none;">
-                ${renderRejectedRequestsTable(rejectedRequests)}
-            </div>
-            
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <div id="pendingTab" class="request-tab">${renderPendingRequestsTable(pendingRequests)}</div>
+            <div id="approvedTab" class="request-tab" style="display:none;">${renderApprovedRequestsTable(approvedRequests)}</div>
+            <div id="rejectedTab" class="request-tab" style="display:none;">${renderRejectedRequestsTable(rejectedRequests)}</div>
+            <div style="margin-top: 20px;">
                 <button id="clearAllRequestsBtn" style="background:#e67e22; color:white; border:none; padding:8px 16px; border-radius:8px;">Εκκαθάριση Ολοκληρωμένων</button>
             </div>
         </div>
@@ -940,7 +845,6 @@ function showRequestsPanel() {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.request-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
             const tab = btn.dataset.tab;
             document.getElementById('pendingTab').style.display = tab === 'pending' ? 'block' : 'none';
             document.getElementById('approvedTab').style.display = tab === 'approved' ? 'block' : 'none';
@@ -955,7 +859,7 @@ function showRequestsPanel() {
     const clearBtn = document.getElementById('clearAllRequestsBtn');
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            if (confirm('Εκκαθάριση όλων των ολοκληρωμένων αιτημάτων (εγκεκριμένων & απορριφθέντων);')) {
+            if (confirm('Εκκαθάριση όλων των ολοκληρωμένων αιτημάτων;')) {
                 movieRequests = movieRequests.filter(r => r.status === 'pending');
                 saveRequestsToLocalStorage();
                 document.getElementById('requestsPanel').remove();
@@ -967,31 +871,18 @@ function showRequestsPanel() {
 }
 
 function renderPendingRequestsTable(requests) {
-    if (requests.length === 0) {
-        return '<div style="text-align:center; padding:40px;">Δεν υπάρχουν εκκρεμή αιτήματα</div>';
-    }
-    
+    if (requests.length === 0) return '<div style="text-align:center; padding:40px;">Δεν υπάρχουν εκκρεμή αιτήματα</div>';
     let html = '<div style="display: grid; gap: 20px;">';
-    
     for (const req of requests) {
-        const movie = moviesData.find(m => m.title === req.title && m.year === req.year);
-        
         html += `
             <div style="border: 1px solid var(--border); border-radius: 12px; padding: 15px; background: var(--input-bg);">
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <div style="width: 100px; text-align: center;">
-                        <div style="width: 100px; height: 150px; background: #2c3e50; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 40px;"></div>
-                        <div style="font-size: 10px; margin-top: 5px; color: orange;">Σε αναμονή</div>
-                    </div>
-                    
-                    <div style="flex: 1;">
+                    <div style="flex:1;">
                         <h3 style="color: var(--primary); margin: 0 0 5px 0;">${escapeHtml(req.title)} (${req.year})</h3>
                         <div>Από: ${escapeHtml(req.requester)} | ${req.dateRequested}</div>
                         ${req.note ? `<div>Σημείωση: ${escapeHtml(req.note)}</div>` : ''}
-                        ${movie ? `<div style="font-size: 11px; margin-top: 5px;">ID: ${movie.id}</div>` : ''}
                     </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 8px; min-width: 120px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
                         <button onclick="approveExistingMovie(${req.id})" style="background:#2ecc71; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">Εγκριση</button>
                         <button onclick="rejectAndDeleteMovie(${req.id})" style="background:#e74c3c; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer;">Απόρριψη & Διαγραφή</button>
                     </div>
@@ -999,48 +890,25 @@ function renderPendingRequestsTable(requests) {
             </div>
         `;
     }
-    
     html += '</div>';
     return html;
 }
 
 function renderApprovedRequestsTable(requests) {
-    if (requests.length === 0) {
-        return '<div style="text-align:center; padding:40px;">Δεν υπάρχουν εγκεκριμένα αιτήματα</div>';
-    }
-    
+    if (requests.length === 0) return '<div style="text-align:center; padding:40px;">Δεν υπάρχουν εγκεκριμένα αιτήματα</div>';
     let html = '<div style="display: grid; gap: 15px;">';
     for (const req of requests) {
-        html += `
-            <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div>
-                    <strong>${escapeHtml(req.title)} (${req.year})</strong>
-                    <span style="font-size: 12px; opacity: 0.7;"> - Από: ${escapeHtml(req.requester)}</span>
-                </div>
-                <span style="background:#2ecc71; padding:2px 8px; border-radius:12px; font-size:11px;">Εγκεκριμένο</span>
-            </div>
-        `;
+        html += `<div style="border:1px solid var(--border);border-radius:8px;padding:12px;"><strong>${escapeHtml(req.title)} (${req.year})</strong> - Από: ${escapeHtml(req.requester)} <span style="background:#2ecc71;padding:2px 8px;border-radius:12px;font-size:11px;margin-left:10px;">Εγκεκριμένο</span></div>`;
     }
     html += '</div>';
     return html;
 }
 
 function renderRejectedRequestsTable(requests) {
-    if (requests.length === 0) {
-        return '<div style="text-align:center; padding:40px;">Δεν υπάρχουν απορριφθέντα αιτήματα</div>';
-    }
-    
+    if (requests.length === 0) return '<div style="text-align:center; padding:40px;">Δεν υπάρχουν απορριφθέντα αιτήματα</div>';
     let html = '<div style="display: grid; gap: 15px;">';
     for (const req of requests) {
-        html += `
-            <div style="border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <div>
-                    <strong>${escapeHtml(req.title)} (${req.year})</strong>
-                    <span style="font-size: 12px; opacity: 0.7;"> - Από: ${escapeHtml(req.requester)}</span>
-                </div>
-                <span style="background:#e74c3c; padding:2px 8px; border-radius:12px; font-size:11px;">Απορρίφθηκε</span>
-            </div>
-        `;
+        html += `<div style="border:1px solid var(--border);border-radius:8px;padding:12px;"><strong>${escapeHtml(req.title)} (${req.year})</strong> - Από: ${escapeHtml(req.requester)} <span style="background:#e74c3c;padding:2px 8px;border-radius:12px;font-size:11px;margin-left:10px;">Απορρίφθηκε</span></div>`;
     }
     html += '</div>';
     return html;
@@ -1048,10 +916,7 @@ function renderRejectedRequestsTable(requests) {
 
 function approveExistingMovie(requestId) {
     const request = movieRequests.find(r => r.id === requestId);
-    if (!request) {
-        showToast('Δεν βρέθηκε το αίτημα', '#e50914');
-        return;
-    }
+    if (!request) { showToast('Δεν βρέθηκε το αίτημα', '#e50914'); return; }
     
     const existingMovie = moviesData.find(m => m.title === request.title && m.year === request.year);
     if (existingMovie) {
@@ -1065,7 +930,6 @@ function approveExistingMovie(requestId) {
     request.status = 'approved';
     request.approvedDate = new Date().toISOString().split('T')[0];
     saveRequestsToLocalStorage();
-    
     showRequestsPanel();
     initFuseSearch();
     applyFilters();
@@ -1073,14 +937,9 @@ function approveExistingMovie(requestId) {
 
 function rejectAndDeleteMovie(requestId) {
     const request = movieRequests.find(r => r.id === requestId);
-    if (!request) {
-        showToast('Δεν βρέθηκε το αίτημα', '#e50914');
-        return;
-    }
+    if (!request) { showToast('Δεν βρέθηκε το αίτημα', '#e50914'); return; }
     
-    if (!confirm(`Σίγουρα θέλεις να ΑΠΟΡΡΙΨΕΙΣ και να ΔΙΑΓΡΑΨΕΙΣ την ταινία "${request.title}" (${request.year});`)) {
-        return;
-    }
+    if (!confirm(`Σίγουρα θέλεις να ΑΠΟΡΡΙΨΕΙΣ και να ΔΙΑΓΡΑΨΕΙΣ την ταινία "${request.title}" (${request.year});`)) return;
     
     const movieIndex = moviesData.findIndex(m => m.title === request.title && m.year === request.year);
     if (movieIndex !== -1) {
@@ -1088,22 +947,17 @@ function rejectAndDeleteMovie(requestId) {
         moviesData.forEach((m, i) => m.id = i + 1);
         saveToLocalStorage();
         showToast(`Η ταινία "${request.title}" διαγράφηκε`, '#e74c3c');
-    } else {
-        showToast(`Δεν βρέθηκε η ταινία "${request.title}"`, '#e67e22');
     }
     
     movieRequests = movieRequests.filter(r => r.id !== requestId);
     saveRequestsToLocalStorage();
-    
     updateRecentMoviesList();
     initFilters();
     initFuseSearch();
     applyFilters();
-    
     const panel = document.getElementById('requestsPanel');
     if (panel) panel.remove();
     showRequestsPanel();
-    
     showToast(`Το αίτημα απορρίφθηκε και η ταινία διαγράφηκε`, '#2ecc71');
 }
 
@@ -1210,7 +1064,6 @@ function initFilters() {
     
     while(yearSel.options.length>1) yearSel.remove(1);
     while(countrySel.options.length>1) countrySel.remove(1);
-    // Κρατάμε τα τρία πρώτα options (All, Biography, Oscar Winner)
     while(genreSel.options.length>3) genreSel.remove(3);
     while(studioSel.options.length>1) studioSel.remove(1);
     
@@ -1219,7 +1072,6 @@ function initFilters() {
     
     let allGenres = [...new Set(moviesData.flatMap(m => m.genre?.split(',').map(g=>g.trim()).filter(g=>g && g!=='N/A' && g!=='Biography' && g!=='Oscar Winner' && g!=='Βιογραφία')))];
     
-    // Συγχωνεύσεις
     allGenres = allGenres.map(g => {
         if (g === 'Αστυνομικό') return 'Εγκλήματος';
         if (g === 'Βιογραφία') return 'Biography';
@@ -1256,11 +1108,7 @@ let searchTimeout = null;
 
 function applyFilters() {
     if (!moviesData.length) return;
-    
-    if (filteredMovies.length !== moviesData.length) {
-        filteredMovies = [...moviesData];
-    }
-    
+    if (filteredMovies.length !== moviesData.length) filteredMovies = [...moviesData];
     toggleClearButton();
     if (searchTimeout) clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => performSearch(), 100);
@@ -1271,61 +1119,33 @@ function performSearch() {
     let results = [];
     
     if (term && term.length >= 2) {
-        results = moviesData.filter(m => 
-            m.title.toLowerCase().includes(term) ||
-            (m.original_title && m.original_title.toLowerCase().includes(term))
-        );
-        
-        if (results.length === 0) {
-            results = searchMoviesWithFuse(term);
-        }
-    } 
-    else if (!term) {
+        results = moviesData.filter(m => m.title.toLowerCase().includes(term) || (m.original_title && m.original_title.toLowerCase().includes(term)));
+        if (results.length === 0) results = searchMoviesWithFuse(term);
+    } else if (!term) {
         results = [...moviesData];
-    }
-    else if (term.length === 1) {
-        results = moviesData.filter(m => 
-            m.title.toLowerCase().includes(term) ||
-            (m.original_title && m.original_title.toLowerCase().includes(term))
-        );
+    } else if (term.length === 1) {
+        results = moviesData.filter(m => m.title.toLowerCase().includes(term) || (m.original_title && m.original_title.toLowerCase().includes(term)));
     }
     
-    if (currentTypeFilter !== 'all') {
-        results = results.filter(m => m.type === currentTypeFilter);
-    }
+    if (currentTypeFilter !== 'all') results = results.filter(m => m.type === currentTypeFilter);
     
     const genre = document.getElementById('genreFilter').value;
-    if (genre !== 'All') {
-        results = results.filter(m => m.genre?.includes(genre));
-    }
+    if (genre !== 'All') results = results.filter(m => m.genre?.includes(genre));
     
     const year = document.getElementById('yearFilter').value;
-    if (year !== 'All') {
-        results = results.filter(m => m.year == year);
-    }
+    if (year !== 'All') results = results.filter(m => m.year == year);
     
     const country = document.getElementById('countryFilter').value;
-    if (country !== 'All') {
-        results = results.filter(m => m.country === country);
-    }
+    if (country !== 'All') results = results.filter(m => m.country === country);
     
     const studio = document.getElementById('studioFilter').value;
-    if (studio !== 'All') {
-        results = results.filter(m => m.studio === studio);
-    }
+    if (studio !== 'All') results = results.filter(m => m.studio === studio);
     
     const sort = document.getElementById('sortSelect').value;
     
-    if (sort === 'pendingOnly') {
-        results = results.filter(m => m.status === 'pending');
-    }
-    
-    if (sort === 'collection_favorites') {
-        results = results.filter(m => isInCollection(m.id, 'favorites'));
-    }
-    else if (sort === 'collection_watchlist') {
-        results = results.filter(m => isInCollection(m.id, 'watchlist'));
-    }
+    if (sort === 'pendingOnly') results = results.filter(m => m.status === 'pending');
+    if (sort === 'collection_favorites') results = results.filter(m => isInCollection(m.id, 'favorites'));
+    else if (sort === 'collection_watchlist') results = results.filter(m => isInCollection(m.id, 'watchlist'));
     
     if (sort === 'title') results.sort((a,b) => a.title.localeCompare(b.title));
     else if (sort === 'yearDesc') results.sort((a,b) => b.year - a.year);
@@ -1334,14 +1154,8 @@ function performSearch() {
     else if (sort === 'idDesc') results.sort((a,b) => b.id - a.id);
     else if (sort === 'idAsc') results.sort((a,b) => a.id - b.id);
     else if (sort === 'yearAsc') results.sort((a,b) => a.year - b.year);
-    else if (sort === 'qualityHD') results.sort((a,b) => {
-        const order = { '4K': 1, 'HD': 2, 'SD': 3 };
-        return (order[a.quality] || 99) - (order[b.quality] || 99);
-    });
-    else if (sort === 'qualitySD') results.sort((a,b) => {
-        const order = { 'SD': 1, 'HD': 2, '4K': 3 };
-        return (order[a.quality] || 99) - (order[b.quality] || 99);
-    });
+    else if (sort === 'qualityHD') results.sort((a,b) => { const order = { '4K': 1, 'HD': 2, 'SD': 3 }; return (order[a.quality] || 99) - (order[b.quality] || 99); });
+    else if (sort === 'qualitySD') results.sort((a,b) => { const order = { 'SD': 1, 'HD': 2, '4K': 3 }; return (order[a.quality] || 99) - (order[b.quality] || 99); });
     
     filteredMovies = results;
     currentPage = 1;
@@ -1374,7 +1188,6 @@ async function renderMovies() {
     }
     
     document.getElementById('loadMoreBtn').style.display = end >= filteredMovies.length ? 'none' : 'block';
-    
     grid.innerHTML = '';
     
     for (const m of page) {
@@ -1416,9 +1229,7 @@ function resetAllFilters() {
     document.getElementById('studioFilter').value = 'All';
     document.getElementById('sortSelect').value = 'title';
     currentTypeFilter = 'all';
-    document.querySelectorAll('.filter-type-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === 'all');
-    });
+    document.querySelectorAll('.filter-type-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === 'all'));
     applyFilters();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast('Επιστροφή στην αρχική σελίδα', '#2ecc71');
@@ -1514,33 +1325,22 @@ function searchMoviesByActor(actorName) {
     
     let results = moviesData.filter(movie => {
         if (!movie.actors || movie.actors === 'N/A') return false;
-        const actorsLower = movie.actors.toLowerCase();
-        return actorsLower.includes(searchTerm);
+        return movie.actors.toLowerCase().includes(searchTerm);
     });
     
-    if (currentTypeFilter !== 'all') {
-        results = results.filter(m => m.type === currentTypeFilter);
-    }
+    if (currentTypeFilter !== 'all') results = results.filter(m => m.type === currentTypeFilter);
     
     const genre = document.getElementById('genreFilter').value;
-    if (genre !== 'All') {
-        results = results.filter(m => m.genre?.includes(genre));
-    }
+    if (genre !== 'All') results = results.filter(m => m.genre?.includes(genre));
     
     const year = document.getElementById('yearFilter').value;
-    if (year !== 'All') {
-        results = results.filter(m => m.year == year);
-    }
+    if (year !== 'All') results = results.filter(m => m.year == year);
     
     const country = document.getElementById('countryFilter').value;
-    if (country !== 'All') {
-        results = results.filter(m => m.country === country);
-    }
+    if (country !== 'All') results = results.filter(m => m.country === country);
     
     const studio = document.getElementById('studioFilter').value;
-    if (studio !== 'All') {
-        results = results.filter(m => m.studio === studio);
-    }
+    if (studio !== 'All') results = results.filter(m => m.studio === studio);
     
     filteredMovies = results;
     currentPage = 1;
@@ -1563,34 +1363,21 @@ function searchMoviesByDirectorOrWriter(value, type) {
     searchInput.value = value;
     toggleClearButton();
     
-    let results = moviesData.filter(m => 
-        m.director?.toLowerCase().includes(value.toLowerCase()) || 
-        m.writer?.toLowerCase().includes(value.toLowerCase())
-    );
+    let results = moviesData.filter(m => m.director?.toLowerCase().includes(value.toLowerCase()) || m.writer?.toLowerCase().includes(value.toLowerCase()));
     
-    if (currentTypeFilter !== 'all') {
-        results = results.filter(m => m.type === currentTypeFilter);
-    }
+    if (currentTypeFilter !== 'all') results = results.filter(m => m.type === currentTypeFilter);
     
     const genre = document.getElementById('genreFilter').value;
-    if (genre !== 'All') {
-        results = results.filter(m => m.genre?.includes(genre));
-    }
+    if (genre !== 'All') results = results.filter(m => m.genre?.includes(genre));
     
     const year = document.getElementById('yearFilter').value;
-    if (year !== 'All') {
-        results = results.filter(m => m.year == year);
-    }
+    if (year !== 'All') results = results.filter(m => m.year == year);
     
     const country = document.getElementById('countryFilter').value;
-    if (country !== 'All') {
-        results = results.filter(m => m.country === country);
-    }
+    if (country !== 'All') results = results.filter(m => m.country === country);
     
     const studio = document.getElementById('studioFilter').value;
-    if (studio !== 'All') {
-        results = results.filter(m => m.studio === studio);
-    }
+    if (studio !== 'All') results = results.filter(m => m.studio === studio);
     
     filteredMovies = results;
     currentPage = 1;
@@ -1605,13 +1392,9 @@ function searchMoviesByDirectorOrWriter(value, type) {
 
 // ============ POSTER FUNCTIONS ============
 async function fetchAndSavePoster(movie) {
-    if (movie.poster_url && movie.poster_url !== '') {
-        return movie.poster_url;
-    }
+    if (movie.poster_url && movie.poster_url !== '') return movie.poster_url;
     
-    if (!TMDB_API_KEY) {
-        return generateFallbackPoster(movie.title);
-    }
+    if (!TMDB_API_KEY) return generateFallbackPoster(movie.title);
     
     try {
         const searchType = movie.type === 'Series' ? 'tv' : 'movie';
@@ -1648,9 +1431,7 @@ async function enrichAllPosters() {
         if (!movie.poster_url) {
             await fetchAndSavePoster(movie);
             count++;
-            if (count % 5 === 0) {
-                showToast(`Λήψη posters: ${count}/${total}`, '#2196f3');
-            }
+            if (count % 5 === 0) showToast(`Λήψη posters: ${count}/${total}`, '#2196f3');
             await new Promise(r => setTimeout(r, 150));
         }
     }
@@ -1658,7 +1439,6 @@ async function enrichAllPosters() {
     saveToLocalStorage();
     console.log(`Ολοκληρώθηκε! ${count} νέα posters προστέθηκαν`);
     showToast(`${count} posters αποθηκεύτηκαν!`, '#2ecc71');
-    
     applyFilters();
 }
 
@@ -1741,14 +1521,11 @@ function openDetailsById(id) {
     } else {
         modalImg.src = generateFallbackPoster(movie.title);
         fetchAndSavePoster(movie).then(url => {
-            if (url && modalImg.src !== url) {
-                modalImg.src = url;
-            }
+            if (url && modalImg.src !== url) modalImg.src = url;
         });
     }
     
     renderCollectionButtons(movie.id);
-    
     renderActorsWithImages(movie.actors, 'modalActorsContainer');
     document.getElementById('detailModal').style.display = 'flex';
 }
@@ -1759,10 +1536,9 @@ function closeDetails() {
     currentMovieLink = null;
 }
 
-// ============ ΠΛΗΡΗΣ ΠΡΟΤΑΣΗ ΠΡΟΒΟΛΗΣ (FREE → SUBSCRIPTION → TERABOX) ============
+// ============ ΠΛΗΡΗΣ ΠΡΟΤΑΣΗ ΠΡΟΒΟΛΗΣ ============
 async function suggestFreeMovie(movie) {
     if (!TMDB_API_KEY) {
-        // Αν δεν έχουμε TMDB key, πάμε κατευθείαν Terabox
         if (movie.link && movie.link !== '') {
             showCompleteSuggestion(movie, [], [], []);
         } else {
@@ -1774,7 +1550,6 @@ async function suggestFreeMovie(movie) {
     showToast('Αναζήτηση για δωρεάν προβολή...', '#2196f3');
     
     try {
-        // Αναζήτηση στο TMDB
         let tmdbId = null;
         
         if (movie.tmdb && movie.tmdb.includes('/movie/')) {
@@ -1785,10 +1560,7 @@ async function suggestFreeMovie(movie) {
             const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movie.title)}&year=${movie.year}`;
             const searchRes = await fetch(searchUrl);
             const searchData = await searchRes.json();
-            
-            if (searchData.results && searchData.results.length > 0) {
-                tmdbId = searchData.results[0].id;
-            }
+            if (searchData.results && searchData.results.length > 0) tmdbId = searchData.results[0].id;
         }
         
         let freePlatforms = [];
@@ -1799,43 +1571,16 @@ async function suggestFreeMovie(movie) {
             const watchUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`;
             const watchRes = await fetch(watchUrl);
             const watchData = await watchRes.json();
-            
             const providers = watchData.results?.GR || watchData.results?.US;
             
             if (providers) {
-                // ΔΩΡΕΑΝ (free) - YouTube, Tubi, Pluto TV, Viki, Rakuten, κλπ.
-                if (providers.free) {
-                    freePlatforms = providers.free.map(p => ({
-                        name: p.provider_name,
-                        logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null,
-                        link: `https://www.themoviedb.org/movie/${tmdbId}/watch`,
-                        type: 'free'
-                    }));
-                }
-                // Με διαφημίσεις (ads)
-                if (providers.ads) {
-                    freeWithAds = providers.ads.map(p => ({
-                        name: p.provider_name,
-                        logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null,
-                        link: `https://www.themoviedb.org/movie/${tmdbId}/watch`,
-                        type: 'ads'
-                    }));
-                }
-                // Συνδρομητικές (flatrate) - Netflix, Disney+, Apple TV, Prime, Max
-                if (providers.flatrate) {
-                    subscriptionPlatforms = providers.flatrate.map(p => ({
-                        name: p.provider_name,
-                        logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null,
-                        link: `https://www.themoviedb.org/movie/${tmdbId}/watch`,
-                        type: 'subscription'
-                    }));
-                }
+                if (providers.free) freePlatforms = providers.free.map(p => ({ name: p.provider_name, logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null, link: `https://www.themoviedb.org/movie/${tmdbId}/watch`, type: 'free' }));
+                if (providers.ads) freeWithAds = providers.ads.map(p => ({ name: p.provider_name, logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null, link: `https://www.themoviedb.org/movie/${tmdbId}/watch`, type: 'ads' }));
+                if (providers.flatrate) subscriptionPlatforms = providers.flatrate.map(p => ({ name: p.provider_name, logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : null, link: `https://www.themoviedb.org/movie/${tmdbId}/watch`, type: 'subscription' }));
             }
         }
         
-        // Εμφάνιση πλήρους popup
         showCompleteSuggestion(movie, freePlatforms, freeWithAds, subscriptionPlatforms);
-        
     } catch(e) {
         console.error('Streaming check failed:', e);
         if (movie.link && movie.link !== '') {
@@ -1846,282 +1591,83 @@ async function suggestFreeMovie(movie) {
     }
 }
 
-// ============ ΠΛΗΡΕΣ POPUP ΠΡΟΤΑΣΕΩΝ ============
 function showCompleteSuggestion(movie, freePlatforms, freeWithAds, subscriptionPlatforms) {
     const existing = document.getElementById('freeSuggestionPopup');
     if (existing) existing.remove();
     
     let platformsHtml = '';
     
-    // ΕΝΟΤΗΤΑ 1: ΔΩΡΕΑΝ ΠΛΑΤΦΟΡΜΕΣ
     if (freePlatforms.length > 0 || freeWithAds.length > 0) {
         if (freePlatforms.length > 0) {
-            platformsHtml += `<div style="margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                    <span style="font-size: 24px;">🎉</span>
-                    <h4 style="color: #2ecc71; margin: 0;">ΔΩΡΕΑΝ (χωρίς εγγραφή)</h4>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
-            
+            platformsHtml += `<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:24px;">🎉</span><h4 style="color:#2ecc71;margin:0;">ΔΩΡΕΑΝ (χωρίς εγγραφή)</h4></div><div style="display:flex;flex-wrap:wrap;gap:12px;">`;
             freePlatforms.forEach(p => {
-                platformsHtml += `
-                    <a href="${p.link}" target="_blank" class="suggestion-platform-btn" style="
-                        background: rgba(46,204,113,0.15);
-                        border: 1.5px solid #2ecc71;
-                        border-radius: 40px;
-                        padding: 10px 20px;
-                        text-decoration: none;
-                        color: var(--text);
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 10px;
-                        transition: all 0.2s;
-                        font-weight: 500;
-                    " onmouseenter="this.style.background='rgba(46,204,113,0.3)'; this.style.transform='translateY(-2px)'" onmouseleave="this.style.background='rgba(46,204,113,0.15)'; this.style.transform='translateY(0)'">
-                        ${p.logo ? `<img src="${p.logo}" style="width: 24px; height: 24px; border-radius: 6px;">` : '🎬'}
-                        ${p.name}
-                    </a>
-                `;
+                platformsHtml += `<a href="${p.link}" target="_blank" style="background:rgba(46,204,113,0.15);border:1.5px solid #2ecc71;border-radius:40px;padding:10px 20px;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:10px;">${p.logo ? `<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;">` : '🎬'} ${p.name}</a>`;
             });
             platformsHtml += `</div></div>`;
         }
         
         if (freeWithAds.length > 0) {
-            platformsHtml += `<div style="margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                    <span style="font-size: 24px;">📺</span>
-                    <h4 style="color: #f39c12; margin: 0;">ΔΩΡΕΑΝ (με διαφημίσεις)</h4>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
-            
+            platformsHtml += `<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:24px;">📺</span><h4 style="color:#f39c12;margin:0;">ΔΩΡΕΑΝ (με διαφημίσεις)</h4></div><div style="display:flex;flex-wrap:wrap;gap:12px;">`;
             freeWithAds.forEach(p => {
-                platformsHtml += `
-                    <a href="${p.link}" target="_blank" class="suggestion-platform-btn" style="
-                        background: rgba(243,156,18,0.15);
-                        border: 1.5px solid #f39c12;
-                        border-radius: 40px;
-                        padding: 10px 20px;
-                        text-decoration: none;
-                        color: var(--text);
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 10px;
-                        transition: all 0.2s;
-                    ">
-                        ${p.logo ? `<img src="${p.logo}" style="width: 24px; height: 24px; border-radius: 6px;">` : '📺'}
-                        ${p.name}
-                    </a>
-                `;
+                platformsHtml += `<a href="${p.link}" target="_blank" style="background:rgba(243,156,18,0.15);border:1.5px solid #f39c12;border-radius:40px;padding:10px 20px;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:10px;">${p.logo ? `<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;">` : '📺'} ${p.name}</a>`;
             });
             platformsHtml += `</div></div>`;
         }
     }
     
-    // ΕΝΟΤΗΤΑ 2: ΣΥΝΔΡΟΜΗΤΙΚΕΣ ΠΛΑΤΦΟΡΜΕΣ
     if (subscriptionPlatforms.length > 0) {
-        platformsHtml += `<div style="margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <span style="font-size: 24px;">💰</span>
-                <h4 style="color: #e67e22; margin: 0;">Συνδρομητικές Πλατφόρμες</h4>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
-        
+        platformsHtml += `<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:24px;">💰</span><h4 style="color:#e67e22;margin:0;">Συνδρομητικές Πλατφόρμες</h4></div><div style="display:flex;flex-wrap:wrap;gap:12px;">`;
         subscriptionPlatforms.forEach(p => {
-            let bgColor = '';
+            let bgColor = '#555';
             if (p.name.toLowerCase().includes('netflix')) bgColor = '#E50914';
             else if (p.name.toLowerCase().includes('disney')) bgColor = '#113CCF';
             else if (p.name.toLowerCase().includes('apple')) bgColor = '#000000';
             else if (p.name.toLowerCase().includes('prime')) bgColor = '#00A8E1';
             else if (p.name.toLowerCase().includes('max')) bgColor = '#0026FF';
-            else bgColor = '#555';
             
-            platformsHtml += `
-                <a href="${p.link}" target="_blank" class="suggestion-platform-btn" style="
-                    background: ${bgColor}20;
-                    border: 1.5px solid ${bgColor};
-                    border-radius: 40px;
-                    padding: 10px 20px;
-                    text-decoration: none;
-                    color: var(--text);
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 10px;
-                    transition: all 0.2s;
-                ">
-                    ${p.logo ? `<img src="${p.logo}" style="width: 24px; height: 24px; border-radius: 6px;">` : '🎬'}
-                    ${p.name}
-                </a>
-            `;
+            platformsHtml += `<a href="${p.link}" target="_blank" style="background:${bgColor}20;border:1.5px solid ${bgColor};border-radius:40px;padding:10px 20px;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:10px;">${p.logo ? `<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;">` : '🎬'} ${p.name}</a>`;
         });
         platformsHtml += `</div></div>`;
     }
     
-    // Αν δεν βρέθηκε ΚΑΜΙΑ πλατφόρμα
     if (freePlatforms.length === 0 && freeWithAds.length === 0 && subscriptionPlatforms.length === 0) {
-        platformsHtml = `
-            <div style="background: rgba(231,76,60,0.1); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px;">
-                <span style="font-size: 48px;">🔍</span>
-                <p style="margin-top: 10px; color: #e74c3c;">Δεν βρέθηκε η ταινία σε καμία πλατφόρμα</p>
-                <p style="font-size: 13px; opacity: 0.7;">Προτείνεται λήψη από Terabox</p>
-            </div>
-        `;
+        platformsHtml = `<div style="background:rgba(231,76,60,0.1);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;"><span style="font-size:48px;">🔍</span><p style="margin-top:10px;color:#e74c3c;">Δεν βρέθηκε η ταινία σε καμία πλατφόρμα</p><p style="font-size:13px;opacity:0.7;">Προτείνεται λήψη από Terabox</p></div>`;
     }
     
-    // ΕΝΟΤΗΤΑ 3: TERABOX (Απλοποιημένη έκδοση)
-    const teraboxHtml = `
-        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed var(--border);">
-            <div style="background: linear-gradient(135deg, rgba(46,204,113,0.1) 0%, rgba(46,204,113,0.05) 100%); border-radius: 16px; padding: 20px;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
-                    <span style="font-size: 32px;">📁</span>
-                    <div>
-                        <h4 style="color: #2ecc71; margin: 0;">Εναλλακτική Λύση - Terabox</h4>
-                        <p style="font-size: 12px; opacity: 0.8; margin: 5px 0 0 0;">✅ Απολύτως νόμιμο (προσωπικό ανέβασμα χρήστη)</p>
-                    </div>
-                </div>
-                
-                <p style="margin-bottom: 15px; font-size: 14px;">
-                    🎯 <strong>Πλεονεκτήματα Terabox:</strong><br>
-                    • 🎬 Καλύτερη ποιότητα εικόνας (4K/HD)<br>
-                    • 🔊 Ανώτερη ακουστική (5.1 Surround / Dolby)<br>
-                    • 🇬🇷 Ελληνικοί υπότιτλοι<br>
-                    • 📱 Offline προβολή
-                </p>
-                
-                ${movie.link && movie.link !== '' ? `
-                    <button id="goToTeraboxBtn" style="
-                        background: #2ecc71;
-                        color: #000;
-                        border: none;
-                        padding: 14px 28px;
-                        border-radius: 40px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        width: 100%;
-                        font-size: 16px;
-                        transition: all 0.2s;
-                    " onmouseenter="this.style.transform='scale(1.02)'; this.style.background='#27ae60'" onmouseleave="this.style.transform='scale(1)'; this.style.background='#2ecc71'">
-                        📥 Λήψη από Terabox
-                    </button>
-                ` : `
-                    <div style="background: rgba(231,76,60,0.2); border-radius: 12px; padding: 12px; text-align: center;">
-                        ⚠️ Δεν υπάρχει διαθέσιμο link Terabox για αυτή την ταινία
-                    </div>
-                `}
-            </div>
-        </div>
-    `;
+    const teraboxHtml = `<div style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--border);"><div style="background:linear-gradient(135deg,rgba(46,204,113,0.1) 0%,rgba(46,204,113,0.05) 100%);border-radius:16px;padding:20px;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:15px;"><span style="font-size:32px;">📁</span><div><h4 style="color:#2ecc71;margin:0;">Εναλλακτική Λύση - Terabox</h4><p style="font-size:12px;opacity:0.8;margin:5px 0 0 0;">✅ Απολύτως νόμιμο (προσωπικό ανέβασμα χρήστη)</p></div></div><p style="margin-bottom:15px;font-size:14px;">🎯 <strong>Πλεονεκτήματα Terabox:</strong><br>• 🎬 Καλύτερη ποιότητα εικόνας (4K/HD)<br>• 🔊 Ανώτερη ακουστική (5.1 Surround / Dolby)<br>• 🇬🇷 Ελληνικοί υπότιτλοι<br>• 📱 Offline προβολή</p>${movie.link && movie.link !== '' ? `<button id="goToTeraboxBtn" style="background:#2ecc71;color:#000;border:none;padding:14px 28px;border-radius:40px;cursor:pointer;font-weight:bold;width:100%;font-size:16px;">📥 Λήψη από Terabox</button>` : `<div style="background:rgba(231,76,60,0.2);border-radius:12px;padding:12px;text-align:center;">⚠️ Δεν υπάρχει διαθέσιμο link Terabox για αυτή την ταινία</div>`}</div></div>`;
     
-    // Συναρμολόγηση popup
     const popup = document.createElement('div');
     popup.id = 'freeSuggestionPopup';
-    popup.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: var(--card);
-        border-radius: 24px;
-        padding: 25px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 85vh;
-        overflow-y: auto;
-        z-index: 20001;
-        border: 2px solid var(--primary);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    `;
+    popup.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border-radius:24px;padding:25px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;z-index:20001;border:2px solid var(--primary);box-shadow:0 20px 60px rgba(0,0,0,0.5);`;
     
-    popup.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="color: var(--primary); margin: 0;">${escapeHtml(movie.title)}</h2>
-                <p style="margin: 5px 0 0 0; opacity: 0.7;">${movie.year} • ${movie.type === 'Series' ? 'Σειρά' : 'Ταινία'}</p>
-            </div>
-            <button id="closeSuggestionPopup" style="
-                background: rgba(0,0,0,0.3);
-                border: none;
-                color: var(--text);
-                font-size: 24px;
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s;
-            " onmouseenter="this.style.background='rgba(229,9,20,0.5)'" onmouseleave="this.style.background='rgba(0,0,0,0.3)'">×</button>
-        </div>
-        
-        <div id="suggestionContent">
-            ${platformsHtml}
-            ${teraboxHtml}
-        </div>
-        
-        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 11px; opacity: 0.6; text-align: center;">
-            🔍 Τα δεδομένα πλατφορμών προέρχονται από TMDB • Οι διαθέσιμες πλατφόρμες ενδέχεται να διαφέρουν ανά χώρα
-        </div>
-    `;
+    popup.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><div><h2 style="color:var(--primary);margin:0;">${escapeHtml(movie.title)}</h2><p style="margin:5px 0 0 0;opacity:0.7;">${movie.year} • ${movie.type === 'Series' ? 'Σειρά' : 'Ταινία'}</p></div><button id="closeSuggestionPopup" style="background:rgba(0,0,0,0.3);border:none;color:var(--text);font-size:24px;width:36px;height:36px;border-radius:50%;cursor:pointer;">×</button></div><div id="suggestionContent">${platformsHtml}${teraboxHtml}</div><div style="margin-top:20px;padding-top:15px;border-top:1px solid var(--border);font-size:11px;opacity:0.6;text-align:center;">🔍 Τα δεδομένα πλατφορμών προέρχονται από TMDB • Οι διαθέσιμες πλατφόρμες ενδέχεται να διαφέρουν ανά χώρα</div>`;
     
     document.body.appendChild(popup);
-    
-    // Event listeners
     document.getElementById('closeSuggestionPopup')?.addEventListener('click', () => popup.remove());
-    
     const goToTerabox = document.getElementById('goToTeraboxBtn');
-    if (goToTerabox) {
-        goToTerabox.addEventListener('click', () => {
-            openTeraboxLink(movie.link);
-            popup.remove();
-        });
-    }
-    
-    // Κλείσιμο με Escape
-    const closeOnEsc = (e) => {
-        if (e.key === 'Escape') {
-            popup.remove();
-            document.removeEventListener('keydown', closeOnEsc);
-        }
-    };
+    if (goToTerabox) goToTerabox.addEventListener('click', () => { openTeraboxLink(movie.link); popup.remove(); });
+    const closeOnEsc = (e) => { if (e.key === 'Escape') { popup.remove(); document.removeEventListener('keydown', closeOnEsc); } };
     document.addEventListener('keydown', closeOnEsc);
 }
-// Άνοιγμα Terabox link
+
 function openTeraboxLink(link) {
-    if (!link || link === '') {
-        showToast('Δεν υπάρχει link προβολής', '#e67e22');
-        return;
-    }
-    
-    if (link.startsWith('magnet:')) {
-        window.location.href = link;
-        setTimeout(() => {
-            showToast('Αν δεν ανοίγει, αντιγράψτε το magnet link', '#3498db');
-        }, 500);
-    } else if (link.startsWith('http://') || link.startsWith('https://')) {
-        window.open(link, '_blank');
-    } else {
-        window.open('https://' + link, '_blank');
-    }
+    if (!link || link === '') { showToast('Δεν υπάρχει link προβολής', '#e67e22'); return; }
+    if (link.startsWith('magnet:')) { window.location.href = link; setTimeout(() => showToast('Αν δεν ανοίγει, αντιγράψτε το magnet link', '#3498db'), 500); }
+    else if (link.startsWith('http://') || link.startsWith('https://')) window.open(link, '_blank');
+    else window.open('https://' + link, '_blank');
 }
 
-// ============ ΑΝΤΙΚΑΤΑΣΤΑΣΗ ΤΟΥ ΠΑΛΙΟΥ handleDownloadClick ============
 function handleDownloadClick() { 
     if (currentModalMovieId) {
         const movie = moviesData.find(m => m.id === currentModalMovieId);
-        if (movie) {
-            suggestFreeMovie(movie);
-        } else {
-            showToast('Σφάλμα: Δεν βρέθηκε η ταινία', '#e50914');
-        }
+        if (movie) suggestFreeMovie(movie);
+        else showToast('Σφάλμα: Δεν βρέθηκε η ταινία', '#e50914');
     }
 }
 
 // ============ CRUD OPERATIONS ============
 function showAddMovieForm() {
-    if (!isUserLoggedIn) { 
-        showToast('Πρέπει να συνδεθείτε για να προσθέσετε ταινία!', '#e50914'); 
-        return; 
-    }
+    if (!isUserLoggedIn) { showToast('Πρέπει να συνδεθείτε για να προσθέσετε ταινία!', '#e50914'); return; }
     
     const modalHtml = `<div class="add-movie-modal" id="addMovieModal"><h2>Προσθήκη Νέας Ταινίας/Σειράς</h2>
         <div class="auto-fill-row" style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -2133,29 +1679,22 @@ function showAddMovieForm() {
         <div style="margin: 15px 0; text-align: center; font-size: 12px; opacity: 0.7;">— ή συμπλήρωσε χειροκίνητα —</div>
         <div class="form-row">
             <div class="form-group"><label>Τίτλος (Ελληνικός) *</label><input type="text" id="newTitle" placeholder="π.χ. Ο Νονός"></div>
-            <div class="form-group"><label>Original Title</label><input type="text" id="newOriginalTitle" placeholder="π.χ. The Godfather, Gisaengchung (για Κορεάτικες)"></div>
+            <div class="form-group"><label>Original Title</label><input type="text" id="newOriginalTitle" placeholder="π.χ. The Godfather"></div>
         </div>
         <div class="form-row">
             <div class="form-group"><label>Ετος *</label><input type="number" id="newYear" placeholder="π.χ. 2024"></div>
-            <div class="form-group"><label>Τύπος</label><select id="newType">
-                <option value="Movie">Ταινία (Movie)</option>
-                <option value="Series">Σειρά (Series)</option>
-            </select></div>
+            <div class="form-group"><label>Τύπος</label><select id="newType"><option value="Movie">Ταινία</option><option value="Series">Σειρά</option></select></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>Ποιότητα</label><select id="newQuality">
-                <option value="HD">HD</option>
-                <option value="SD">SD</option>
-                <option value="4K">4K</option>
-            </select></div>
-            <div class="form-group"><label>Χώρα</label><input type="text" id="newCountry" placeholder="π.χ. United States, Greece"></div>
+            <div class="form-group"><label>Ποιότητα</label><select id="newQuality"><option value="HD">HD</option><option value="SD">SD</option><option value="4K">4K</option></select></div>
+            <div class="form-group"><label>Χώρα</label><input type="text" id="newCountry" placeholder="π.χ. United States"></div>
         </div>
         <div class="form-row">
             <div class="form-group"><label>Είδος (Genre)</label><input type="text" id="newGenre" placeholder="π.χ. Δράμα, Θρίλερ"></div>
             <div class="form-group"><label>Βαθμολογία (0-10)</label><input type="number" step="0.1" id="newRating" placeholder="π.χ. 8.5"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>Πλατφόρμα (Studio)</label><input type="text" id="newStudio" placeholder="π.χ. Netflix, Disney+"></div>
+            <div class="form-group"><label>Πλατφόρμα (Studio)</label><input type="text" id="newStudio" placeholder="π.χ. Netflix"></div>
             <div class="form-group"><label>Σκηνοθέτης</label><input type="text" id="newDirector" placeholder="Ονόματα σκηνοθετών"></div>
         </div>
         <div class="form-row">
@@ -2167,7 +1706,7 @@ function showAddMovieForm() {
             <div class="form-group"><label>IMDB Link</label><input type="url" id="newImdb" placeholder="https://www.imdb.com/..."></div>
             <div class="form-group"><label>TMDB Link</label><input type="url" id="newTmdb" placeholder="https://www.themoviedb.org/..."></div>
         </div>
-        <div class="form-group"><label>Περιγραφή</label><textarea id="newDesc" rows="3" placeholder="Περιγραφή της ταινίας/σειράς..."></textarea></div>
+        <div class="form-group"><label>Περιγραφή</label><textarea id="newDesc" rows="3" placeholder="Περιγραφή..."></textarea></div>
         <div class="modal-buttons"><button id="saveMovieBtn" class="btn-save">Αποθήκευση</button><button id="cancelAddMovieBtn" class="btn-cancel">Ακύρωση</button></div>
     </div>`;
     
@@ -2181,9 +1720,7 @@ function showAddMovieForm() {
     document.getElementById('cancelAddMovieBtn').addEventListener('click', () => closeAddMovieForm());
 }
 
-function closeAddMovieForm() { 
-    document.getElementById('addMovieModal')?.remove(); 
-}
+function closeAddMovieForm() { document.getElementById('addMovieModal')?.remove(); }
 
 function isDuplicateMovie(title, year, excludeId = null) {
     return moviesData.some(m => m.title.toLowerCase() === title.toLowerCase() && m.year === year && m.id !== excludeId);
@@ -2195,14 +1732,8 @@ async function searchTMDBForAdd(type) {
     const title = document.getElementById('autoTitle').value.trim();
     const searchType = type;
     
-    if (!title) {
-        showToast('Παρακαλώ γράψτε έναν τίτλο', '#e67e22');
-        return;
-    }
-    if (!TMDB_API_KEY) {
-        showToast('Σφάλμα: Missing TMDB API Key', '#e50914');
-        return;
-    }
+    if (!title) { showToast('Παρακαλώ γράψτε έναν τίτλο', '#e67e22'); return; }
+    if (!TMDB_API_KEY) { showToast('Σφάλμα: Missing TMDB API Key', '#e50914'); return; }
     
     showToast(`Αναζήτηση ${searchType === 'tv' ? 'σειράς' : 'ταινίας'} στο TMDB...`, '#2196f3');
     
@@ -2223,21 +1754,16 @@ async function searchTMDBForAdd(type) {
             
             for (let i = 0; i < Math.min(10, data.results.length); i++) {
                 const r = data.results[i];
-                const year = searchType === 'tv' 
-                    ? (r.first_air_date || '').substring(0, 4) 
-                    : (r.release_date || '').substring(0, 4);
+                const year = searchType === 'tv' ? (r.first_air_date || '').substring(0, 4) : (r.release_date || '').substring(0, 4);
                 const titleName = searchType === 'tv' ? r.name : r.title;
                 const resultItem = document.createElement('div');
                 resultItem.className = 'result-item';
                 resultItem.setAttribute('data-id', r.id);
                 resultItem.style.cssText = 'padding:12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.2s;';
-                resultItem.innerHTML = `<strong>${searchType === 'tv' ? '' : ''} ${titleName}</strong> <span style="opacity:0.7;">(${year || 'Άγνωστο'})</span>`;
+                resultItem.innerHTML = `<strong>${titleName}</strong> <span style="opacity:0.7;">(${year || 'Άγνωστο'})</span>`;
                 resultItem.addEventListener('click', () => {
-                    if (searchType === 'tv') {
-                        selectTMDBTvResultForAdd(r.id, titleName, year, r.poster_path);
-                    } else {
-                        selectTMDBResultForAdd(r.id, titleName, year, r.poster_path);
-                    }
+                    if (searchType === 'tv') selectTMDBTvResultForAdd(r.id, titleName, year, r.poster_path);
+                    else selectTMDBResultForAdd(r.id, titleName, year, r.poster_path);
                 });
                 resultItem.addEventListener('mouseenter', () => { resultItem.style.background = 'var(--primary)'; resultItem.style.color = 'white'; });
                 resultItem.addEventListener('mouseleave', () => { resultItem.style.background = ''; resultItem.style.color = ''; });
@@ -2245,7 +1771,7 @@ async function searchTMDBForAdd(type) {
             }
             resultsDiv.style.display = 'block';
         } else {
-            resultsDiv.innerHTML = `<div style="padding:15px;text-align:center;">Δεν βρέθηκε ${searchType === 'tv' ? 'σειρά' : 'ταινία'} με τίτλο "${title}"<br><small>Δοκίμασε με διαφορετική ορθογραφία ή χρησιμοποίησε TMDB ID</small></div>`;
+            resultsDiv.innerHTML = `<div style="padding:15px;text-align:center;">Δεν βρέθηκε ${searchType === 'tv' ? 'σειρά' : 'ταινία'} με τίτλο "${title}"</div>`;
             resultsDiv.style.display = 'block';
         }
     } catch(e) {
@@ -2267,81 +1793,42 @@ async function selectTMDBResultForAdd(movieId, movieTitle, movieYear, posterPath
         if (!creditsRes.ok) throw new Error(`HTTP ${creditsRes.status}`);
         const creditsData = await creditsRes.json();
         
-        let director = 'N/A';
+        let director = 'N/A', writer = 'N/A', actors = 'N/A';
         if (creditsData.crew) {
             const directorObj = creditsData.crew.find(person => person.job === 'Director');
             if (directorObj) director = directorObj.name;
-        }
-        let writer = 'N/A';
-        if (creditsData.crew) {
             const writerObj = creditsData.crew.find(person => person.job === 'Writer' || person.job === 'Screenplay');
             if (writerObj) writer = writerObj.name;
         }
-        let actors = 'N/A';
-        if (creditsData.cast && creditsData.cast.length > 0) {
-            actors = creditsData.cast.slice(0, 5).map(actor => actor.name).join(', ');
-        }
+        if (creditsData.cast && creditsData.cast.length > 0) actors = creditsData.cast.slice(0, 5).map(actor => actor.name).join(', ');
+        
         const title = movieData.title || movieTitle;
         const year = (movieData.release_date || '').substring(0, 4) || movieYear;
-        let country = 'N/A';
-        if (movieData.production_countries && movieData.production_countries.length > 0) country = movieData.production_countries[0].name;
-        
+        const country = movieData.production_countries?.[0]?.name || 'N/A';
         let genre = 'N/A';
         if (movieData.genres && movieData.genres.length > 0) {
             genre = movieData.genres.map(g => {
-                if (g.name === "Επ. Φαντασίας" || g.name === "Επιστημονικής Φαντασίας" || g.name === "Sci-Fi & Fantasy") {
-                    return "Επιστημονική Φαντασία";
-                }
-                if (g.name === "Action & Adventure") {
-                    return "Δράση & Περιπέτεια";
-                }
-                if (g.name === "Drama") {
-                    return "Δράμα";
-                }
-                if (g.name === "Romance") {
-                    return "Ρομαντισμός";
-                }
-                if (g.name === "Comedy") {
-                    return "Κωμωδία";
-                }
-                if (g.name === "Thriller") {
-                    return "Θρίλερ";
-                }
-                if (g.name === "Horror") {
-                    return "Τρόμου";
-                }
-                if (g.name === "Crime") {
-                    return "Εγκλήματος";
-                }
-                if (g.name === "Mystery") {
-                    return "Μυστηρίου";
-                }
-                if (g.name === "Family") {
-                    return "Οικογενειακή";
-                }
-                if (g.name === "Animation") {
-                    return "Κινούμενα Σχέδια";
-                }
-                if (g.name === "History") {
-                    return "Ιστορική";
-                }
-                if (g.name === "War") {
-                    return "Πολεμική";
-                }
-                if (g.name === "Western") {
-                    return "Γουέστερν";
-                }
+                if (g.name === "Sci-Fi & Fantasy") return "Επιστημονική Φαντασία";
+                if (g.name === "Action & Adventure") return "Δράση & Περιπέτεια";
+                if (g.name === "Drama") return "Δράμα";
+                if (g.name === "Romance") return "Ρομαντισμός";
+                if (g.name === "Comedy") return "Κωμωδία";
+                if (g.name === "Thriller") return "Θρίλερ";
+                if (g.name === "Horror") return "Τρόμου";
+                if (g.name === "Crime") return "Εγκλήματος";
+                if (g.name === "Mystery") return "Μυστηρίου";
+                if (g.name === "Family") return "Οικογενειακή";
+                if (g.name === "Animation") return "Κινούμενα Σχέδια";
+                if (g.name === "History") return "Ιστορική";
+                if (g.name === "War") return "Πολεμική";
+                if (g.name === "Western") return "Γουέστερν";
                 return g.name;
             }).join(', ');
-        } else {
-            genre = 'N/A';
         }
         
-        let studio = 'N/A';
-        if (movieData.production_companies && movieData.production_companies.length > 0) studio = movieData.production_companies[0].name;
-        let rating = movieData.vote_average || 0;
-        rating = Math.round(rating * 10) / 10;
-        let desc = movieData.overview || 'Δεν υπάρχει περιγραφή.';
+        const studio = movieData.production_companies?.[0]?.name || 'N/A';
+        const rating = Math.round((movieData.vote_average || 0) * 10) / 10;
+        const desc = movieData.overview || 'Δεν υπάρχει περιγραφή.';
         
         document.getElementById('newTitle').value = title;
         document.getElementById('newYear').value = year;
@@ -2356,12 +1843,8 @@ async function selectTMDBResultForAdd(movieId, movieTitle, movieYear, posterPath
         document.getElementById('newType').value = 'Movie';
         document.getElementById('newTmdb').value = `https://www.themoviedb.org/movie/${movieId}`;
         document.getElementById('newOriginalTitle').value = movieData.original_title || title;
-        if (movieData.imdb_id) {
-            document.getElementById('newImdb').value = `https://www.imdb.com/title/${movieData.imdb_id}`;
-        }
-        if (movieData.poster_path || posterPath) {
-            tempPoster = `https://image.tmdb.org/t/p/w500${movieData.poster_path || posterPath}`;
-        }
+        if (movieData.imdb_id) document.getElementById('newImdb').value = `https://www.imdb.com/title/${movieData.imdb_id}`;
+        if (movieData.poster_path || posterPath) tempPoster = `https://image.tmdb.org/t/p/w500${movieData.poster_path || posterPath}`;
         document.getElementById('searchResults').style.display = 'none';
         document.getElementById('autoTitle').value = '';
         showToast(`Φορτώθηκαν στοιχεία για: ${title}`, '#2ecc71');
@@ -2379,84 +1862,45 @@ async function selectTMDBTvResultForAdd(tvId, tvTitle, tvYear, posterPath) {
         const seriesRes = await fetch(seriesUrl);
         if (!seriesRes.ok) throw new Error(`HTTP ${seriesRes.status}`);
         const seriesData = await seriesRes.json();
-        
-        const creditsUrl = `https://api.themoviedb.org/3/tv/${tvId}/credits?api_key=${TMDB_API_KEY}&language=en-US`;
+        const creditsUrl = `https://api.themoviedb.org/3/tv/${tvId}/credits?api_key=${TMDB_API_KEY}`;
         const creditsRes = await fetch(creditsUrl);
         if (!creditsRes.ok) throw new Error(`HTTP ${creditsRes.status}`);
         const creditsData = await creditsRes.json();
-        
         const descUrl = `https://api.themoviedb.org/3/tv/${tvId}?api_key=${TMDB_API_KEY}&language=el`;
         const descRes = await fetch(descUrl);
-        if (!descRes.ok) throw new Error(`HTTP ${descRes.status}`);
         const descData = await descRes.json();
         
-        let director = 'N/A';
-        let actors = 'N/A';
-        let writer = 'N/A';
-        
+        let director = 'N/A', writer = 'N/A', actors = 'N/A';
         if (creditsData.crew) {
             const directorObj = creditsData.crew.find(p => p.job === 'Director');
             if (directorObj) director = directorObj.name;
             const writerObj = creditsData.crew.find(p => p.job === 'Writer' || p.department === 'Writing');
             if (writerObj) writer = writerObj.name;
         }
-        if (creditsData.cast && creditsData.cast.length > 0) {
-            actors = creditsData.cast.slice(0, 5).map(a => a.name).join(', ');
-        }
+        if (creditsData.cast && creditsData.cast.length > 0) actors = creditsData.cast.slice(0, 5).map(a => a.name).join(', ');
         
         const title = seriesData.name;
         const year = (seriesData.first_air_date || '').substring(0, 4) || tvYear;
         const country = seriesData.production_countries?.[0]?.name || 'N/A';
-        
         let genre = 'N/A';
         if (seriesData.genres && seriesData.genres.length > 0) {
             genre = seriesData.genres.map(g => {
-                if (g.name === "Επ. Φαντασίας" || g.name === "Επιστημονικής Φαντασίας" || g.name === "Sci-Fi & Fantasy") {
-                    return "Επιστημονική Φαντασία";
-                }
-                if (g.name === "Action & Adventure") {
-                    return "Δράση & Περιπέτεια";
-                }
-                if (g.name === "Drama") {
-                    return "Δράμα";
-                }
-                if (g.name === "Romance") {
-                    return "Ρομαντισμός";
-                }
-                if (g.name === "Comedy") {
-                    return "Κωμωδία";
-                }
-                if (g.name === "Thriller") {
-                    return "Θρίλερ";
-                }
-                if (g.name === "Horror") {
-                    return "Τρόμου";
-                }
-                if (g.name === "Crime") {
-                    return "Εγκλήματος";
-                }
-                if (g.name === "Mystery") {
-                    return "Μυστηρίου";
-                }
-                if (g.name === "Family") {
-                    return "Οικογενειακή";
-                }
-                if (g.name === "Animation") {
-                    return "Κινούμενα Σχέδια";
-                }
-                if (g.name === "History") {
-                    return "Ιστορική";
-                }
-                if (g.name === "War") {
-                    return "Πολεμική";
-                }
-                if (g.name === "Western") {
-                    return "Γουέστερν";
-                }
+                if (g.name === "Sci-Fi & Fantasy") return "Επιστημονική Φαντασία";
+                if (g.name === "Action & Adventure") return "Δράση & Περιπέτεια";
+                if (g.name === "Drama") return "Δράμα";
+                if (g.name === "Romance") return "Ρομαντισμός";
+                if (g.name === "Comedy") return "Κωμωδία";
+                if (g.name === "Thriller") return "Θρίλερ";
+                if (g.name === "Horror") return "Τρόμου";
+                if (g.name === "Crime") return "Εγκλήματος";
+                if (g.name === "Mystery") return "Μυστηρίου";
+                if (g.name === "Family") return "Οικογενειακή";
+                if (g.name === "Animation") return "Κινούμενα Σχέδια";
+                if (g.name === "History") return "Ιστορική";
+                if (g.name === "War") return "Πολεμική";
+                if (g.name === "Western") return "Γουέστερν";
                 return g.name;
             }).join(', ');
-        } else {
-            genre = 'N/A';
         }
         
         const studio = seriesData.production_companies?.[0]?.name || 'N/A';
@@ -2476,11 +1920,7 @@ async function selectTMDBTvResultForAdd(tvId, tvTitle, tvYear, posterPath) {
         document.getElementById('newType').value = 'Series';
         document.getElementById('newTmdb').value = `https://www.themoviedb.org/tv/${tvId}`;
         document.getElementById('newOriginalTitle').value = seriesData.original_name || title;
-        
-        if (seriesData.poster_path || posterPath) {
-            tempPoster = `https://image.tmdb.org/t/p/w500${seriesData.poster_path || posterPath}`;
-        }
-        
+        if (seriesData.poster_path || posterPath) tempPoster = `https://image.tmdb.org/t/p/w500${seriesData.poster_path || posterPath}`;
         document.getElementById('searchResults').style.display = 'none';
         document.getElementById('autoTitle').value = '';
         showToast(`Φορτώθηκαν στοιχεία για: ${title}`, '#2ecc71');
@@ -2491,50 +1931,28 @@ async function selectTMDBTvResultForAdd(tvId, tvTitle, tvYear, posterPath) {
 }
 
 function saveNewMovie() {
-    if (!isUserLoggedIn) {
-        showToast('Πρέπει να συνδεθείτε για να προσθέσετε ταινία!', '#e50914');
-        return;
-    }
+    if (!isUserLoggedIn) { showToast('Πρέπει να συνδεθείτε για να προσθέσετε ταινία!', '#e50914'); return; }
     
     const title = document.getElementById('newTitle').value.trim();
     const year = parseInt(document.getElementById('newYear').value);
     const originalTitle = document.getElementById('newOriginalTitle').value.trim();
     
-    if (!title || !year) { 
-        showToast('Συμπλήρωσε τίτλο και έτος', '#e50914'); 
-        return; 
-    }
-    
-    if (isDuplicateMovie(title, year)) { 
-        showToast('Υπάρχει ήδη!', '#e50914'); 
-        return; 
-    }
+    if (!title || !year) { showToast('Συμπλήρωσε τίτλο και έτος', '#e50914'); return; }
+    if (isDuplicateMovie(title, year)) { showToast('Υπάρχει ήδη!', '#e50914'); return; }
     
     const linkValue = document.getElementById('newLink').value || '';
     const newId = moviesData.length ? Math.max(...moviesData.map(m => m.id)) + 1 : 4;
     
     const newMovie = { 
-        id: newId, 
-        title: title, 
-        year: year, 
-        type: document.getElementById('newType').value, 
-        quality: document.getElementById('newQuality').value,
-        actors: document.getElementById('newActors').value || 'N/A', 
-        link: linkValue,
-        dateAdded: new Date().toISOString().split('T')[0], 
-        studio: document.getElementById('newStudio').value || 'Κανάλι',
-        rating: parseFloat(document.getElementById('newRating').value) || 0, 
-        country: document.getElementById('newCountry').value || 'N/A',
-        genre: document.getElementById('newGenre').value || 'N/A', 
-        director: document.getElementById('newDirector').value || 'N/A',
-        writer: document.getElementById('newWriter').value || 'N/A', 
-        imdb: document.getElementById('newImdb').value || '',
-        tmdb: document.getElementById('newTmdb').value || '', 
-        desc: document.getElementById('newDesc').value || '',
-        poster_url: tempPoster || null, 
-        original_title: originalTitle || title,
-        createdBy: currentUserName || 'Χρήστης',
-        status: linkValue ? 'active' : 'pending'
+        id: newId, title, year, type: document.getElementById('newType').value, quality: document.getElementById('newQuality').value,
+        actors: document.getElementById('newActors').value || 'N/A', link: linkValue,
+        dateAdded: new Date().toISOString().split('T')[0], studio: document.getElementById('newStudio').value || 'Κανάλι',
+        rating: parseFloat(document.getElementById('newRating').value) || 0, country: document.getElementById('newCountry').value || 'N/A',
+        genre: document.getElementById('newGenre').value || 'N/A', director: document.getElementById('newDirector').value || 'N/A',
+        writer: document.getElementById('newWriter').value || 'N/A', imdb: document.getElementById('newImdb').value || '',
+        tmdb: document.getElementById('newTmdb').value || '', desc: document.getElementById('newDesc').value || '',
+        poster_url: tempPoster || null, original_title: originalTitle || title,
+        createdBy: currentUserName || 'Χρήστης', status: linkValue ? 'active' : 'pending'
     };
     
     moviesData.push(newMovie);
@@ -2545,12 +1963,7 @@ function saveNewMovie() {
     applyFilters();
     closeAddMovieForm();
     tempPoster = null;
-    
-    if (linkValue) {
-        showToast(`Προστέθηκε: ${title} από ${currentUserName}`, '#2ecc71');
-    } else {
-        showToast(`Προστέθηκε: ${title} (ΣΕ ΑΝΑΜΟΝΗ - χωρίς link)`, '#e67e22');
-    }
+    showToast(`Προστέθηκε: ${title}${linkValue ? '' : ' (ΣΕ ΑΝΑΜΟΝΗ)'}`, linkValue ? '#2ecc71' : '#e67e22');
 }
 
 let currentEditingMovieId = null;
@@ -2563,44 +1976,13 @@ function editCurrentMovie() {
     closeDetails();
     
     const modalHtml = `<div class="edit-movie-modal" id="editMovieModal"><h2>Επεξεργασία: ${escapeHtml(movie.title)}</h2>
-        <div class="form-row">
-            <div class="form-group"><label>Τίτλος</label><input type="text" id="editTitle" value="${escapeHtml(movie.title)}"></div>
-            <div class="form-group"><label>Ετος</label><input type="number" id="editYear" value="${movie.year}"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>Τύπος</label><select id="editType">
-                <option value="Movie" ${movie.type==='Movie'?'selected':''}>Ταινία</option>
-                <option value="Series" ${movie.type==='Series'?'selected':''}>Σειρά</option>
-            </select></div>
-            <div class="form-group"><label>Ποιότητα</label><select id="editQuality">
-                <option ${movie.quality==='HD'?'selected':''}>HD</option>
-                <option ${movie.quality==='SD'?'selected':''}>SD</option>
-                <option ${movie.quality==='4K'?'selected':''}>4K</option>
-            </select></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>Βαθμολογία (0-10)</label><input type="number" step="0.1" id="editRating" value="${movie.rating}"></div>
-            <div class="form-group"><label>Ηθοποιοί</label><input type="text" id="editActors" value="${escapeHtml(movie.actors||'')}"></div>
-        </div>
-        <div class="form-group">
-            <label>Είδος (Genre)</label>
-            <input type="text" id="editGenre" value="${escapeHtml(movie.genre || '')}" placeholder="π.χ. Δράμα, Θρίλερ, Oscar Winner">
-            
-        </div>
-        <div class="form-group"><label>Link Προβολής</label><input type="url" id="editLink" value="${escapeHtml(movie.link||'')}" placeholder="https://..."></div>
-        
-        <div class="form-group">
-            <label>Original Title</label>
-            <input type="text" id="editOriginalTitle" value="${escapeHtml(movie.original_title || '')}" placeholder="π.χ. The Godfather, Gisaengchung (για Κορεάτικες)">
-            <small>Ο πρωτότυπος τίτλος της ταινίας/σειράς</small>
-        </div> 
-        
-        <div class="form-group">
-            <label>Ημερομηνία Προσθήκης</label>
-            <input type="date" id="editDateAdded" value="${movie.dateAdded || new Date().toISOString().split('T')[0]}">
-            <small>Αλλαξε την ημερομηνία για να εμφανίζεται στις "Πρόσφατες Προσθήκες"</small>
-        </div>
-        
+        <div class="form-row"><div class="form-group"><label>Τίτλος</label><input type="text" id="editTitle" value="${escapeHtml(movie.title)}"></div><div class="form-group"><label>Ετος</label><input type="number" id="editYear" value="${movie.year}"></div></div>
+        <div class="form-row"><div class="form-group"><label>Τύπος</label><select id="editType"><option value="Movie" ${movie.type==='Movie'?'selected':''}>Ταινία</option><option value="Series" ${movie.type==='Series'?'selected':''}>Σειρά</option></select></div><div class="form-group"><label>Ποιότητα</label><select id="editQuality"><option ${movie.quality==='HD'?'selected':''}>HD</option><option ${movie.quality==='SD'?'selected':''}>SD</option><option ${movie.quality==='4K'?'selected':''}>4K</option></select></div></div>
+        <div class="form-row"><div class="form-group"><label>Βαθμολογία (0-10)</label><input type="number" step="0.1" id="editRating" value="${movie.rating}"></div><div class="form-group"><label>Ηθοποιοί</label><input type="text" id="editActors" value="${escapeHtml(movie.actors||'')}"></div></div>
+        <div class="form-group"><label>Είδος (Genre)</label><input type="text" id="editGenre" value="${escapeHtml(movie.genre || '')}" placeholder="π.χ. Δράμα, Θρίλερ, Oscar Winner"></div>
+        <div class="form-group"><label>Link Προβολής</label><input type="url" id="editLink" value="${escapeHtml(movie.link||'')}"></div>
+        <div class="form-group"><label>Original Title</label><input type="text" id="editOriginalTitle" value="${escapeHtml(movie.original_title || '')}"></div>
+        <div class="form-group"><label>Ημερομηνία Προσθήκης</label><input type="date" id="editDateAdded" value="${movie.dateAdded || new Date().toISOString().split('T')[0]}"></div>
         <div class="modal-buttons"><button id="saveEditBtn" class="btn-save">Αποθήκευση</button><button id="cancelEditBtn" class="btn-cancel">Ακύρωση</button></div>
     </div>`;
     
@@ -2624,36 +2006,21 @@ function saveEditedMovie() {
     const oldLink = moviesData[idx].link;
     const newDateAdded = document.getElementById('editDateAdded').value;
     const newOriginalTitle = document.getElementById('editOriginalTitle').value.trim();
-    const newGenre = document.getElementById('editGenre').value.trim();  // ← ΠΡΟΣΘΗΣΕ ΑΥΤΗ ΤΗ ΓΡΑΜΜΗ
+    const newGenre = document.getElementById('editGenre').value.trim();
     
-    if (isDuplicateMovie(title, year, currentEditingMovieId)) { 
-        showToast('Υπάρχει ήδη!', '#e50914'); 
-        return; 
-    }
+    if (isDuplicateMovie(title, year, currentEditingMovieId)) { showToast('Υπάρχει ήδη!', '#e50914'); return; }
     
     const wasPending = moviesData[idx].status === 'pending';
     const hasNewLink = newLink && newLink !== '';
     const hadNoLink = !oldLink || oldLink === '';
     
-    moviesData[idx] = { 
-        ...moviesData[idx], 
-        title, 
-        year, 
-        type: document.getElementById('editType').value, 
-        quality: document.getElementById('editQuality').value, 
-        rating,
-        actors: document.getElementById('editActors').value || 'N/A', 
-        link: newLink,
-        original_title: newOriginalTitle || title,
-        dateAdded: newDateAdded,
-        genre: newGenre || null   // ← ΠΡΟΣΘΗΣΕ ΑΥΤΗ ΤΗ ΓΡΑΜΜΗ
-    };
+    moviesData[idx] = { ...moviesData[idx], title, year, type: document.getElementById('editType').value, quality: document.getElementById('editQuality').value, rating, actors: document.getElementById('editActors').value || 'N/A', link: newLink, original_title: newOriginalTitle || title, dateAdded: newDateAdded, genre: newGenre || null };
     
     if (wasPending && hasNewLink && hadNoLink) {
         moviesData[idx].status = 'active';
         moviesData[idx].approvedDate = new Date().toISOString().split('T')[0];
         moviesData[idx].approvedBy = currentUserName || 'Διαχειριστής';
-        showToast(`Η ταινία "${title}" εγκρίθηκε και είναι πλέον διαθέσιμη!`, '#2ecc71');
+        showToast(`Η ταινία "${title}" εγκρίθηκε!`, '#2ecc71');
         initFuseSearch();
     }
     
@@ -2667,50 +2034,28 @@ function saveEditedMovie() {
 }
 
 function deleteMovieById(id) {
-    if (!isUserLoggedIn) { 
-        showToast('Συνδεθείτε για διαγραφή', '#e50914'); 
-        return false; 
-    }
+    if (!isUserLoggedIn) { showToast('Συνδεθείτε για διαγραφή', '#e50914'); return false; }
     if (!confirm('Μόνιμη διαγραφή;')) return false;
     
     const title = moviesData.find(m => m.id === id)?.title;
     moviesData = moviesData.filter(m => m.id !== id);
-    
     moviesData.forEach((m, i) => m.id = i + 1);
-    
     saveToLocalStorage();
     updateRecentMoviesList();
     initFilters();
     initFuseSearch();
-    
     currentPage = 1;
     currentTypeFilter = 'all';
     filteredMovies = [...moviesData];
-    
     const searchInput = document.getElementById('movieSearch');
-    if (searchInput) {
-        searchInput.value = '';
-        toggleClearButton();
-    }
-    
-    const genreFilter = document.getElementById('genreFilter');
-    const yearFilter = document.getElementById('yearFilter');
-    const countryFilter = document.getElementById('countryFilter');
-    const studioFilter = document.getElementById('studioFilter');
-    const sortSelect = document.getElementById('sortSelect');
-    
-    if (genreFilter) genreFilter.value = 'All';
-    if (yearFilter) yearFilter.value = 'All';
-    if (countryFilter) countryFilter.value = 'All';
-    if (studioFilter) studioFilter.value = 'All';
-    if (sortSelect) sortSelect.value = 'title';
-    
-    document.querySelectorAll('.filter-type-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === 'all');
-    });
-    
+    if (searchInput) { searchInput.value = ''; toggleClearButton(); }
+    document.getElementById('genreFilter').value = 'All';
+    document.getElementById('yearFilter').value = 'All';
+    document.getElementById('countryFilter').value = 'All';
+    document.getElementById('studioFilter').value = 'All';
+    document.getElementById('sortSelect').value = 'title';
+    document.querySelectorAll('.filter-type-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === 'all'));
     applyFilters();
-    
     closeDetails();
     showToast(`Διαγράφηκε: ${title}`, '#2ecc71');
     return true;
@@ -2733,27 +2078,29 @@ function openPosterEditor() {
 
 function addMovieByTMDBId() {
     if (!TMDB_API_KEY) { showToast('Σφάλμα: Missing TMDB API Key', '#e50914'); return; }
-    const id = prompt('Εισάγετε το TMDB ID (π.χ. 1041613):');
+    const id = prompt('Εισάγετε το TMDB ID:');
     if (!id) return;
-    const isSeries = confirm('Είναι Σειρά (TV); Αν όχι, πατήστε Ακύρωση για Ταινία.');
+    const isSeries = confirm('Είναι Σειρά (TV);');
     const mediaType = isSeries ? 'tv' : 'movie';
     const tmdbUrl = `https://www.themoviedb.org/${mediaType}/${id}`;
     const existingByTmdb = moviesData.find(m => m.tmdb === tmdbUrl);
-    if (existingByTmdb) { showToast(`Η ταινία "${existingByTmdb.title}" (${existingByTmdb.year}) υπάρχει ήδη!`, '#e67e22'); return; }
+    if (existingByTmdb) { showToast(`Η ταινία "${existingByTmdb.title}" υπάρχει ήδη!`, '#e67e22'); return; }
     showToast(`Αναζήτηση σε TMDB...`, '#2196f3');
     fetch(`https://api.themoviedb.org/3/${mediaType}/${id}?api_key=${TMDB_API_KEY}&language=el&append_to_response=credits`)
-        .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+        .then(res => res.json())
         .then(data => {
             const title = data.title || data.name;
             const year = (data.release_date || data.first_air_date || '').substring(0,4);
             const existingByTitle = moviesData.find(m => m.title.toLowerCase() === title.toLowerCase() && m.year == year);
-            if (existingByTitle) { showToast(`Υπάρχει ήδη "${existingByTitle.title}" (${existingByTitle.year})`, '#e67e22'); return; }
-            let director = 'N/A';
-            if (data.credits && data.credits.crew) { const directorObj = data.credits.crew.find(p => p.job === 'Director'); if (directorObj) director = directorObj.name; }
-            let writer = 'N/A';
-            if (data.credits && data.credits.crew) { const writerObj = data.credits.crew.find(p => p.job === 'Writer' || p.department === 'Writing'); if (writerObj) writer = writerObj.name; if (writer === 'N/A') { const screenplayObj = data.credits.crew.find(p => p.job === 'Screenplay'); if (screenplayObj) writer = screenplayObj.name; } }
-            let actors = 'N/A';
-            if (data.credits && data.credits.cast && data.credits.cast.length > 0) { actors = data.credits.cast.slice(0, 5).map(a => a.name).join(', '); }
+            if (existingByTitle) { showToast(`Υπάρχει ήδη "${existingByTitle.title}"`, '#e67e22'); return; }
+            let director = 'N/A', writer = 'N/A', actors = 'N/A';
+            if (data.credits && data.credits.crew) {
+                const directorObj = data.credits.crew.find(p => p.job === 'Director');
+                if (directorObj) director = directorObj.name;
+                const writerObj = data.credits.crew.find(p => p.job === 'Writer' || p.department === 'Writing');
+                if (writerObj) writer = writerObj.name;
+            }
+            if (data.credits && data.credits.cast && data.credits.cast.length > 0) actors = data.credits.cast.slice(0, 5).map(a => a.name).join(', ');
             const newId = moviesData.length ? Math.max(...moviesData.map(m => m.id)) + 1 : 4;
             const newMovie = { id: newId, title, year: parseInt(year) || new Date().getFullYear(), country: data.production_countries?.[0]?.name || 'N/A', genre: data.genres?.map(g => g.name).join(', ') || 'N/A', type: mediaType === 'tv' ? 'Series' : 'Movie', quality: 'HD', rating: data.vote_average || 0, actors, director, writer, link: '', imdb: data.imdb_id ? `https://www.imdb.com/title/${data.imdb_id}` : '', tmdb: tmdbUrl, desc: data.overview || 'Δεν υπάρχει περιγραφή.', dateAdded: new Date().toISOString().split('T')[0], studio: data.production_companies?.[0]?.name || 'N/A', createdBy: currentUserName || 'Χρήστης', status: 'active', poster_url: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : null, original_title: data.original_title || title };
             moviesData.push(newMovie);
@@ -2762,9 +2109,9 @@ function addMovieByTMDBId() {
             initFilters();
             initFuseSearch();
             applyFilters();
-            showToast(`Προστέθηκε: ${title} (${year})`, '#2ecc71');
+            showToast(`Προστέθηκε: ${title}`, '#2ecc71');
         })
-        .catch(e => { console.error(e); showToast(`Σφάλμα: Δεν βρέθηκε ${mediaType === 'tv' ? 'σειρά' : 'ταινία'} με ID ${id}`, '#e50914'); });
+        .catch(e => { console.error(e); showToast(`Σφάλμα: Δεν βρέθηκε`, '#e50914'); });
 }
 
 function exportToJSON() {
@@ -2799,16 +2146,15 @@ function importFromJSON(event) {
 
 function removeAllLinksAndExport() {
     if (!AdminAuth.isSessionValid()) { showToast('Μόνο διαχειριστής!', '#e50914'); return; }
-    if (!confirm('ΠΡΟΣΟΧΗ! Αυτή η ενέργεια θα ΑΦΑΙΡΕΣΕΙ ΟΛΑ ΤΑ LINKS από ΟΛΕΣ τις ταινίες/σειρές.\n\nΣυνέχεια;')) return;
+    if (!confirm('ΠΡΟΣΟΧΗ! Αυτό θα ΑΦΑΙΡΕΣΕΙ ΟΛΑ ΤΑ LINKS.\nΣυνέχεια;')) return;
     let removedCount = 0;
     for (let i = 0; i < moviesData.length; i++) { if (moviesData[i].link && moviesData[i].link !== '') { moviesData[i].link = ''; removedCount++; } }
     saveToLocalStorage(); updateRecentMoviesList(); applyFilters();
-    const dataStr = JSON.stringify(moviesData, null, 2);
-    const blob = new Blob([dataStr], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'movies_clean.json'; a.click(); URL.revokeObjectURL(url);
-    showToast(`Αφαιρέθηκαν ${removedCount} links! Το καθαρό αρχείο κατέβηκε.`, '#2ecc71');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(moviesData,null,2)], {type:'application/json'}));
+    a.download = 'movies_clean.json';
+    a.click();
+    showToast(`Αφαιρέθηκαν ${removedCount} links!`, '#2ecc71');
 }
 
 function showMissingPostersList() { alert('Λειτουργία ελέγχου poster - Ολα καλά!'); }
@@ -2816,19 +2162,13 @@ function searchByID() { const id = prompt('ID:'); const movie = moviesData.find(
 function loadDashboardState() { 
     const auth = AdminAuth.isSessionValid(); 
     const visible = localStorage.getItem('dashboardVisible') === 'true'; 
-    if (auth && visible) {
-        showDashboard();
-    } else {
-        hideDashboard();
-    }
+    if (auth && visible) showDashboard();
+    else hideDashboard();
 }
 
 function addEnrichButton() {
     const dashboard = document.querySelector('.dashboard-actions');
-    if (!dashboard) {
-        setTimeout(addEnrichButton, 1000);
-        return;
-    }
+    if (!dashboard) { setTimeout(addEnrichButton, 1000); return; }
     
     if (!document.getElementById('enrichBiographiesBtn')) {
         const bioBtn = document.createElement('button');
@@ -2844,12 +2184,12 @@ function addEnrichButton() {
         dashboard.appendChild(bioBtn);
     }
     
-        if (!document.getElementById('enrichOscarBtn')) {
+    if (!document.getElementById('enrichOscarBtn')) {
         const oscarBtn = document.createElement('button');
         oscarBtn.id = 'enrichOscarBtn';
         oscarBtn.className = 'dash-btn';
-        oscarBtn.style.background = '#9b59b6';  // ← ΙΔΙΟ με TMDB κουμπί
-        oscarBtn.style.color = 'white';         // ← ΙΔΙΟ με όλα
+        oscarBtn.style.background = '#9b59b6';
+        oscarBtn.style.color = 'white';
         oscarBtn.innerHTML = 'Προσθήκη OSCAR Winner';
         oscarBtn.onclick = async () => {
             if (!AdminAuth.isSessionValid()) { showToast('Μόνο διαχειριστής!', '#e50914'); return; }
@@ -2857,6 +2197,18 @@ function addEnrichButton() {
         };
         dashboard.appendChild(oscarBtn);
     }
+    
+    // EXTRA FIX: Ensure biography button works even if addEnrichButton runs after
+    setTimeout(function() {
+        var bioBtn2 = document.getElementById('enrichBiographiesBtn');
+        if (bioBtn2 && typeof addBiographyTag === 'function') {
+            bioBtn2.onclick = function() {
+                if (!AdminAuth.isSessionValid()) { showToast('Μόνο διαχειριστής!', '#e50914'); return; }
+                addBiographyTag();
+            };
+            console.log('Bio button extra fix applied');
+        }
+    }, 500);
 }
 
 // ============ EVENT LISTENERS ============
@@ -2915,38 +2267,21 @@ function attachEventListeners() {
     if (logoutAdminBtn) logoutAdminBtn.addEventListener('click', () => logoutAdmin());
     
     const viewRequestsBtn = document.getElementById('viewRequestsBtn');
-    if (viewRequestsBtn) {
-        viewRequestsBtn.addEventListener('click', () => showRequestsPanel());
-    }
+    if (viewRequestsBtn) viewRequestsBtn.addEventListener('click', () => showRequestsPanel());
     
     const quickAddBtn = document.getElementById('quickAddBtn');
-    if (quickAddBtn) {
-        quickAddBtn.addEventListener('click', () => {
-            const title = prompt('Τίτλος ταινίας από email:');
-            if (!title) return;
-            const year = prompt('Ετος:');
-            if (!year) return;
-            const requester = prompt('Από ποιον; (προαιρετικό)') || 'Από email';
-            
-            movieRequests.push({
-                id: Date.now(),
-                title: title,
-                year: parseInt(year),
-                requester: requester,
-                dateRequested: new Date().toISOString().split('T')[0],
-                status: 'pending'
-            });
-            
-            saveRequestsToLocalStorage();
-            showToast(`Προστέθηκε: ${title}`, '#2ecc71');
-            
-            const panel = document.getElementById('requestsPanel');
-            if (panel) {
-                panel.remove();
-                showRequestsPanel();
-            }
-        });
-    }
+    if (quickAddBtn) quickAddBtn.addEventListener('click', () => {
+        const title = prompt('Τίτλος ταινίας:');
+        if (!title) return;
+        const year = prompt('Ετος:');
+        if (!year) return;
+        const requester = prompt('Από ποιον;') || 'Από email';
+        movieRequests.push({ id: Date.now(), title, year: parseInt(year), requester, dateRequested: new Date().toISOString().split('T')[0], status: 'pending' });
+        saveRequestsToLocalStorage();
+        showToast(`Προστέθηκε: ${title}`, '#2ecc71');
+        const panel = document.getElementById('requestsPanel');
+        if (panel) { panel.remove(); showRequestsPanel(); }
+    });
     
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     if (clearSearchBtn) clearSearchBtn.addEventListener('click', () => clearSearch());
@@ -2959,21 +2294,12 @@ function attachEventListeners() {
     
     const searchInput = document.getElementById('movieSearch');
     if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            toggleClearButton();
-            applyFilters();
-        });
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') applyFilters();
-        });
+        searchInput.addEventListener('input', () => { toggleClearButton(); applyFilters(); });
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyFilters(); });
     }
     
     const modal = document.getElementById('detailModal');
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeDetails();
-        });
-    }
+    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeDetails(); });
     
     const closeModalBtn = document.querySelector('.close-modal');
     if (closeModalBtn) closeModalBtn.addEventListener('click', () => closeDetails());
@@ -3009,27 +2335,12 @@ function attachEventListeners() {
     if (modalAddBtn) modalAddBtn.addEventListener('click', () => showAddMovieForm());
     
     const modalDirector = document.getElementById('modalDirector');
-    if (modalDirector) {
-        modalDirector.addEventListener('click', (e) => {
-            const value = e.target.innerText;
-            if (value && value !== '-') {
-                searchMoviesByDirectorOrWriter(value, 'director');
-            }
-        });
-    }
+    if (modalDirector) modalDirector.addEventListener('click', (e) => { const value = e.target.innerText; if (value && value !== '-') searchMoviesByDirectorOrWriter(value, 'director'); });
     
     const modalWriter = document.getElementById('modalWriter');
-    if (modalWriter) {
-        modalWriter.addEventListener('click', (e) => {
-            const value = e.target.innerText;
-            if (value && value !== '-') {
-                searchMoviesByDirectorOrWriter(value, 'writer');
-            }
-        });
-    }
+    if (modalWriter) modalWriter.addEventListener('click', (e) => { const value = e.target.innerText; if (value && value !== '-') searchMoviesByDirectorOrWriter(value, 'writer'); });
     
     addEnrichButton();
-	    // Νομικά modals initialization
     initLegalModals();
     
     window.approveExistingMovie = approveExistingMovie;
@@ -3038,7 +2349,7 @@ function attachEventListeners() {
 
 // ============ INITIALIZATION ============
 window.addEventListener('DOMContentLoaded', async () => {
-    if (!initConfig()) { showToast('Σφάλμα: Δεν βρέθηκε το config.js!', '#e50914'); }
+    if (!initConfig()) showToast('Σφάλμα: Δεν βρέθηκε το config.js!', '#e50914');
     loadTheme();
     loadRequestsFromLocalStorage();
     await loadMoviesData();
@@ -3047,10 +2358,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     attachEventListeners();
     setTimeout(() => checkForGitHubUpdates(), 3000);
     const backBtn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => { 
-        backBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; 
-    });
-    document.addEventListener('keydown', e => { 
-        if(e.key === 'Escape') closeDetails(); 
-    });
+    window.addEventListener('scroll', () => { backBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDetails(); });
 });
