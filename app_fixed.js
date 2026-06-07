@@ -2844,12 +2844,12 @@ function addEnrichButton() {
         dashboard.appendChild(bioBtn);
     }
     
-    if (!document.getElementById('enrichOscarBtn')) {
+        if (!document.getElementById('enrichOscarBtn')) {
         const oscarBtn = document.createElement('button');
         oscarBtn.id = 'enrichOscarBtn';
         oscarBtn.className = 'dash-btn';
-        oscarBtn.style.background = '#f1c40f';
-        oscarBtn.style.color = '#000';
+        oscarBtn.style.background = '#9b59b6';  // ← ΙΔΙΟ με TMDB κουμπί
+        oscarBtn.style.color = 'white';         // ← ΙΔΙΟ με όλα
         oscarBtn.innerHTML = 'Προσθήκη OSCAR Winner';
         oscarBtn.onclick = async () => {
             if (!AdminAuth.isSessionValid()) { showToast('Μόνο διαχειριστής!', '#e50914'); return; }
