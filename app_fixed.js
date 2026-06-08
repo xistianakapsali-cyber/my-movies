@@ -973,103 +973,65 @@ async function loadMoviesData() {
     if (savedVersion) CURRENT_VERSION = savedVersion;
     document.getElementById('versionBadge').innerHTML = `Έκδοση: ${CURRENT_VERSION}${isUserLoggedIn ? ' ' : ''}`;
     
-    // Έλεγχος αν τρέχει τοπικά
-    const isLocal = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.protocol === 'file:';
+    // Βρες το σωστό path για το JSON (ίδιος φάκελος με την εφαρμογή)
+    const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+    const jsonUrl = basePath + 'movies.json';
     
-    let moviesLoaded = false;
+    console.log('Φόρτωση από:', jsonUrl);
     
-    // === ΤΟΠΙΚΑ: Διάβασε από το local movies.json ===
-    if (isLocal) {
-        console.log('🔧 Τοπική λειτουργία - διαβάζω από movies.json');
-        
-        try {
-            // Δοκίμασε να φορτώσεις το τοπικό movies.json
-            const response = await fetch('movies.json');
-            if (response.ok) {
-                moviesData = await response.json();
-                console.log(`✅ Φορτώθηκαν ${moviesData.length} ταινίες από τοπικό movies.json`);
-                moviesLoaded = true;
-            } else {
-                throw new Error('Δεν βρέθηκε το movies.json');
-            }
-        } catch(error) {
-            console.log('Δεν βρέθηκε τοπικό movies.json, δοκιμάζω localStorage...');
-            
-            // Fallback στο localStorage
-            const saved = localStorage.getItem('yioio_movies_data');
-            if (saved) {
-                try {
-                    moviesData = JSON.parse(saved);
-                    if (moviesData.length) {
-                        console.log(`✅ Φορτώθηκαν ${moviesData.length} ταινίες από localStorage`);
-                        moviesLoaded = true;
-                    }
-                } catch(e) {}
-            }
-        }
-        
-        // Αν ακόμα δεν φορτώθηκε, χρησιμοποίησε default
-        if (!moviesLoaded || moviesData.length === 0) {
-            moviesData = [
-                { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ταξιδεύουν προς τη Δύση.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1883" },
-                { "id": 2, "title": "1899", "year": 2022, "country": "Germany", "genre": "Μυστηρίου, Δράμα", "type": "Series", "quality": "HD", "rating": 7.3, "actors": "Emily Beecham, Andreas Pietschmann", "director": "Baran bo Odar", "writer": "Baran bo Odar", "link": "", "imdb": "", "tmdb": "", "desc": "Μετανάστες ταξιδεύουν από την Ευρώπη στην Αμερική.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Netflix", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1899" },
-                { "id": 3, "title": "1923", "year": 2022, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.3, "actors": "Harrison Ford, Helen Mirren", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η συνέχεια του 1883.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1923" }
-            ];
-            console.log('📀 Χρησιμοποιήθηκαν default δεδομένα');
-        }
-        
-        // Ενημέρωσε τα πάντα
-        updateRecentMoviesList();
-        initFilters();
-        initFuseSearch();
-        loadCollections();
-        await applyFilters();
-        
-        // Κρύψε το loading overlay
-        const overlay = document.getElementById('initialLoadingOverlay');
-        if (overlay) overlay.style.display = 'none';
-        
-        showToast(`✅ Τοπική λειτουργία: ${moviesData.length} τίτλοι`, '#2ecc71');
-        return;
-    }
-    
-    // === ONLINE: Διάβασε από GitHub ===
-    const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/xistianakapsali-cyber/my-movies/main/my-movies-clean/movies.json';
+    // Δείξε loading overlay
+    const overlay = document.getElementById('initialLoadingOverlay');
+    if (overlay) overlay.style.display = 'flex';
     
     try {
-        showToast('📥 Λήψη βάσης δεδομένων...', '#2196f3');
-        const response = await fetch(GITHUB_JSON_URL);
+        showToast('📥 Φόρτωση βάσης δεδομένων...', '#2196f3');
         
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // Προσπάθησε να φορτώσεις από τον ίδιο φάκελο
+        const response = await fetch('movies.json');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: Δεν βρέθηκε το movies.json`);
+        }
         
         moviesData = await response.json();
         
+        // Διόρθωσε τα IDs
         moviesData.forEach((m, i) => {
             m.id = i + 1;
             if (!m.status) m.status = 'active';
             if (!m.poster_url) m.poster_url = null;
             if (!m.original_title) m.original_title = m.title;
+            if (!m.dateAdded) m.dateAdded = new Date().toISOString().split('T')[0];
         });
         
+        // Αποθήκευση cache
         localStorage.setItem('yioio_movies_cache', JSON.stringify(moviesData));
         localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData));
+        localStorage.setItem('yioio_data_loaded', 'true');
         
+        // Αρχικοποίηση όλων των συστημάτων
         updateRecentMoviesList();
         initFilters();
         initFuseSearch();
         loadCollections();
+        
+        // Εφάρμοσε τα φίλτρα για να εμφανιστούν οι ταινίες
         await applyFilters();
         
-        const overlay = document.getElementById('initialLoadingOverlay');
-        if (overlay) overlay.style.display = 'none';
+        // Κρύψε το loading overlay
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        }
         
-        showToast(`✅ Φορτώθηκαν ${moviesData.length} τίτλοι!`, '#2ecc71');
+        showToast(`✅ Φορτώθηκαν ${moviesData.length.toLocaleString()} τίτλοι!`, '#2ecc71');
         
     } catch(error) {
-        console.error('GitHub load failed:', error);
+        console.error('Φόρτωση απέτυχε:', error);
         
+        // Fallback στο cache αν υπάρχει
         const cached = localStorage.getItem('yioio_movies_cache');
         if (cached) {
             moviesData = JSON.parse(cached);
@@ -1079,12 +1041,39 @@ async function loadMoviesData() {
             loadCollections();
             await applyFilters();
             
-            const overlay = document.getElementById('initialLoadingOverlay');
             if (overlay) overlay.style.display = 'none';
+            showToast(`⚠️ Λειτουργία cache: ${moviesData.length} τίτλοι`, '#e67e22');
+        } 
+        // Fallback σε default δεδομένα
+        else if (moviesData.length === 0) {
+            moviesData = [
+                { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ταξιδεύουν προς τη Δύση.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1883" },
+                { "id": 2, "title": "1899", "year": 2022, "country": "Germany", "genre": "Μυστηρίου, Δράμα", "type": "Series", "quality": "HD", "rating": 7.3, "actors": "Emily Beecham, Andreas Pietschmann", "director": "Baran bo Odar", "writer": "Baran bo Odar", "link": "", "imdb": "", "tmdb": "", "desc": "Μετανάστες ταξιδεύουν από την Ευρώπη στην Αμερική.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Netflix", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1899" },
+                { "id": 3, "title": "1923", "year": 2022, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.3, "actors": "Harrison Ford, Helen Mirren", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η συνέχεια του 1883.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1923" }
+            ];
+            updateRecentMoviesList();
+            initFilters();
+            initFuseSearch();
+            loadCollections();
+            await applyFilters();
             
-            showToast('⚠️ Λειτουργία offline (cache)', '#e67e22');
-        } else {
-            showToast('❌ Αδυναμία φόρτωσης δεδομένων', '#e50914');
+            if (overlay) overlay.style.display = 'none';
+            showToast('⚠️ Χρησιμοποιούνται default δεδομένα', '#e67e22');
+        }
+        
+        // Εμφάνισε μήνυμα σφάλματος στο grid αν δεν υπάρχουν καθόλου ταινίες
+        if (moviesData.length === 0) {
+            const grid = document.getElementById('movieGrid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div style="text-align:center;padding:50px;">
+                        ❌ Αποτυχία φόρτωσης δεδομένων<br>
+                        <span style="font-size:12px;">${error.message}</span><br><br>
+                        <button onclick="location.reload()" style="background:#e50914;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;">🔄 Δοκιμή ξανά</button>
+                    </div>
+                `;
+            }
+            if (overlay) overlay.style.display = 'none';
         }
     }
 }
