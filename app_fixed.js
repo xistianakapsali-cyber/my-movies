@@ -973,12 +973,77 @@ async function loadMoviesData() {
     if (savedVersion) CURRENT_VERSION = savedVersion;
     document.getElementById('versionBadge').innerHTML = `Έκδοση: ${CURRENT_VERSION}${isUserLoggedIn ? ' ' : ''}`;
     
-    // ΝΕΟΣ ΤΡΟΠΟΣ: Διάβασμα από GitHub
+    // Έλεγχος αν τρέχει τοπικά
+    const isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.protocol === 'file:';
+    
+    let moviesLoaded = false;
+    
+    // === ΤΟΠΙΚΑ: Διάβασε από το local movies.json ===
+    if (isLocal) {
+        console.log('🔧 Τοπική λειτουργία - διαβάζω από movies.json');
+        
+        try {
+            // Δοκίμασε να φορτώσεις το τοπικό movies.json
+            const response = await fetch('movies.json');
+            if (response.ok) {
+                moviesData = await response.json();
+                console.log(`✅ Φορτώθηκαν ${moviesData.length} ταινίες από τοπικό movies.json`);
+                moviesLoaded = true;
+            } else {
+                throw new Error('Δεν βρέθηκε το movies.json');
+            }
+        } catch(error) {
+            console.log('Δεν βρέθηκε τοπικό movies.json, δοκιμάζω localStorage...');
+            
+            // Fallback στο localStorage
+            const saved = localStorage.getItem('yioio_movies_data');
+            if (saved) {
+                try {
+                    moviesData = JSON.parse(saved);
+                    if (moviesData.length) {
+                        console.log(`✅ Φορτώθηκαν ${moviesData.length} ταινίες από localStorage`);
+                        moviesLoaded = true;
+                    }
+                } catch(e) {}
+            }
+        }
+        
+        // Αν ακόμα δεν φορτώθηκε, χρησιμοποίησε default
+        if (!moviesLoaded || moviesData.length === 0) {
+            moviesData = [
+                { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ταξιδεύουν προς τη Δύση.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1883" },
+                { "id": 2, "title": "1899", "year": 2022, "country": "Germany", "genre": "Μυστηρίου, Δράμα", "type": "Series", "quality": "HD", "rating": 7.3, "actors": "Emily Beecham, Andreas Pietschmann", "director": "Baran bo Odar", "writer": "Baran bo Odar", "link": "", "imdb": "", "tmdb": "", "desc": "Μετανάστες ταξιδεύουν από την Ευρώπη στην Αμερική.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Netflix", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1899" },
+                { "id": 3, "title": "1923", "year": 2022, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.3, "actors": "Harrison Ford, Helen Mirren", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η συνέχεια του 1883.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1923" }
+            ];
+            console.log('📀 Χρησιμοποιήθηκαν default δεδομένα');
+        }
+        
+        // Ενημέρωσε τα πάντα
+        updateRecentMoviesList();
+        initFilters();
+        initFuseSearch();
+        loadCollections();
+        await applyFilters();
+        
+        // Κρύψε το loading overlay
+        const overlay = document.getElementById('initialLoadingOverlay');
+        if (overlay) overlay.style.display = 'none';
+        
+        showToast(`✅ Τοπική λειτουργία: ${moviesData.length} τίτλοι`, '#2ecc71');
+        return;
+    }
+    
+    // === ONLINE: Διάβασε από GitHub ===
     const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/xistianakapsali-cyber/my-movies/main/my-movies-clean/movies.json';
     
     try {
         showToast('📥 Λήψη βάσης δεδομένων...', '#2196f3');
         const response = await fetch(GITHUB_JSON_URL);
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         moviesData = await response.json();
         
         moviesData.forEach((m, i) => {
@@ -988,32 +1053,38 @@ async function loadMoviesData() {
             if (!m.original_title) m.original_title = m.title;
         });
         
-        // Αποθήκευση cache για offline
         localStorage.setItem('yioio_movies_cache', JSON.stringify(moviesData));
+        localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData));
         
         updateRecentMoviesList();
         initFilters();
         initFuseSearch();
         loadCollections();
-        applyFilters();
+        await applyFilters();
+        
+        const overlay = document.getElementById('initialLoadingOverlay');
+        if (overlay) overlay.style.display = 'none';
         
         showToast(`✅ Φορτώθηκαν ${moviesData.length} τίτλοι!`, '#2ecc71');
         
     } catch(error) {
         console.error('GitHub load failed:', error);
         
-        // Fallback στο cache αν υπάρχει
         const cached = localStorage.getItem('yioio_movies_cache');
         if (cached) {
             moviesData = JSON.parse(cached);
-            showToast('⚠️ Λειτουργία offline (cache)', '#e67e22');
             updateRecentMoviesList();
             initFilters();
             initFuseSearch();
             loadCollections();
-            applyFilters();
+            await applyFilters();
+            
+            const overlay = document.getElementById('initialLoadingOverlay');
+            if (overlay) overlay.style.display = 'none';
+            
+            showToast('⚠️ Λειτουργία offline (cache)', '#e67e22');
         } else {
-            showToast('❌ Χρειάζεται σύνδεση στο internet', '#e50914');
+            showToast('❌ Αδυναμία φόρτωσης δεδομένων', '#e50914');
         }
     }
 }
@@ -1751,6 +1822,18 @@ function showSuggestionResult(movie, foundPlatforms) {
     const hasTeraboxLink = movie.link && movie.link !== '';
     const hasPlatforms = foundPlatforms.length > 0;
     
+    // Μορφοποίηση του link για εμφάνιση
+    let fullLink = '';
+    let displayLink = '';
+    if (hasTeraboxLink) {
+        fullLink = movie.link;
+        if (!fullLink.startsWith('http')) {
+            fullLink = 'https://' + fullLink;
+        }
+        // Για εμφάνιση, κόψε αν είναι πολύ μεγάλο
+        displayLink = fullLink.length > 70 ? fullLink.substring(0, 67) + '...' : fullLink;
+    }
+    
     let content = `<h2 style="color:#e50914;margin-top:0;margin-bottom:15px;">${escapeHtml(movie.title)} (${movie.year})</h2>`;
     
     if (hasPlatforms) {
@@ -1763,40 +1846,69 @@ function showSuggestionResult(movie, foundPlatforms) {
     }
     
     content += `<div style="margin:20px 0;padding:15px;background:rgba(229,9,20,0.1);border-radius:12px;border-left:4px solid #e50914;">`;
-    content += `<p style="margin:0;font-size:15px;"><strong>☁️ Μπορείτε επίσης να δείτε το έργο σε κορυφαία ποιότητα μέσα από το δικό σας TeraBox Cloud, όπου διατηρείτε τη νόμιμη ψηφιακή σας ταινιοθήκη.</p>`;
+    content += `<p style="margin:0;font-size:15px;"><strong>☁️ Μπορείτε επίσης να δείτε το έργο σε κορυφαία ποιότητα μέσα από το δικό σας TeraBox Cloud, όπου διατηρείτε τη νόμιμη ψηφιακή σας ταινιοθήκη.</strong></p>`;
     content += `</div>`;
     
     content += `<div style="margin-top:20px;">`;
     
     if (hasTeraboxLink) {
-        content += `<button id="goToTeraboxBtn" style="background:#2ecc71;color:#000;border:none;padding:14px 24px;border-radius:40px;cursor:pointer;font-weight:bold;width:100%;font-size:16px;margin-bottom:12px;">Μετάβαση στο Terabox</button>`;
+        content += `<button id="goToTeraboxBtn" style="background:#2ecc71;color:#000;border:none;padding:14px 24px;border-radius:40px;cursor:pointer;font-weight:bold;width:100%;font-size:16px;margin-bottom:12px;">📁 Μετάβαση στο Terabox</button>`;
+        
+        // Link με κουμπί αντιγραφής
+        content += `<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;margin-top:5px;">`;
+        content += `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">`;
+        content += `<span style="font-size:11px;color:rgba(255,255,255,0.6);">🔗 Διεύθυνση:</span>`;
+        content += `<div style="flex:1;font-family:monospace;font-size:11px;background:rgba(0,0,0,0.5);padding:6px 10px;border-radius:6px;word-break:break-all;color:#ddd;">${escapeHtml(displayLink)}</div>`;
+        content += `<button id="copyLinkBtn" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:bold;">📋 Αντιγραφή</button>`;
+        content += `</div>`;
+        content += `</div>`;
     } else {
         content += `<p style="color:#e67e22;margin:10px 0;">⚠️ Δεν υπάρχει διαθέσιμο link Terabox για αυτή την ταινία</p>`;
     }
     
-    content += `<button id="closeResultPopup" style="background:#e50914;color:white;border:none;padding:10px 20px;border-radius:40px;cursor:pointer;width:100%;font-size:14px;">Κλείσιμο</button></div>`;
+    content += `<button id="closeResultPopup" style="background:#e50914;color:white;border:none;padding:10px 20px;border-radius:40px;cursor:pointer;width:100%;font-size:14px;margin-top:12px;">Κλείσιμο</button></div>`;
     
     popup.innerHTML = content;
     document.body.appendChild(popup);
     
+    // Μετάβαση στο Terabox
     const teraboxBtn = document.getElementById('goToTeraboxBtn');
     if (teraboxBtn) {
         teraboxBtn.addEventListener('click', () => {
-            if (movie.link && movie.link !== '') {
-                if (movie.link.startsWith('http')) {
-                    window.open(movie.link, '_blank');
-                } else {
-                    window.open('https://' + movie.link, '_blank');
-                }
+            if (fullLink) {
+                window.open(fullLink, '_blank');
             }
             popup.remove();
         });
     }
     
+    // Κουμπί αντιγραφής
+    const copyBtn = document.getElementById('copyLinkBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(fullLink);
+                // Αλλάζει προσωρινά το κείμενο του κουμπιού
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '✅ Αντιγράφηκε!';
+                copyBtn.style.background = '#2ecc71';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.style.background = '#3498db';
+                }, 2000);
+                showToast('✅ Το link αντιγράφηκε!', '#2ecc71');
+            } catch(err) {
+                showToast('❌ Δεν μπόρεσε να αντιγραφεί', '#e50914');
+            }
+        });
+    }
+    
+    // Κλείσιμο
     document.getElementById('closeResultPopup').addEventListener('click', () => {
         popup.remove();
     });
     
+    // Escape για κλείσιμο
     const closeOnEsc = (e) => {
         if (e.key === 'Escape') {
             popup.remove();
@@ -2565,14 +2677,33 @@ function attachEventListeners() {
 // ============ INITIALIZATION ============
 window.addEventListener('DOMContentLoaded', async () => {
     if (!initConfig()) showToast('Σφάλμα: Δεν βρέθηκε το config.js!', '#e50914');
+    
     loadTheme();
     loadRequestsFromLocalStorage();
+    
+    // Φόρτωσε τα δεδομένα (το overlay είναι ήδη ορατό)
     await loadMoviesData();
+    
     loadDashboardState();
     loadUserSession();
     attachEventListeners();
-    setTimeout(() => checkForGitHubUpdates(), 3000);
+    
+    // Έλεγχος αν τα δεδομένα φορτώθηκαν
+    if (moviesData.length === 0) {
+        console.log('No data loaded, retrying...');
+        setTimeout(async () => {
+            if (moviesData.length === 0) {
+                await loadMoviesData();
+            }
+        }, 2000);
+    }
+    
+    setTimeout(() => checkForGitHubUpdates(), 5000);
+    
     const backBtn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => { backBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+    window.addEventListener('scroll', () => {
+        backBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+    
     document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDetails(); });
 });

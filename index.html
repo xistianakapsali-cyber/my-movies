@@ -86,6 +86,17 @@
         <select id="studioFilter"><option value="All">Ολες οι Πλατφορμες</option></select>
     </div>
 </div>
+<!-- Loading overlay -->
+<div id="initialLoadingOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:20px;">🎬</div>
+        <div style="font-size:20px; margin-bottom:10px;">Φόρτωση βάσης δεδομένων...</div>
+        <div style="font-size:12px; opacity:0.7;">Παρακαλώ περιμένετε</div>
+        <div style="width:200px; height:4px; background:#333; margin-top:20px; border-radius:4px; overflow:hidden;">
+            <div id="loadingProgressBar" style="width:0%; height:100%; background:#e50914; transition:width 0.3s;"></div>
+        </div>
+    </div>
+</div>
 
 <div class="movie-grid dashboard-hidden" id="movieGrid"><div style="text-align:center;padding:50px;">Φόρτωση δεδομένων...</div></div>
 <button id="loadMoreBtn" style="display:none;">ΦΟΡΤΩΣΗ ΠΕΡΙΣΣΟΤΕΡΩΝ</button>
