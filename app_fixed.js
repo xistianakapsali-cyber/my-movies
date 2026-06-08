@@ -1005,8 +1005,8 @@ async function loadMoviesData() {
         });
         
         // Αποθήκευση cache
-        localStorage.setItem('yioio_movies_cache', JSON.stringify(moviesData));
-        localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData));
+        // localStorage.setItem('yioio_movies_cache', JSON.stringify(moviesData));
+// localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData));
         localStorage.setItem('yioio_data_loaded', 'true');
         
         // Αρχικοποίηση όλων των συστημάτων
