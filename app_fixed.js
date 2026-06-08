@@ -987,7 +987,7 @@ async function loadMoviesData() {
         showToast('📥 Φόρτωση βάσης δεδομένων...', '#2196f3');
         
         // Προσπάθησε να φορτώσεις από τον ίδιο φάκελο
-        const response = await fetch('movies.json');
+        const response = await fetch('https://raw.githubusercontent.com/xistianakapsali-cyber/my-movies/main/my-movies-clean/movies.json');
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: Δεν βρέθηκε το movies.json`);
