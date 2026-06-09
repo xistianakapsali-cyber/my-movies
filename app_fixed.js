@@ -114,6 +114,18 @@ async function showUserLogin() {
         
         showToast('Ελεγχος για links...', '#9b59b6');
         setTimeout(() => checkForGitHubUpdates(), 500);
+		// Διόρθωση για κινητά: δύναμη στα κουμπιά
+setTimeout(() => {
+    const btns = document.querySelectorAll('.modal-icon-btn, .download-btn-yts, #modalDownloadBtn, #modalAddBtn, .modal-buttons button');
+    btns.forEach(btn => {
+        btn.style.setProperty('z-index', '999999', 'important');
+        btn.style.setProperty('position', 'relative', 'important');
+        btn.style.setProperty('pointer-events', 'auto', 'important');
+        btn.style.setProperty('display', 'inline-flex', 'important');
+        btn.style.setProperty('opacity', '1', 'important');
+        btn.style.setProperty('visibility', 'visible', 'important');
+    });
+}, 100);
         
         if (document.getElementById('detailModal').style.display === 'flex' && currentMovieLink) {
             document.getElementById('modalDownloadBtn').style.display = 'block';
