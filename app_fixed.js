@@ -2285,7 +2285,10 @@ function saveNewMovie() {
 let currentEditingMovieId = null;
 
 function editCurrentMovie() {
-    if (!isUserLoggedIn) { showToast('Συνδεθείτε για επεξεργασία', '#e50914'); return; }
+    if (!isUserLoggedIn) { 
+        showToast('Συνδεθείτε για επεξεργασία', '#e50914'); 
+        return; 
+    }
     const movie = moviesData.find(m => m.id === currentModalMovieId);
     if (!movie) return;
     currentEditingMovieId = movie.id;
@@ -2296,6 +2299,7 @@ function editCurrentMovie() {
         <div class="form-row"><div class="form-group"><label>Τύπος</label><select id="editType"><option value="Movie" ${movie.type==='Movie'?'selected':''}>Ταινία</option><option value="Series" ${movie.type==='Series'?'selected':''}>Σειρά</option></select></div><div class="form-group"><label>Ποιότητα</label><select id="editQuality"><option ${movie.quality==='HD'?'selected':''}>HD</option><option ${movie.quality==='SD'?'selected':''}>SD</option><option ${movie.quality==='4K'?'selected':''}>4K</option></select></div></div>
         <div class="form-row"><div class="form-group"><label>Βαθμολογία (0-10)</label><input type="number" step="0.1" id="editRating" value="${movie.rating}"></div><div class="form-group"><label>Ηθοποιοί</label><input type="text" id="editActors" value="${escapeHtml(movie.actors||'')}"></div></div>
         <div class="form-group"><label>Είδος (Genre)</label><input type="text" id="editGenre" value="${escapeHtml(movie.genre || '')}" placeholder="π.χ. Δράμα, Θρίλερ, Oscar Winner"></div>
+        <div class="form-group"><label>Πλατφόρμα (Streaming)</label><input type="text" id="editPlatform" value="${escapeHtml(movie.studio || '')}" placeholder="π.χ. Netflix, Disney+, Max, Amazon, Apple TV+, Paramount+, YouTube" style="border:2px solid var(--primary);"></div>
         <div class="form-group"><label>Link Προβολής</label><input type="url" id="editLink" value="${escapeHtml(movie.link||'')}"></div>
         <div class="form-group"><label>Original Title</label><input type="text" id="editOriginalTitle" value="${escapeHtml(movie.original_title || '')}"></div>
         <div class="form-group"><label>Ημερομηνία Προσθήκης</label><input type="date" id="editDateAdded" value="${movie.dateAdded || new Date().toISOString().split('T')[0]}"></div>
@@ -2305,6 +2309,7 @@ function editCurrentMovie() {
     const existing = document.getElementById('editMovieModal');
     if (existing) existing.remove();
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
     document.getElementById('saveEditBtn').addEventListener('click', () => saveEditedMovie());
     document.getElementById('cancelEditBtn').addEventListener('click', () => closeEditForm());
 }
@@ -2323,6 +2328,7 @@ function saveEditedMovie() {
     const newDateAdded = document.getElementById('editDateAdded').value;
     const newOriginalTitle = document.getElementById('editOriginalTitle').value.trim();
     const newGenre = document.getElementById('editGenre').value.trim();
+    const newPlatform = document.getElementById('editPlatform').value.trim();
     
     if (isDuplicateMovie(title, year, currentEditingMovieId)) { showToast('Υπάρχει ήδη!', '#e50914'); return; }
     
@@ -2330,7 +2336,7 @@ function saveEditedMovie() {
     const hasNewLink = newLink && newLink !== '';
     const hadNoLink = !oldLink || oldLink === '';
     
-    moviesData[idx] = { ...moviesData[idx], title, year, type: document.getElementById('editType').value, quality: document.getElementById('editQuality').value, rating, actors: document.getElementById('editActors').value || 'N/A', link: newLink, original_title: newOriginalTitle || title, dateAdded: newDateAdded, genre: newGenre || null };
+    moviesData[idx] = { ...moviesData[idx], title, year, type: document.getElementById('editType').value, quality: document.getElementById('editQuality').value, rating, actors: document.getElementById('editActors').value || 'N/A', link: newLink, original_title: newOriginalTitle || title, dateAdded: newDateAdded, genre: newGenre || null, studio: newPlatform };
     
     if (wasPending && hasNewLink && hadNoLink) {
         moviesData[idx].status = 'active';
