@@ -126,6 +126,15 @@ setTimeout(() => {
         btn.style.setProperty('visibility', 'visible', 'important');
     });
 }, 100);
+// Διόρθωση για κινητά
+setTimeout(() => {
+    const btns = document.querySelectorAll('#detailModal button, #detailModal a, #modalDownloadBtn, #modalAddBtn');
+    btns.forEach(btn => {
+        btn.style.pointerEvents = 'auto';
+        btn.style.zIndex = '999999';
+        btn.style.position = 'relative';
+    });
+}, 10);
         
         if (document.getElementById('detailModal').style.display === 'flex' && currentMovieLink) {
             document.getElementById('modalDownloadBtn').style.display = 'block';
