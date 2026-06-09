@@ -1,4 +1,4 @@
-﻿// ============ ΑΡΧΙΚΟΠΟΙΗΣΗ ΑΠΟ CONFIG ============
+﻿﻿// ============ ΑΡΧΙΚΟΠΟΙΗΣΗ ΑΠΟ CONFIG ============
 let CONFIG = null;
 let TMDB_API_KEY = null;
 let GITHUB_CONFIG = null;
@@ -219,6 +219,63 @@ let currentTypeFilter = 'all';
 let currentModalMovieId = null;
 let currentMovieLink = null;
 let recentMovieIds = [];
+
+// ΜΟΝΙΜΕΣ ΠΛΑΤΦΟΡΜΕΣ - 15 ΚΑΤΗΓΟΡΙΕΣ
+let mainPlatforms = [
+    'Netflix', 'Disney+', 'Max (HBO)', 'Amazon Prime Video', 'Apple TV+', 
+    'Paramount+', 'Peacock', 'Hulu', 'YouTube', 'Mubi', 'Starz', 
+    'Crunchyroll', 'Discovery+', 'Ελληνικες Ταινιες', 'Αλλες Πλατφορμες'
+];
+// Δεν χρησιμοποιούμε localStorage για να βλέπουν ΟΛΟΙ τις ίδιες πλατφόρμες
+
+function updateMainPlatformsDropdown() {
+    const select = document.getElementById('studioFilter');
+    if (!select) return;
+    
+    const counts = {};
+    moviesData.forEach(m => { counts[m.studio] = (counts[m.studio] || 0) + 1; });
+    
+    while (select.options.length > 1) select.remove(1);
+    
+    for (let platform of mainPlatforms) {
+        if (counts[platform]) {
+            select.add(new Option(`${platform} (${counts[platform]})`, platform));
+        } else {
+            select.add(new Option(platform, platform));
+        }
+    }
+    
+    const otherCount = moviesData.filter(m => m.studio && !mainPlatforms.includes(m.studio)).length;
+    if (otherCount > 0) {
+        select.add(new Option(`Αλλες (${otherCount})`, 'Αλλες'));
+    }
+}
+
+function addNewPlatformToDropdown(platform) {
+    if (!platform) return false;
+    if (mainPlatforms.includes(platform)) {
+        showToast(`Η πλατφορμα "${platform}" υπαρχει ηδη`, '#e67e22');
+        return false;
+    }
+    mainPlatforms.push(platform);
+    localStorage.setItem('main_platforms', JSON.stringify(mainPlatforms));
+    updateMainPlatformsDropdown();
+    showToast(`✅ Η πλατφορμα "${platform}" προστεθηκε στο dropdown`, '#2ecc71');
+    return true;
+}
+
+function removePlatformFromDropdown(platform) {
+    if (!platform) return false;
+    if (!mainPlatforms.includes(platform)) {
+        showToast(`Η πλατφορμα "${platform}" δεν υπαρχει`, '#e67e22');
+        return false;
+    }
+    mainPlatforms = mainPlatforms.filter(p => p !== platform);
+    localStorage.setItem('main_platforms', JSON.stringify(mainPlatforms));
+    updateMainPlatformsDropdown();
+    showToast(`✅ Η πλατφορμα "${platform}" αφαιρεθηκε απο το dropdown`, '#e74c3c');
+    return true;
+}
 
 // ============ FUZE.JS SEARCH ENGINE ============
 let fuseSearch = null;
@@ -973,20 +1030,17 @@ async function loadMoviesData() {
     if (savedVersion) CURRENT_VERSION = savedVersion;
     document.getElementById('versionBadge').innerHTML = `Έκδοση: ${CURRENT_VERSION}${isUserLoggedIn ? ' ' : ''}`;
     
-    // Βρες το σωστό path για το JSON (ίδιος φάκελος με την εφαρμογή)
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
     const jsonUrl = basePath + 'movies.json';
     
     console.log('Φόρτωση από:', jsonUrl);
     
-    // Δείξε loading overlay
     const overlay = document.getElementById('initialLoadingOverlay');
     if (overlay) overlay.style.display = 'flex';
     
     try {
         showToast('📥 Φόρτωση βάσης δεδομένων...', '#2196f3');
         
-        // Προσπάθησε να φορτώσεις από τον ίδιο φάκελο
         const response = await fetch('https://raw.githubusercontent.com/xistianakapsali-cyber/my-movies/main/my-movies-clean/movies.json');
         
         if (!response.ok) {
@@ -995,7 +1049,6 @@ async function loadMoviesData() {
         
         moviesData = await response.json();
         
-        // Διόρθωσε τα IDs
         moviesData.forEach((m, i) => {
             m.id = i + 1;
             if (!m.status) m.status = 'active';
@@ -1004,21 +1057,15 @@ async function loadMoviesData() {
             if (!m.dateAdded) m.dateAdded = new Date().toISOString().split('T')[0];
         });
         
-        // Αποθήκευση cache
-        // localStorage.setItem('yioio_movies_cache', JSON.stringify(moviesData));
-// localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData));
         localStorage.setItem('yioio_data_loaded', 'true');
         
-        // Αρχικοποίηση όλων των συστημάτων
         updateRecentMoviesList();
         initFilters();
         initFuseSearch();
         loadCollections();
         
-        // Εφάρμοσε τα φίλτρα για να εμφανιστούν οι ταινίες
         await applyFilters();
         
-        // Κρύψε το loading overlay
         if (overlay) {
             overlay.style.opacity = '0';
             setTimeout(() => {
@@ -1028,10 +1075,12 @@ async function loadMoviesData() {
         
         showToast(`✅ Φορτώθηκαν ${moviesData.length.toLocaleString()} τίτλοι!`, '#2ecc71');
         
+        // Ενημέρωση dropdown με τις main platforms
+        setTimeout(() => updateMainPlatformsDropdown(), 500);
+        
     } catch(error) {
         console.error('Φόρτωση απέτυχε:', error);
         
-        // Fallback στο cache αν υπάρχει
         const cached = localStorage.getItem('yioio_movies_cache');
         if (cached) {
             moviesData = JSON.parse(cached);
@@ -1043,8 +1092,8 @@ async function loadMoviesData() {
             
             if (overlay) overlay.style.display = 'none';
             showToast(`⚠️ Λειτουργία cache: ${moviesData.length} τίτλοι`, '#e67e22');
+            updateMainPlatformsDropdown();
         } 
-        // Fallback σε default δεδομένα
         else if (moviesData.length === 0) {
             moviesData = [
                 { "id": 1, "title": "1883", "year": 2021, "country": "United States", "genre": "Δράμα, Γουέστερν", "type": "Series", "quality": "HD", "rating": 8.7, "actors": "Sam Elliott, Tim McGraw, Faith Hill, Isabel May", "director": "Taylor Sheridan", "writer": "Taylor Sheridan", "link": "", "imdb": "", "tmdb": "", "desc": "Η ιστορία της οικογένειας Ντάτον καθώς ταξιδεύουν προς τη Δύση.", "dateAdded": new Date().toISOString().split('T')[0], "studio": "Paramount+", "createdBy": "Διαχειριστής", "status": "active", "poster_url": null, "original_title": "1883" },
@@ -1059,9 +1108,9 @@ async function loadMoviesData() {
             
             if (overlay) overlay.style.display = 'none';
             showToast('⚠️ Χρησιμοποιούνται default δεδομένα', '#e67e22');
+            updateMainPlatformsDropdown();
         }
         
-        // Εμφάνισε μήνυμα σφάλματος στο grid αν δεν υπάρχουν καθόλου ταινίες
         if (moviesData.length === 0) {
             const grid = document.getElementById('movieGrid');
             if (grid) {
@@ -1120,6 +1169,7 @@ async function checkForGitHubUpdates() {
                 initFuseSearch();
                 loadCollections();
                 applyFilters();
+                updateMainPlatformsDropdown();
                 showToast(`Ενημέρωση! ${moviesData.length} τίτλοι`, '#2ecc71');
             }
         } else {
@@ -1137,12 +1187,10 @@ function initFilters() {
     const yearSel = document.getElementById('yearFilter');
     const countrySel = document.getElementById('countryFilter');
     const genreSel = document.getElementById('genreFilter');
-    const studioSel = document.getElementById('studioFilter');
     
     while(yearSel.options.length>1) yearSel.remove(1);
     while(countrySel.options.length>1) countrySel.remove(1);
     while(genreSel.options.length>3) genreSel.remove(3);
-    while(studioSel.options.length>1) studioSel.remove(1);
     
     [...new Set(moviesData.map(m => m.year))].sort((a,b)=>b-a).forEach(y => yearSel.add(new Option(y,y)));
     [...new Set(moviesData.map(m => m.country).filter(c=>c&&c!=='N/A'))].sort().forEach(c => countrySel.add(new Option(c,c)));
@@ -1161,37 +1209,8 @@ function initFilters() {
     allGenres.sort((a,b)=>a.localeCompare(b,'el'));
     allGenres.forEach(g => genreSel.add(new Option(g,g)));
     
-        // TOP 10 ΠΛΑΤΦΟΡΜΕΣ + ΑΛΛΕΣ
-    const studioCount = {};
-    moviesData.forEach(m => {
-        if (m.studio && m.studio !== 'Κανάλι' && m.studio !== 'N/A') {
-            let studioName = m.studio;
-            // Κανονικοποίηση ονομάτων
-            if (studioName.toLowerCase().includes('netflix')) studioName = 'Netflix';
-            else if (studioName.toLowerCase().includes('amazon') || studioName.toLowerCase().includes('prime video')) studioName = 'Amazon Prime Video';
-            else if (studioName.toLowerCase().includes('disney')) studioName = 'Disney+';
-            else if (studioName.toLowerCase().includes('apple')) studioName = 'Apple TV+';
-            else if (studioName.toLowerCase().includes('max') || studioName.toLowerCase().includes('hbo')) studioName = 'Max';
-            else if (studioName.toLowerCase().includes('paramount')) studioName = 'Paramount+';
-            else if (studioName.toLowerCase().includes('peacock')) studioName = 'Peacock';
-            else if (studioName.toLowerCase().includes('hulu')) studioName = 'Hulu';
-            else if (studioName.toLowerCase().includes('youtube')) studioName = 'YouTube';
-            studioCount[studioName] = (studioCount[studioName] || 0) + 1;
-        }
-    });
-    
-    const sortedStudios = Object.entries(studioCount).sort((a, b) => b[1] - a[1]);
-    const topStudios = ['Netflix', 'Amazon Prime Video', 'Disney+', 'Apple TV+', 'Max', 'Paramount+', 'Peacock', 'Hulu', 'YouTube'];
-    
-    topStudios.forEach(studio => {
-        studioSel.add(new Option(studio, studio));
-    });
-    
-    if (sortedStudios.length > 10) {
-        studioSel.add(new Option('Άλλες', 'Άλλες'));
-    }
-    
-    console.log(`Studio filter: ${topStudios.length} top platforms + "Άλλες" (${sortedStudios.length - topStudios.length} συγχωνεύτηκαν)`);
+    // Ενημέρωση dropdown με main platforms
+    updateMainPlatformsDropdown();
 }
 
 function toggleClearButton() { 
@@ -1246,36 +1265,10 @@ function performSearch() {
     
     const studio = document.getElementById('studioFilter').value;
     if (studio !== 'All') {
-        if (studio === 'Άλλες') {
-            const topStudios = ['Netflix', 'Amazon Prime', 'Disney+', 'Apple TV+', 'Max', 'Paramount+', 'Peacock', 'Hulu'];
-            results = results.filter(m => {
-                if (!m.studio || m.studio === 'Κανάλι' || m.studio === 'N/A') return false;
-                let studioName = m.studio;
-                if (studioName.toLowerCase().includes('netflix')) studioName = 'Netflix';
-                else if (studioName.toLowerCase().includes('amazon')) studioName = 'Amazon Prime';
-                else if (studioName.toLowerCase().includes('disney')) studioName = 'Disney+';
-                else if (studioName.toLowerCase().includes('apple')) studioName = 'Apple TV+';
-                else if (studioName.toLowerCase().includes('max') || studioName.toLowerCase().includes('hbo')) studioName = 'Max';
-                else if (studioName.toLowerCase().includes('paramount')) studioName = 'Paramount+';
-                else if (studioName.toLowerCase().includes('peacock')) studioName = 'Peacock';
-                else if (studioName.toLowerCase().includes('hulu')) studioName = 'Hulu';
-                return !topStudios.includes(studioName);
-            });
+        if (studio === 'Αλλες') {
+            results = results.filter(m => m.studio && !mainPlatforms.includes(m.studio));
         } else {
-            results = results.filter(m => {
-                if (!m.studio) return false;
-                let studioName = m.studio;
-                if (studioName.toLowerCase().includes('netflix')) studioName = 'Netflix';
-                else if (studioName.toLowerCase().includes('amazon')) studioName = 'Amazon Prime';
-                else if (studioName.toLowerCase().includes('disney')) studioName = 'Disney+';
-                else if (studioName.toLowerCase().includes('apple')) studioName = 'Apple TV+';
-                else if (studioName.toLowerCase().includes('max') || studioName.toLowerCase().includes('hbo')) studioName = 'Max';
-                else if (studioName.toLowerCase().includes('paramount')) studioName = 'Paramount+';
-                else if (studioName.toLowerCase().includes('peacock')) studioName = 'Peacock';
-                else if (studioName.toLowerCase().includes('hulu')) studioName = 'Hulu';
-                else studioName = m.studio;
-                return studioName === studio;
-            });
+            results = results.filter(m => m.studio === studio);
         }
     }
     
@@ -1679,308 +1672,6 @@ function closeDetails() {
     currentMovieLink = null;
 }
 
-// ============ ΠΛΗΡΗΣ ΠΡΟΤΑΣΗ ΠΡΟΒΟΛΗΣ ============
-async function suggestFreeMovie(movie) {
-    // Δημιουργία overlay μπάρας προόδου
-    const overlay = document.createElement('div');
-    overlay.id = 'aiProgressOverlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:30000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;';
-    
-    // Κείμενο AI
-    const aiText = document.createElement('div');
-    aiText.style.cssText = 'color:white;font-size:20px;margin-bottom:20px;text-align:center;font-weight:bold;';
-    aiText.innerHTML = 'Αναζήτηση μέσω AI σε όλο το web.....';
-    
-    // Μπάρα προόδου
-    const barContainer = document.createElement('div');
-    barContainer.style.cssText = 'width:500px;max-width:80%;background:#333;border-radius:10px;overflow:hidden;margin-bottom:20px;';
-    const progressBar = document.createElement('div');
-    progressBar.style.cssText = 'width:0%;height:14px;background:#e50914;transition:width 0.05s linear;';
-    barContainer.appendChild(progressBar);
-    
-    // Υπότιτλος μπάρας
-    const progressSubtext = document.createElement('div');
-    progressSubtext.style.cssText = 'color:rgba(255,255,255,0.7);font-size:12px;margin-top:5px;';
-    progressSubtext.innerHTML = 'Σύνδεση με TMDB... 0%';
-    
-    // Περιοχή για τα αποτελέσματα πλατφορμών
-    const resultsDiv = document.createElement('div');
-    resultsDiv.style.cssText = 'width:500px;max-width:80%;background:rgba(0,0,0,0.7);border-radius:12px;padding:20px;color:white;font-size:14px;margin-top:20px;border:1px solid #e50914;min-height:120px;';
-    resultsDiv.innerHTML = '🔍 Σύνδεση με TMDB API...';
-    
-    overlay.appendChild(aiText);
-    overlay.appendChild(barContainer);
-    overlay.appendChild(progressSubtext);
-    overlay.appendChild(resultsDiv);
-    document.body.appendChild(overlay);
-    
-    // ΠΡΑΓΜΑΤΙΚΗ ΑΝΑΖΗΤΗΣΗ
-    let foundPlatforms = [];
-    let tmdbId = null;
-    
-    // Βήμα 1: Εύρεση TMDB ID
-    resultsDiv.innerHTML = '🔎 Αναζήτηση ταινίας στη βάση TMDB...';
-    progressSubtext.innerHTML = 'Αναζήτηση TMDB ID... 25%';
-    progressBar.style.width = '25%';
-    
-    if (movie.tmdb && movie.tmdb.includes('/movie/')) {
-        tmdbId = movie.tmdb.split('/movie/')[1].split('/')[0];
-    }
-    
-    if (!tmdbId && TMDB_API_KEY) {
-        try {
-            const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(movie.title)}&year=${movie.year}`;
-            const searchRes = await fetch(searchUrl);
-            const searchData = await searchRes.json();
-            if (searchData.results && searchData.results.length > 0) {
-                tmdbId = searchData.results[0].id;
-            }
-        } catch(e) {
-            console.error('Search error:', e);
-        }
-    }
-    
-    if (!tmdbId) {
-        resultsDiv.innerHTML = '❌ Δεν βρέθηκε το TMDB ID για αυτή την ταινία';
-        progressSubtext.innerHTML = 'Αποτυχία αναζήτησης 100%';
-        progressBar.style.width = '100%';
-        setTimeout(() => {
-            overlay.remove();
-            showSuggestionResult(movie, []);
-        }, 1000);
-        return;
-    }
-    
-    // Βήμα 2: Λήψη πλατφορμών από TMDB
-    resultsDiv.innerHTML = `📡 Λήψη διαθέσιμων πλατφορμών για TMDB ID: ${tmdbId}`;
-    progressSubtext.innerHTML = 'Λήψη πλατφορμών... 60%';
-    progressBar.style.width = '60%';
-    
-    try {
-        const watchUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`;
-        const watchRes = await fetch(watchUrl);
-        const watchData = await watchRes.json();
-        
-        // Προτιμούμε Ελλάδα (GR), αλλιώς ΗΠΑ (US)
-        const providers = watchData.results?.GR || watchData.results?.US;
-        
-        if (providers) {
-            if (providers.flatrate) {
-                foundPlatforms.push(...providers.flatrate.map(p => p.provider_name));
-                resultsDiv.innerHTML = `✅ Βρέθηκε σε συνδρομητικές: ${providers.flatrate.map(p => p.provider_name).join(', ')}`;
-            }
-            if (providers.free) {
-                foundPlatforms.push(...providers.free.map(p => p.provider_name));
-                resultsDiv.innerHTML = `✅ Βρέθηκε δωρεάν σε: ${providers.free.map(p => p.provider_name).join(', ')}`;
-            }
-            if (providers.ads) {
-                foundPlatforms.push(...providers.ads.map(p => p.provider_name));
-                resultsDiv.innerHTML = `✅ Βρέθηκε με διαφημίσεις σε: ${providers.ads.map(p => p.provider_name).join(', ')}`;
-            }
-        }
-        
-        // Αφαίρεση διπλότυπων
-        foundPlatforms = [...new Set(foundPlatforms)];
-        
-    } catch(e) {
-        console.error('Error fetching providers:', e);
-        resultsDiv.innerHTML = '⚠️ Σφάλμα κατά την ανάκτηση πλατφορμών';
-    }
-    
-    // Βήμα 3: Ολοκλήρωση
-    progressSubtext.innerHTML = 'Ολοκλήρωση αναζήτησης... 100%';
-    progressBar.style.width = '100%';
-    
-    if (foundPlatforms.length === 0) {
-        resultsDiv.innerHTML = '🔍 Η τεχνητή νοημοσύνη δεν εντόπισε το έργο σε καμία πλατφόρμα streaming.';
-    } else {
-        resultsDiv.innerHTML = `🎯 Βρέθηκε σε ${foundPlatforms.length} πλατφόρμες: ${foundPlatforms.join(', ')}`;
-    }
-    
-    setTimeout(() => {
-        overlay.remove();
-        showSuggestionResult(movie, foundPlatforms);
-    }, 1500);
-}
-
-function showSuggestionResult(movie, foundPlatforms) {
-    const popup = document.createElement('div');
-    popup.id = 'suggestionResultPopup';
-    popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border-radius:20px;padding:30px;max-width:550px;width:90%;z-index:30001;border:2px solid #e50914;box-shadow:0 20px 60px rgba(0,0,0,0.5);font-family:sans-serif;text-align:center;';
-    
-    const hasTeraboxLink = movie.link && movie.link !== '';
-    const hasPlatforms = foundPlatforms.length > 0;
-    
-    // Μορφοποίηση του link για εμφάνιση
-    let fullLink = '';
-    let displayLink = '';
-    if (hasTeraboxLink) {
-        fullLink = movie.link;
-        if (!fullLink.startsWith('http')) {
-            fullLink = 'https://' + fullLink;
-        }
-        // Για εμφάνιση, κόψε αν είναι πολύ μεγάλο
-        displayLink = fullLink.length > 70 ? fullLink.substring(0, 67) + '...' : fullLink;
-    }
-    
-    let content = `<h2 style="color:#e50914;margin-top:0;margin-bottom:15px;">${escapeHtml(movie.title)} (${movie.year})</h2>`;
-    
-    if (hasPlatforms) {
-        content += `<p style="margin:15px 0;font-size:16px;">Βρέθηκε μέσω AI στις παρακάτω πλατφόρμες:</p>`;
-        content += `<div style="margin:15px 0;padding:12px;background:rgba(46,204,113,0.1);border-radius:12px;">`;
-        content += foundPlatforms.map(p => `<span style="display:inline-block;background:#2ecc71;color:#000;padding:6px 12px;margin:4px;border-radius:20px;font-size:13px;font-weight:bold;">${p}</span>`).join('');
-        content += `</div>`;
-    } else {
-        content += `<p style="margin:15px 0;font-size:16px;color:#e67e22;">⚠️ Κατόπιν αυτοματοποιημένου ελέγχου μέσω συστημάτων Τεχνητής Νοημοσύνης, δεν εντοπίστηκε διαθεσιμότητα του συγκεκριμένου έργου σε καμία από τις γνωστές πλατφόρμες ροής (streaming).</p>`;
-    }
-    
-    content += `<div style="margin:20px 0;padding:15px;background:rgba(229,9,20,0.1);border-radius:12px;border-left:4px solid #e50914;">`;
-    content += `<p style="margin:0;font-size:15px;"><strong>☁️ Μπορείτε επίσης να δείτε το έργο σε κορυφαία ποιότητα μέσα από το δικό σας TeraBox Cloud, όπου διατηρείτε τη νόμιμη ψηφιακή σας ταινιοθήκη.</strong></p>`;
-    content += `</div>`;
-    
-    content += `<div style="margin-top:20px;">`;
-    
-    if (hasTeraboxLink) {
-        content += `<button id="goToTeraboxBtn" style="background:#2ecc71;color:#000;border:none;padding:14px 24px;border-radius:40px;cursor:pointer;font-weight:bold;width:100%;font-size:16px;margin-bottom:12px;">📁 Μετάβαση στο Terabox</button>`;
-        
-        // Link με κουμπί αντιγραφής
-        content += `<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;margin-top:5px;">`;
-        content += `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">`;
-        content += `<span style="font-size:11px;color:rgba(255,255,255,0.6);">🔗 Διεύθυνση:</span>`;
-        content += `<div style="flex:1;font-family:monospace;font-size:11px;background:rgba(0,0,0,0.5);padding:6px 10px;border-radius:6px;word-break:break-all;color:#ddd;">${escapeHtml(displayLink)}</div>`;
-        content += `<button id="copyLinkBtn" style="background:#3498db;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:bold;">📋 Αντιγραφή</button>`;
-        content += `</div>`;
-        content += `</div>`;
-    } else {
-        content += `<p style="color:#e67e22;margin:10px 0;">⚠️ Δεν υπάρχει διαθέσιμο link Terabox για αυτή την ταινία</p>`;
-    }
-    
-    content += `<button id="closeResultPopup" style="background:#e50914;color:white;border:none;padding:10px 20px;border-radius:40px;cursor:pointer;width:100%;font-size:14px;margin-top:12px;">Κλείσιμο</button></div>`;
-    
-    popup.innerHTML = content;
-    document.body.appendChild(popup);
-    
-    // Μετάβαση στο Terabox
-    const teraboxBtn = document.getElementById('goToTeraboxBtn');
-    if (teraboxBtn) {
-        teraboxBtn.addEventListener('click', () => {
-            if (fullLink) {
-                window.open(fullLink, '_blank');
-            }
-            popup.remove();
-        });
-    }
-    
-    // Κουμπί αντιγραφής
-    const copyBtn = document.getElementById('copyLinkBtn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(fullLink);
-                // Αλλάζει προσωρινά το κείμενο του κουμπιού
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '✅ Αντιγράφηκε!';
-                copyBtn.style.background = '#2ecc71';
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                    copyBtn.style.background = '#3498db';
-                }, 2000);
-                showToast('✅ Το link αντιγράφηκε!', '#2ecc71');
-            } catch(err) {
-                showToast('❌ Δεν μπόρεσε να αντιγραφεί', '#e50914');
-            }
-        });
-    }
-    
-    // Κλείσιμο
-    document.getElementById('closeResultPopup').addEventListener('click', () => {
-        popup.remove();
-    });
-    
-    // Escape για κλείσιμο
-    const closeOnEsc = (e) => {
-        if (e.key === 'Escape') {
-            popup.remove();
-            document.removeEventListener('keydown', closeOnEsc);
-        }
-    };
-    document.addEventListener('keydown', closeOnEsc);
-}
-
-function showCompleteSuggestion(movie, freePlatforms, freeWithAds, subscriptionPlatforms) {
-    const existing = document.getElementById('freeSuggestionPopup');
-    if (existing) existing.remove();
-    
-    let platformsHtml = '';
-    
-    if (freePlatforms.length > 0 || freeWithAds.length > 0) {
-        if (freePlatforms.length > 0) {
-            platformsHtml += `<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:24px;">🎉</span><h4 style="color:#2ecc71;margin:0;">ΔΩΡΕΑΝ (χωρίς εγγραφή)</h4></div><div style="display:flex;flex-wrap:wrap;gap:12px;">`;
-            freePlatforms.forEach(p => {
-                platformsHtml += `<a href="${p.link}" target="_blank" style="background:rgba(46,204,113,0.15);border:1.5px solid #2ecc71;border-radius:40px;padding:10px 20px;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:10px;">${p.logo ? `<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;">` : '🎬'} ${p.name}</a>`;
-            });
-            platformsHtml += `</div></div>`;
-        }
-        
-        if (freeWithAds.length > 0) {
-            platformsHtml += `<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:24px;">📺</span><h4 style="color:#f39c12;margin:0;">ΔΩΡΕΑΝ (με διαφημίσεις)</h4></div><div style="display:flex;flex-wrap:wrap;gap:12px;">`;
-            freeWithAds.forEach(p => {
-                platformsHtml += `<a href="${p.link}" target="_blank" style="background:rgba(243,156,18,0.15);border:1.5px solid #f39c12;border-radius:40px;padding:10px 20px;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:10px;">${p.logo ? `<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;">` : '📺'} ${p.name}</a>`;
-            });
-            platformsHtml += `</div></div>`;
-        }
-    }
-    
-    if (subscriptionPlatforms.length > 0) {
-        platformsHtml += `<div style="margin-bottom:20px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:24px;">💰</span><h4 style="color:#e67e22;margin:0;">Συνδρομητικές Πλατφόρμες</h4></div><div style="display:flex;flex-wrap:wrap;gap:12px;">`;
-        subscriptionPlatforms.forEach(p => {
-            let bgColor = '#555';
-            if (p.name.toLowerCase().includes('netflix')) bgColor = '#E50914';
-            else if (p.name.toLowerCase().includes('disney')) bgColor = '#113CCF';
-            else if (p.name.toLowerCase().includes('apple')) bgColor = '#000000';
-            else if (p.name.toLowerCase().includes('prime')) bgColor = '#00A8E1';
-            else if (p.name.toLowerCase().includes('max')) bgColor = '#0026FF';
-            
-            platformsHtml += `<a href="${p.link}" target="_blank" style="background:${bgColor}20;border:1.5px solid ${bgColor};border-radius:40px;padding:10px 20px;text-decoration:none;color:var(--text);display:inline-flex;align-items:center;gap:10px;">${p.logo ? `<img src="${p.logo}" style="width:24px;height:24px;border-radius:6px;">` : '🎬'} ${p.name}</a>`;
-        });
-        platformsHtml += `</div></div>`;
-    }
-    
-    if (freePlatforms.length === 0 && freeWithAds.length === 0 && subscriptionPlatforms.length === 0) {
-        platformsHtml = `<div style="background:rgba(231,76,60,0.1);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;"><span style="font-size:48px;">🔍</span><p style="margin-top:10px;color:#e74c3c;">Δεν βρέθηκε η ταινία σε καμία πλατφόρμα</p><p style="font-size:13px;opacity:0.7;">Προτείνεται λήψη από Terabox</p></div>`;
-    }
-    
-    const teraboxHtml = `<div style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--border);"><div style="background:linear-gradient(135deg,rgba(46,204,113,0.1) 0%,rgba(46,204,113,0.05) 100%);border-radius:16px;padding:20px;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:15px;"><span style="font-size:32px;">📁</span><div><h4 style="color:#2ecc71;margin:0;">Εναλλακτική Λύση - Terabox</h4><p style="font-size:12px;opacity:0.8;margin:5px 0 0 0;">✅ Απολύτως νόμιμο (προσωπικό ανέβασμα χρήστη)</p></div></div><p style="margin-bottom:15px;font-size:14px;">🎯 <strong>Πλεονεκτήματα Terabox:</strong><br>• 🎬 Καλύτερη ποιότητα εικόνας (4K/HD)<br>• 🔊 Ανώτερη ακουστική (5.1 Surround / Dolby)<br>• 🇬🇷 Ελληνικοί υπότιτλοι<br>• 📱 Offline προβολή</p>${movie.link && movie.link !== '' ? `<button id="goToTeraboxBtn" style="background:#2ecc71;color:#000;border:none;padding:14px 28px;border-radius:40px;cursor:pointer;font-weight:bold;width:100%;font-size:16px;">📥 Λήψη από Terabox</button>` : `<div style="background:rgba(231,76,60,0.2);border-radius:12px;padding:12px;text-align:center;">⚠️ Δεν υπάρχει διαθέσιμο link Terabox για αυτή την ταινία</div>`}</div></div>`;
-    
-    const popup = document.createElement('div');
-    popup.id = 'freeSuggestionPopup';
-    popup.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border-radius:24px;padding:25px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto;z-index:20001;border:2px solid var(--primary);box-shadow:0 20px 60px rgba(0,0,0,0.5);`;
-    
-    popup.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><div><h2 style="color:var(--primary);margin:0;">${escapeHtml(movie.title)}</h2><p style="margin:5px 0 0 0;opacity:0.7;">${movie.year} • ${movie.type === 'Series' ? 'Σειρά' : 'Ταινία'}</p></div><button id="closeSuggestionPopup" style="background:rgba(0,0,0,0.3);border:none;color:var(--text);font-size:24px;width:36px;height:36px;border-radius:50%;cursor:pointer;">×</button></div><div id="suggestionContent">${platformsHtml}${teraboxHtml}</div><div style="margin-top:20px;padding-top:15px;border-top:1px solid var(--border);font-size:11px;opacity:0.6;text-align:center;">🔍 Τα δεδομένα πλατφορμών προέρχονται από TMDB • Οι διαθέσιμες πλατφόρμες ενδέχεται να διαφέρουν ανά χώρα</div>`;
-    
-    document.body.appendChild(popup);
-    document.getElementById('closeSuggestionPopup')?.addEventListener('click', () => popup.remove());
-    const goToTerabox = document.getElementById('goToTeraboxBtn');
-    if (goToTerabox) goToTerabox.addEventListener('click', () => { openTeraboxLink(movie.link); popup.remove(); });
-    const closeOnEsc = (e) => { if (e.key === 'Escape') { popup.remove(); document.removeEventListener('keydown', closeOnEsc); } };
-    document.addEventListener('keydown', closeOnEsc);
-}
-
-function openTeraboxLink(link) {
-    if (!link || link === '') { showToast('Δεν υπάρχει link προβολής', '#e67e22'); return; }
-    if (link.startsWith('magnet:')) { window.location.href = link; setTimeout(() => showToast('Αν δεν ανοίγει, αντιγράψτε το magnet link', '#3498db'), 500); }
-    else if (link.startsWith('http://') || link.startsWith('https://')) window.open(link, '_blank');
-    else window.open('https://' + link, '_blank');
-}
-
-function handleDownloadClick() { 
-    if (currentModalMovieId) {
-        const movie = moviesData.find(m => m.id === currentModalMovieId);
-        if (movie) suggestFreeMovie(movie);
-        else showToast('Σφάλμα: Δεν βρέθηκε η ταινία', '#e50914');
-    }
-}
-
 // ============ CRUD OPERATIONS ============
 function showAddMovieForm() {
     if (!isUserLoggedIn) { showToast('Πρέπει να συνδεθείτε για να προσθέσετε ταινία!', '#e50914'); return; }
@@ -2294,21 +1985,92 @@ function editCurrentMovie() {
     currentEditingMovieId = movie.id;
     closeDetails();
     
-    const modalHtml = `<div class="edit-movie-modal" id="editMovieModal"><h2>Επεξεργασία: ${escapeHtml(movie.title)}</h2>
-        <div class="form-row"><div class="form-group"><label>Τίτλος</label><input type="text" id="editTitle" value="${escapeHtml(movie.title)}"></div><div class="form-group"><label>Ετος</label><input type="number" id="editYear" value="${movie.year}"></div></div>
-        <div class="form-row"><div class="form-group"><label>Τύπος</label><select id="editType"><option value="Movie" ${movie.type==='Movie'?'selected':''}>Ταινία</option><option value="Series" ${movie.type==='Series'?'selected':''}>Σειρά</option></select></div><div class="form-group"><label>Ποιότητα</label><select id="editQuality"><option ${movie.quality==='HD'?'selected':''}>HD</option><option ${movie.quality==='SD'?'selected':''}>SD</option><option ${movie.quality==='4K'?'selected':''}>4K</option></select></div></div>
-        <div class="form-row"><div class="form-group"><label>Βαθμολογία (0-10)</label><input type="number" step="0.1" id="editRating" value="${movie.rating}"></div><div class="form-group"><label>Ηθοποιοί</label><input type="text" id="editActors" value="${escapeHtml(movie.actors||'')}"></div></div>
-        <div class="form-group"><label>Είδος (Genre)</label><input type="text" id="editGenre" value="${escapeHtml(movie.genre || '')}" placeholder="π.χ. Δράμα, Θρίλερ, Oscar Winner"></div>
-        <div class="form-group"><label>Πλατφόρμα (Streaming)</label><input type="text" id="editPlatform" value="${escapeHtml(movie.studio || '')}" placeholder="π.χ. Netflix, Disney+, Max, Amazon, Apple TV+, Paramount+, YouTube" style="border:2px solid var(--primary);"></div>
-        <div class="form-group"><label>Link Προβολής</label><input type="url" id="editLink" value="${escapeHtml(movie.link||'')}"></div>
-        <div class="form-group"><label>Original Title</label><input type="text" id="editOriginalTitle" value="${escapeHtml(movie.original_title || '')}"></div>
-        <div class="form-group"><label>Ημερομηνία Προσθήκης</label><input type="date" id="editDateAdded" value="${movie.dateAdded || new Date().toISOString().split('T')[0]}"></div>
-        <div class="modal-buttons"><button id="saveEditBtn" class="btn-save">Αποθήκευση</button><button id="cancelEditBtn" class="btn-cancel">Ακύρωση</button></div>
+    const modalHtml = `<div class="edit-movie-modal" id="editMovieModal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);padding:25px;border-radius:16px;z-index:20000;width:90%;max-width:700px;max-height:85vh;overflow-y:auto;border:1px solid var(--border);">
+        <h2 style="color:var(--primary);margin-bottom:20px;">Επεξεργασία: ${escapeHtml(movie.title)}</h2>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group"><label>Τίτλος</label><input type="text" id="editTitle" value="${escapeHtml(movie.title)}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+            <div class="form-group"><label>Ετος</label><input type="number" id="editYear" value="${movie.year}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group"><label>Τύπος</label><select id="editType" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"><option value="Movie" ${movie.type==='Movie'?'selected':''}>Ταινία</option><option value="Series" ${movie.type==='Series'?'selected':''}>Σειρά</option></select></div>
+            <div class="form-group"><label>Ποιότητα</label><select id="editQuality" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"><option ${movie.quality==='HD'?'selected':''}>HD</option><option ${movie.quality==='SD'?'selected':''}>SD</option><option ${movie.quality==='4K'?'selected':''}>4K</option></select></div>
+        </div>
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+            <div class="form-group"><label>Βαθμολογία (0-10)</label><input type="number" step="0.1" id="editRating" value="${movie.rating}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+            <div class="form-group"><label>Ηθοποιοί</label><input type="text" id="editActors" value="${escapeHtml(movie.actors||'')}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+        </div>
+        <div class="form-group"><label>Είδος (Genre)</label><input type="text" id="editGenre" value="${escapeHtml(movie.genre || '')}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+        
+        <!-- ΠΕΔΙΟ ΠΛΑΤΦΟΡΜΑΣ ΜΕ AUTOCOMPLETE ΚΑΙ ΚΟΥΜΠΙΑ -->
+        <div class="form-group">
+            <label>Πλατφόρμα (Streaming)</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <input type="text" id="editPlatform" list="platformAutocomplete" value="${escapeHtml(movie.studio || '')}" placeholder="π.χ. Netflix, Disney+, Max, Amazon, Apple TV+" style="flex:3;padding:12px;background:var(--input-bg);border:2px solid var(--primary);border-radius:8px;color:var(--text);">
+                <datalist id="platformAutocomplete">
+                    <option value="Netflix">
+                    <option value="Disney+">
+                    <option value="Max (HBO)">
+                    <option value="Amazon Prime Video">
+                    <option value="Apple TV+">
+                    <option value="Paramount+">
+                    <option value="Peacock">
+                    <option value="Hulu">
+                    <option value="YouTube">
+                    <option value="Mubi">
+                    <option value="Starz">
+                    <option value="Crunchyroll">
+                    <option value="Discovery+">
+                    <option value="Ελληνικες Ταινιες">
+                    <option value="Αλλες Πλατφορμες">
+                </datalist>
+                <button type="button" id="addPlatformBtn" style="background:#2ecc71;color:white;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;font-weight:bold;">+ Προσθηκη</button>
+                <button type="button" id="removePlatformBtn" style="background:#e74c3c;color:white;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;font-weight:bold;">- Αφαιρεση</button>
+            </div>
+            <small style="font-size:11px;opacity:0.7;">Γραψτε πλατφορμα - Αυτόματες προτάσεις - "+" για προσθηκη στο dropdown - "-" για αφαιρεση</small>
+        </div>
+        
+        <div class="form-group"><label>Link Προβολής</label><input type="url" id="editLink" value="${escapeHtml(movie.link||'')}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+        <div class="form-group"><label>Original Title</label><input type="text" id="editOriginalTitle" value="${escapeHtml(movie.original_title || '')}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+        <div class="form-group"><label>Ημερομηνία Προσθήκης</label><input type="date" id="editDateAdded" value="${movie.dateAdded || new Date().toISOString().split('T')[0]}" style="width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);color:var(--text);border-radius:8px;"></div>
+        <div class="modal-buttons" style="display:flex;gap:10px;margin-top:20px;">
+            <button id="saveEditBtn" style="background:#2ecc71;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:bold;">Αποθηκευση</button>
+            <button id="cancelEditBtn" style="background:#e74c3c;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:bold;">Ακυρωση</button>
+        </div>
     </div>`;
     
     const existing = document.getElementById('editMovieModal');
     if (existing) existing.remove();
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Κουμπί Προσθήκης
+    document.getElementById('addPlatformBtn').addEventListener('click', () => {
+        const input = document.getElementById('editPlatform');
+        const newPlatform = input.value.trim();
+        if (newPlatform) {
+            if (typeof addNewPlatformToDropdown === 'function') {
+                addNewPlatformToDropdown(newPlatform);
+            } else {
+                showToast('Η λειτουργία δεν είναι διαθέσιμη', '#e67e22');
+            }
+        } else {
+            showToast('Γραψτε μια πλατφορμα πρωτα', '#e67e22');
+        }
+    });
+    
+    // Κουμπί Αφαίρεσης
+    document.getElementById('removePlatformBtn').addEventListener('click', () => {
+        const input = document.getElementById('editPlatform');
+        const platformToRemove = input.value.trim();
+        if (platformToRemove) {
+            if (typeof removePlatformFromDropdown === 'function') {
+                removePlatformFromDropdown(platformToRemove);
+            } else {
+                showToast('Η λειτουργία δεν είναι διαθέσιμη', '#e67e22');
+            }
+        } else {
+            showToast('Γραψτε την πλατφορμα που θελετε να αφαιρεσετε', '#e67e22');
+        }
+    });
     
     document.getElementById('saveEditBtn').addEventListener('click', () => saveEditedMovie());
     document.getElementById('cancelEditBtn').addEventListener('click', () => closeEditForm());
@@ -2520,7 +2282,6 @@ function addEnrichButton() {
         dashboard.appendChild(oscarBtn);
     }
     
-    // EXTRA FIX: Ensure biography button works even if addEnrichButton runs after
     setTimeout(function() {
         var bioBtn2 = document.getElementById('enrichBiographiesBtn');
         if (bioBtn2 && typeof addBiographyTag === 'function') {
@@ -2676,14 +2437,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     loadTheme();
     loadRequestsFromLocalStorage();
     
-    // Φόρτωσε τα δεδομένα (το overlay είναι ήδη ορατό)
     await loadMoviesData();
     
     loadDashboardState();
     loadUserSession();
     attachEventListeners();
     
-    // Έλεγχος αν τα δεδομένα φορτώθηκαν
     if (moviesData.length === 0) {
         console.log('No data loaded, retrying...');
         setTimeout(async () => {

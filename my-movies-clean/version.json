@@ -2,6 +2,6 @@
   "version": "2.1.1",
   "lastUpdate": "2026-06-07",
   "changes": "Προσθήκη ανάγνωσης από GitHub, υποστήριξη 10000+ ταινιών",
-  "minRequiredVersion": "2.0.0",
+  "minRequiredVersion": "2.0.8",
   "files": ["app_fixed.js", "styles.css", "config.js"]
 }
