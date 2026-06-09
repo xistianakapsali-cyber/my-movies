@@ -373,6 +373,28 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
     transform: rotate(90deg);
 }
 
+/* ============ ΠΡΟΣΘΗΚΕΣ ΓΙΑ ΣΩΣΤΗ ΛΕΙΤΟΥΡΓΙΑ ΣΕ ΚΙΝΗΤΑ ============ */
+/* Εξασφαλίζει ότι τα κουμπιά είναι πάνω από όλα και πατιούνται */
+.modal-icon-btn, 
+.download-btn-yts,
+#modalDownloadBtn,
+#modalAddBtn,
+#saveEditBtn,
+#cancelEditBtn,
+.add-movie-modal button,
+.edit-movie-modal button {
+    position: relative;
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+}
+
+/* Το modal background να μην μπλοκάρει τα κλικ στο περιεχόμενο */
+#detailModal,
+.edit-movie-modal,
+.add-movie-modal {
+    pointer-events: auto;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) { 
     .modal-box { 
@@ -444,6 +466,18 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
     }
     .info-grid-value { 
         font-size: 14px;
+    }
+
+    /* Ειδικά για κινητά: μεγαλύτερα tap targets */
+    .modal-icon-btn, 
+    .download-btn-yts,
+    #modalDownloadBtn,
+    #modalAddBtn,
+    #saveEditBtn,
+    #cancelEditBtn {
+        padding: 12px 20px !important;
+        min-height: 44px;
+        font-size: 14px !important;
     }
 }
 
