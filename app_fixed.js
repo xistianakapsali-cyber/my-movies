@@ -2091,6 +2091,9 @@ function saveEditedMovie() {
     const newOriginalTitle = document.getElementById('editOriginalTitle').value.trim();
     const newGenre = document.getElementById('editGenre').value.trim();
     const newPlatform = document.getElementById('editPlatform').value.trim();
+    const newActors = document.getElementById('editActors').value.trim();
+    const newType = document.getElementById('editType').value;
+    const newQuality = document.getElementById('editQuality').value;
     
     if (isDuplicateMovie(title, year, currentEditingMovieId)) { showToast('Υπάρχει ήδη!', '#e50914'); return; }
     
@@ -2098,7 +2101,20 @@ function saveEditedMovie() {
     const hasNewLink = newLink && newLink !== '';
     const hadNoLink = !oldLink || oldLink === '';
     
-    moviesData[idx] = { ...moviesData[idx], title, year, type: document.getElementById('editType').value, quality: document.getElementById('editQuality').value, rating, actors: document.getElementById('editActors').value || 'N/A', link: newLink, original_title: newOriginalTitle || title, dateAdded: newDateAdded, genre: newGenre || null, studio: newPlatform };
+    moviesData[idx] = { 
+        ...moviesData[idx], 
+        title, 
+        year, 
+        type: newType, 
+        quality: newQuality, 
+        rating, 
+        actors: newActors || 'N/A', 
+        link: newLink, 
+        original_title: newOriginalTitle || title, 
+        dateAdded: newDateAdded, 
+        genre: newGenre || null, 
+        studio: newPlatform 
+    };
     
     if (wasPending && hasNewLink && hadNoLink) {
         moviesData[idx].status = 'active';
