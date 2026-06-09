@@ -223,7 +223,7 @@ let recentMovieIds = [];
 // ΜΟΝΙΜΕΣ ΠΛΑΤΦΟΡΜΕΣ - 15 ΚΑΤΗΓΟΡΙΕΣ
 let mainPlatforms = [
     'Netflix', 'Disney+', 'Max (HBO)', 'Amazon Prime Video', 'Apple TV+', 
-    'Paramount+', 'Peacock', 'Hulu', 'YouTube', 'Mubi', 'Starz', 
+    'Paramount+', 'Peacock', 'Hulu', 'YouTube', 'Starz', 
     'Crunchyroll', 'Discovery+', 'Ελληνικες Ταινιες', 'Αλλες Πλατφορμες'
 ];
 // Δεν χρησιμοποιούμε localStorage για να βλέπουν ΟΛΟΙ τις ίδιες πλατφόρμες
