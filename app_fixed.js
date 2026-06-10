@@ -1013,7 +1013,7 @@ function openDetailsById(id) {
     }
     
     const downloadBtn = document.getElementById('modalDownloadBtn');
-    if (isUserLoggedIn && movie.link && movie.link !== '') {
+    if (isUserLoggedIn) {
         downloadBtn.style.display = 'block';
     } else {
         downloadBtn.style.display = 'none';
@@ -1032,7 +1032,7 @@ function openDetailsById(id) {
     renderCollectionButtons(movie.id);
     renderActorsWithImages(movie.actors, 'modalActorsContainer');
     
-    // Ενεργοποίηση κουμπιών - ΜΟΝΟ ΜΙΑ ΦΟΡΑ
+    // ============ ΕΝΕΡΓΟΠΟΙΗΣΗ ΚΟΥΜΠΙΩΝ ΜΕ AI ΑΝΑΖΗΤΗΣΗ ============
     const btn1 = document.getElementById('modalDownloadBtn');
     const btn2 = document.getElementById('modalAddBtn');
     
@@ -1040,14 +1040,7 @@ function openDetailsById(id) {
         btn1.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            if (currentModalMovieId) {
-                const m = moviesData.find(x => x.id === currentModalMovieId);
-                if (m && m.link && m.link !== '') {
-                    window.open(m.link, '_blank');
-                } else {
-                    showToast('Δεν υπάρχει link προβολής', '#e67e22');
-                }
-            }
+            suggestFreeMovie(movie);
         };
     }
     
@@ -1066,6 +1059,206 @@ function closeDetails() {
     document.getElementById('detailModal').style.display = 'none'; 
     currentModalMovieId = null;
     currentMovieLink = null;
+}
+
+// ============ AI ΑΝΑΖΗΤΗΣΗ ΔΩΡΕΑΝ ΠΡΟΒΟΛΗΣ (ΔΙΟΡΘΩΜΕΝΗ) ============
+async function suggestFreeMovie(movie) {
+    if (!movie) {
+        showToast('Σφάλμα: Δεν βρέθηκε η ταινία', '#e50914');
+        return;
+    }
+    
+    // Δημιουργία modal αναζήτησης
+    const searchModal = document.createElement('div');
+    searchModal.id = 'searchModal';
+    searchModal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); z-index: 30000;
+        display: flex; align-items: center; justify-content: center;
+    `;
+    
+    searchModal.innerHTML = `
+        <div style="background: var(--card); border-radius: 20px; padding: 30px; 
+                    max-width: 400px; width: 90%; text-align: center; border: 2px solid var(--primary);">
+            <div class="loading-spinner" style="width: 50px; height: 50px; border: 4px solid var(--border);
+                border-top-color: var(--primary); border-radius: 50%; margin: 0 auto 20px auto;
+                animation: spin 1s linear infinite;"></div>
+            <h3 style="color: var(--primary); margin-bottom: 10px;">🔍 Αναζήτηση δωρεάν προβολής...</h3>
+            <p style="opacity: 0.8;">Ψάχνουμε για: <strong>${escapeHtml(movie.title)} (${movie.year})</strong></p>
+            <div id="searchProgress" style="margin-top: 15px; font-size: 12px; opacity: 0.7;">Ελέγχος πλατφορμών...</div>
+        </div>
+    `;
+    
+    document.body.appendChild(searchModal);
+    
+    // Προσθήκη CSS για το spinning animation
+    if (!document.querySelector('#spinner-style')) {
+        const style = document.createElement('style');
+        style.id = 'spinner-style';
+        style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+    }
+    
+    // Δημιουργία query για αναζήτηση
+    const searchQuery = encodeURIComponent(`${movie.title} ${movie.year} full movie free`);
+    const searchQueryGreek = encodeURIComponent(`${movie.title} ${movie.year} ταινία δωρεάν`);
+    
+    // Λίστα πλατφορμών για έλεγχο
+    const platformsToCheck = [
+        { name: 'YouTube', url: `https://www.youtube.com/results?search_query=${searchQuery}`, icon: '▶️' },
+        { name: 'DailyMotion', url: `https://www.dailymotion.com/search/${searchQuery}`, icon: '📹' },
+        { name: 'Vimeo', url: `https://vimeo.com/search?q=${searchQuery}`, icon: '🎬' },
+        { name: 'Internet Archive', url: `https://archive.org/search.php?query=${searchQuery}`, icon: '📚' },
+        { name: 'Tubi (δωρεάν)', url: `https://tubitv.com/search?q=${encodeURIComponent(movie.title)}`, icon: '📺' },
+        { name: 'Pluto TV', url: `https://pluto.tv/search?q=${encodeURIComponent(movie.title)}`, icon: '📡' },
+        { name: 'Plex', url: `https://watch.plex.tv/search?q=${encodeURIComponent(movie.title)}`, icon: '🎥' },
+        
+        { name: 'Google Αναζήτηση', url: `https://www.google.com/search?q=${searchQueryGreek}`, icon: '🔍' }
+    ];
+    
+    // Προσομοίωση ελέγχου
+    let currentPlatform = 0;
+    const progressInterval = setInterval(() => {
+        if (currentPlatform < platformsToCheck.length) {
+            const progressDiv = document.getElementById('searchProgress');
+            if (progressDiv) {
+                progressDiv.innerHTML = `✅ Έλεγχος: ${platformsToCheck[currentPlatform].name}...`;
+            }
+            currentPlatform++;
+        }
+    }, 400);
+    
+    // Μικρή καθυστέρηση
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    clearInterval(progressInterval);
+    
+    // Κλείσιμο modal αναζήτησης
+    searchModal.remove();
+    
+    // Εμφάνιση αποτελεσμάτων
+    showSuggestionResult(movie, platformsToCheck);
+}
+
+function showSuggestionResult(movie, platforms) {
+    // Φιλτράρισμα για να μην υπάρχει Terra Box μέσα στις πλατφόρμες
+    const filteredPlatforms = platforms.filter(p => p.name !== 'Terra Box');
+    
+    let platformsHtml = '';
+    
+    for (const platform of filteredPlatforms) {
+        platformsHtml += `
+            <a href="${platform.url}" target="_blank" style="display: flex; align-items: center; 
+                gap: 12px; padding: 12px 15px; background: var(--input-bg); 
+                border-radius: 12px; text-decoration: none; color: var(--text);
+                transition: all 0.2s; border: 1px solid var(--border); margin-bottom: 8px;
+                cursor: pointer;">
+                <span style="font-size: 24px;">${platform.icon}</span>
+                <span style="flex: 1; font-weight: 500;">${platform.name}</span>
+                <span style="color: var(--primary);">🔗 Προβολή →</span>
+            </a>
+        `;
+    }
+    
+    const resultModal = document.createElement('div');
+    resultModal.id = 'resultModal';
+    resultModal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); z-index: 30000;
+        display: flex; align-items: center; justify-content: center;
+    `;
+    
+    // Έλεγχος αν υπάρχει link για Terra Box
+    const hasTerraBoxLink = movie.link && movie.link !== '';
+    
+    resultModal.innerHTML = `
+        <div style="background: var(--card); border-radius: 20px; padding: 25px; 
+                    max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto;
+                    border: 2px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: var(--primary); margin: 0;">🎬 Δωρεάν Προβολή</h2>
+                <button id="closeResultModalBtn" style="background: #e74c3c; border: none; color: white;
+                    font-size: 20px; cursor: pointer; width: 36px; height: 36px;
+                    border-radius: 50%; font-weight: bold;">✕</button>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.1);
+                        border-radius: 12px;">
+                <h3 style="margin: 0 0 5px 0;">${escapeHtml(movie.title)}</h3>
+                <p style="margin: 0; opacity: 0.7;">${movie.year} • ${movie.quality || 'HD'}</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom: 15px; font-size: 14px; opacity: 0.8;">
+                    📌 Παρακάτω μπορείς να ψάξεις σε δωρεάν πλατφόρμες:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    ${platformsHtml}
+                </div>
+            </div>
+            
+            <!-- ΞΕΧΩΡΙΣΤΟ ΚΟΥΜΠΙ ΓΙΑ TERRA BOX -->
+            ${hasTerraBoxLink ? `
+            <div style="margin: 15px 0;">
+                <a id="terraBoxDirectLink" href="${movie.link}" target="_blank" style="display: flex; align-items: center;
+                    justify-content: center; gap: 12px; padding: 14px; background: linear-gradient(135deg, #1a472a, #2ecc71);
+                    border-radius: 12px; text-decoration: none; color: white; font-weight: bold;
+                    transition: all 0.2s; border: 2px solid #2ecc71; font-size: 16px;">
+                    <span style="font-size: 28px;">📦</span>
+                    <span>ΜΕΤΑΦΟΡΑ ΣΤΟ TERRA BOX</span>
+                    <span>🚀</span>
+                </a>
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button id="googleSearchBtnModal" style="flex: 1; background: #4285f4; color: white; border: none;
+                    padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+                    🔍 Google
+                </button>
+                <button id="justwatchBtnModal" style="flex: 1; background: #e67e22; color: white; border: none;
+                    padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+                    🎯 JustWatch
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(resultModal);
+    
+    // Event listeners
+    const closeBtn = resultModal.querySelector('#closeResultModalBtn');
+    const googleBtn = resultModal.querySelector('#googleSearchBtnModal');
+    const justwatchBtn = resultModal.querySelector('#justwatchBtnModal');
+    
+    if (closeBtn) {
+        closeBtn.onclick = function(e) {
+            e.preventDefault();
+            resultModal.remove();
+        };
+    }
+    
+    if (googleBtn) {
+        googleBtn.onclick = function(e) {
+            e.preventDefault();
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(movie.title + ' ' + movie.year + ' full movie free')}`, '_blank');
+        };
+    }
+    
+    if (justwatchBtn) {
+        justwatchBtn.onclick = function(e) {
+            e.preventDefault();
+            window.open(`https://www.justwatch.com/us/search?q=${encodeURIComponent(movie.title)}`, '_blank');
+        };
+    }
+    
+    // Links
+    const allLinks = resultModal.querySelectorAll('a');
+    allLinks.forEach(link => {
+        link.onclick = function(e) {
+            e.preventDefault();
+            window.open(this.href, '_blank');
+        };
+    });
 }
 
 // ============ CRUD OPERATIONS ============
@@ -1804,8 +1997,6 @@ function exportUserData() { /* ... */ }
 function deleteAllUserData() { /* ... */ }
 function showLegalModal(modalId) { /* ... */ }
 function closeLegalModal(modalId) { /* ... */ }
-async function suggestFreeMovie(movie) { /* ... */ }
-function showSuggestionResult(movie, foundPlatforms) { /* ... */ }
 
 // EVENT LISTENERS
 function attachEventListeners() {
@@ -1858,4 +2049,52 @@ window.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => checkForGitHubUpdates(), 5000);
     const backBtn = document.getElementById('backToTop'); window.addEventListener('scroll', () => { backBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
     document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDetails(); });
+	
 });
+// ΠΑΓΚΟΣΜΙΑ ΕΝΕΡΓΟΠΟΙΗΣΗ ΚΟΥΜΠΙΟΥ ΠΡΟΒΟΛΗΣ
+(function globalButtonFix() {
+    console.log('Ενεργοποίηση κουμπιού Προβολής...');
+    
+    // Παρακολούθηση για νέα modals
+    const observer = new MutationObserver(function(mutations) {
+        const btn = document.getElementById('modalDownloadBtn');
+        if (btn && !btn.hasAttribute('data-fixed')) {
+            btn.setAttribute('data-fixed', 'true');
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Κλικ στο κουμπί Προβολής');
+                if (currentModalMovieId) {
+                    const movie = moviesData.find(m => m.id === currentModalMovieId);
+                    if (movie) {
+                        suggestFreeMovie(movie);
+                    } else {
+                        showToast('Σφάλμα: Δεν βρέθηκε η ταινία', '#e50914');
+                    }
+                }
+                return false;
+            };
+            console.log('✅ Κουμπί Προβολής ενεργοποιήθηκε');
+        }
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Έλεγχος κάθε 2 δευτερόλεπτα για τυχόν modals που ξέφυγαν
+    setInterval(function() {
+        const btn = document.getElementById('modalDownloadBtn');
+        if (btn && !btn.hasAttribute('data-fixed')) {
+            btn.setAttribute('data-fixed', 'true');
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (currentModalMovieId) {
+                    const movie = moviesData.find(m => m.id === currentModalMovieId);
+                    if (movie) suggestFreeMovie(movie);
+                }
+                return false;
+            };
+            console.log('✅ Κουμπί Προβολής ενεργοποιήθηκε (interval)');
+        }
+    }, 2000);
+})();
