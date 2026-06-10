@@ -2076,39 +2076,7 @@ function editCurrentMovie() {
     if (existing) existing.remove();
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
-    // Κουμπί Προσθήκης
-    document.getElementById('addPlatformBtn').addEventListener('click', () => {
-        const input = document.getElementById('editPlatform');
-        const newPlatform = input.value.trim();
-        if (newPlatform) {
-            if (typeof addNewPlatformToDropdown === 'function') {
-                addNewPlatformToDropdown(newPlatform);
-            } else {
-                showToast('Η λειτουργία δεν είναι διαθέσιμη', '#e67e22');
-            }
-        } else {
-            showToast('Γραψτε μια πλατφορμα πρωτα', '#e67e22');
-        }
-    });
-    
-    // Κουμπί Αφαίρεσης
-    document.getElementById('removePlatformBtn').addEventListener('click', () => {
-        const input = document.getElementById('editPlatform');
-        const platformToRemove = input.value.trim();
-        if (platformToRemove) {
-            if (typeof removePlatformFromDropdown === 'function') {
-                removePlatformFromDropdown(platformToRemove);
-            } else {
-                showToast('Η λειτουργία δεν είναι διαθέσιμη', '#e67e22');
-            }
-        } else {
-            showToast('Γραψτε την πλατφορμα που θελετε να αφαιρεσετε', '#e67e22');
-        }
-    });
-    
-    document.getElementById('saveEditBtn').addEventListener('click', () => saveEditedMovie());
-    document.getElementById('cancelEditBtn').addEventListener('click', () => closeEditForm());
-}
+  
 
 function closeEditForm() { document.getElementById('editMovieModal')?.remove(); currentEditingMovieId = null; }
     
