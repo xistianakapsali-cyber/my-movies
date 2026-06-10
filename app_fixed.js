@@ -1031,6 +1031,34 @@ function openDetailsById(id) {
     
     renderCollectionButtons(movie.id);
     renderActorsWithImages(movie.actors, 'modalActorsContainer');
+    
+    // Ενεργοποίηση κουμπιών - ΜΟΝΟ ΜΙΑ ΦΟΡΑ
+    const btn1 = document.getElementById('modalDownloadBtn');
+    const btn2 = document.getElementById('modalAddBtn');
+    
+    if (btn1) {
+        btn1.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (currentModalMovieId) {
+                const m = moviesData.find(x => x.id === currentModalMovieId);
+                if (m && m.link && m.link !== '') {
+                    window.open(m.link, '_blank');
+                } else {
+                    showToast('Δεν υπάρχει link προβολής', '#e67e22');
+                }
+            }
+        };
+    }
+    
+    if (btn2) {
+        btn2.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showAddMovieForm();
+        };
+    }
+    
     document.getElementById('detailModal').style.display = 'flex';
 }
 
