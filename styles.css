@@ -565,3 +565,180 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
     background: rgba(229,9,20,0.15);
     transform: translateY(-2px);
 }
+/* ============ ΠΡΟΣΘΗΚΗ ΓΙΑ SUGGESTION POPUP ============ */
+
+/* Suggestion Platform Buttons */
+.suggestion-platform-btn {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-platform-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Scrollbar για το popup */
+#freeSuggestionPopup::-webkit-scrollbar {
+    width: 6px;
+}
+
+#freeSuggestionPopup::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+}
+
+#freeSuggestionPopup::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+/* Για Firefox */
+#freeSuggestionPopup {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) rgba(255,255,255,0.05);
+}
+/* ============ ΝΟΜΙΚΑ MODALS ============ */
+.legal-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.95);
+    z-index: 20000;
+    align-items: center;
+    justify-content: center;
+}
+
+.legal-modal-content {
+    background: var(--card);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow: hidden;
+    border: 2px solid var(--primary);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+.legal-modal-content h2 {
+    color: var(--primary);
+    padding: 20px 25px 0 25px;
+    margin: 0;
+    font-size: 24px;
+}
+
+.legal-scroll {
+    padding: 0 25px 25px 25px;
+    max-height: calc(85vh - 70px);
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.legal-scroll h3 {
+    color: var(--primary);
+    margin: 20px 0 10px 0;
+    font-size: 18px;
+}
+
+.legal-scroll ul {
+    margin: 10px 0 10px 20px;
+}
+
+.legal-scroll li {
+    margin: 5px 0;
+}
+
+.legal-date {
+    margin-top: 20px;
+    font-size: 12px;
+    opacity: 0.6;
+    text-align: right;
+}
+
+.legal-close {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--text);
+    transition: color 0.2s;
+    z-index: 20001;
+}
+
+.legal-close:hover {
+    color: var(--primary);
+}
+
+/* ============ FOOTER ============ */
+.site-footer {
+    margin-top: 60px;
+    padding: 30px 5% 20px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    text-align: center;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.footer-links a {
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.footer-links a:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+
+.footer-disclaimer {
+    opacity: 0.6;
+    margin-bottom: 15px;
+    font-size: 11px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.footer-disclaimer a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.footer-copyright {
+    opacity: 0.4;
+    font-size: 10px;
+}
+
+/* GDPR buttons inside modal */
+#gdprExportBtn, #gdprDeleteBtn {
+    transition: all 0.2s ease;
+}
+
+#gdprExportBtn:hover, #gdprDeleteBtn:hover {
+    transform: translateY(-2px);
+}
+/* ΤΕΛΙΚΗ ΔΥΝΑΤΗ ΛΥΣΗ */
+.modal-icon-btn, .download-btn-yts, #modalDownloadBtn, #modalAddBtn {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    display: inline-flex !important;
+    pointer-events: auto !important;
+    z-index: 999999 !important;
+    position: relative !important;
+    cursor: pointer !important;
+}
