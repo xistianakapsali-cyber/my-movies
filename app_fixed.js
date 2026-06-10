@@ -114,27 +114,6 @@ async function showUserLogin() {
         
         showToast('Ελεγχος για links...', '#9b59b6');
         setTimeout(() => checkForGitHubUpdates(), 500);
-		// Διόρθωση για κινητά: δύναμη στα κουμπιά
-setTimeout(() => {
-    const btns = document.querySelectorAll('.modal-icon-btn, .download-btn-yts, #modalDownloadBtn, #modalAddBtn, .modal-buttons button');
-    btns.forEach(btn => {
-        btn.style.setProperty('z-index', '999999', 'important');
-        btn.style.setProperty('position', 'relative', 'important');
-        btn.style.setProperty('pointer-events', 'auto', 'important');
-        btn.style.setProperty('display', 'inline-flex', 'important');
-        btn.style.setProperty('opacity', '1', 'important');
-        btn.style.setProperty('visibility', 'visible', 'important');
-    });
-}, 100);
-// Διόρθωση για κινητά
-setTimeout(() => {
-    const btns = document.querySelectorAll('#detailModal button, #detailModal a, #modalDownloadBtn, #modalAddBtn');
-    btns.forEach(btn => {
-        btn.style.pointerEvents = 'auto';
-        btn.style.zIndex = '999999';
-        btn.style.position = 'relative';
-    });
-}, 10);
         
         if (document.getElementById('detailModal').style.display === 'flex' && currentMovieLink) {
             document.getElementById('modalDownloadBtn').style.display = 'block';
@@ -1685,6 +1664,40 @@ function openDetailsById(id) {
     renderCollectionButtons(movie.id);
     renderActorsWithImages(movie.actors, 'modalActorsContainer');
     document.getElementById('detailModal').style.display = 'flex';
+	
+	document.getElementById('detailModal').style.display = 'flex';
+
+// ΜΟΝΑΔΙΚΗ ΔΙΟΡΘΩΣΗ ΓΙΑ ΚΙΝΗΤΑ
+setTimeout(() => {
+    const modal = document.getElementById('detailModal');
+    if (!modal) return;
+    
+    const btns = modal.querySelectorAll('button, a, .modal-icon-btn, .download-btn-yts, #modalDownloadBtn, #modalAddBtn');
+    btns.forEach(btn => {
+        btn.style.setProperty('pointer-events', 'auto', 'important');
+        btn.style.setProperty('z-index', '999999', 'important');
+        btn.style.setProperty('position', 'relative', 'important');
+        btn.style.display = 'inline-flex';
+    });
+    
+    const downloadBtn = document.getElementById('modalDownloadBtn');
+    const addBtn = document.getElementById('modalAddBtn');
+    
+    if (downloadBtn) {
+        downloadBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDownloadClick();
+        };
+    }
+    if (addBtn) {
+        addBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showAddMovieForm();
+        };
+    }
+}, 50);
 }
 
 function closeDetails() { 
@@ -2098,6 +2111,7 @@ function editCurrentMovie() {
 }
 
 function closeEditForm() { document.getElementById('editMovieModal')?.remove(); currentEditingMovieId = null; }
+    
 
 function saveEditedMovie() {
     const idx = moviesData.findIndex(m => m.id === currentEditingMovieId);
