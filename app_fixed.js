@@ -437,6 +437,9 @@ async function loadMoviesData() {
         loadCollections();
         
         await applyFilters();
+		 (async () => {
+    await loadFeaturedMovie();
+})();
         
         if (overlay) {
             overlay.style.opacity = '0';
@@ -1232,6 +1235,7 @@ function showSuggestionResult(movie, platforms) {
     `;
     
     document.body.appendChild(resultModal);
+
     
     // Event listeners
     const closeBtn = resultModal.querySelector('#closeResultModalBtn');
@@ -1280,6 +1284,118 @@ function showSuggestionResult(movie, platforms) {
             window.open(this.href, '_blank');
         };
     });
+}
+// ============ ΠΡΟΤΕΙΝΟΜΕΝΗ ΤΑΙΝΙΑ ΤΗΣ ΗΜΕΡΑΣ ============
+let currentFeaturedMovieId = null;
+let cachedFeaturedId = null;
+let lastFetchDate = null;
+async function getFeaturedMovieId() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (cachedFeaturedId !== null && lastFetchDate === today) {
+        return cachedFeaturedId;
+    }
+    
+    try {
+        const featuredUrl = 'https://raw.githubusercontent.com/xistianakapsali-cyber/my-movies/main/my-movies-clean/featured.json';
+        const response = await fetch(featuredUrl);
+        
+        if (response.ok) {
+            const data = await response.json();
+            cachedFeaturedId = data.featuredMovieId;
+            lastFetchDate = today;
+            console.log('Featured movie ID loaded:', cachedFeaturedId);
+            return cachedFeaturedId;
+        } else {
+            console.warn('Featured.json not found, using fallback');
+        }
+    } catch(e) {
+        console.error('Error fetching featured.json:', e);
+    }
+    
+    const validMovies = moviesData.filter(m => m.status === 'active' && m.poster_url);
+    if (validMovies.length === 0) return null;
+    return validMovies[0].id;
+}
+
+async function loadFeaturedMovie() {
+    const container = document.getElementById('featuredMovieContainer');
+    if (!container) return;
+    
+    const movieId = await getFeaturedMovieId();
+    if (!movieId) return;
+    
+    const movie = moviesData.find(m => m.id === movieId);
+    if (!movie) return;
+    
+    currentFeaturedMovieId = movie.id;
+    
+    document.getElementById('featuredTitle').innerHTML = escapeHtml(movie.title);
+    document.getElementById('featuredYear').innerHTML = movie.year;
+    document.getElementById('featuredQuality').innerHTML = movie.quality || 'HD';
+    document.getElementById('featuredType').innerHTML = movie.type === 'Series' ? 'Σειρά' : 'Ταινία';
+    document.getElementById('featuredDesc').innerHTML = movie.desc || 'Δεν υπάρχει περιγραφή.';
+    document.getElementById('featuredStars').innerHTML = getStarsHtml(movie.rating) + ` <span style="font-size: 14px; opacity: 0.8;">(${movie.rating.toFixed(1)}/10)</span>`;
+    
+    const posterImg = document.getElementById('featuredPoster');
+    posterImg.src = movie.poster_url || generateFallbackPoster(movie.title);
+    posterImg.onerror = () => { posterImg.src = generateFallbackPoster(movie.title); };
+    
+    // Background image
+    const heroBg = document.getElementById('featuredHeroBg');
+    if (heroBg) {
+    heroBg.style.background = "linear-gradient(135deg, #1a1a2e, #e50914)";
+    heroBg.style.backgroundSize = 'cover';
+}
+    
+    const watchBtn = document.getElementById('featuredWatchBtn');
+    const watchlistBtn = document.getElementById('featuredWatchlistBtn');
+    
+    if (watchBtn) {
+        watchBtn.onclick = () => {
+            if (isUserLoggedIn) {
+                suggestFreeMovie(movie);
+            } else {
+                showToast('Συνδεθείτε για προβολή', '#e67e22');
+            }
+        };
+    }
+    
+    if (watchlistBtn) {
+        watchlistBtn.onclick = () => {
+            if (isUserLoggedIn) {
+                const isAdded = toggleCollection(movie.id, 'watchlist');
+                showToast(isAdded ? `Προστέθηκε: ${movie.title}` : `Αφαιρέθηκε: ${movie.title}`, isAdded ? '#2ecc71' : '#e67e22');
+                watchlistBtn.innerHTML = isAdded ? '✓ Watchlist' : '➕ Watchlist';
+                watchlistBtn.style.borderColor = isAdded ? '#2ecc71' : 'var(--primary)';
+                watchlistBtn.style.color = isAdded ? '#2ecc71' : 'var(--primary)';
+            } else {
+                showToast('Συνδεθείτε για να προσθέσετε', '#e67e22');
+            }
+        };
+        
+        if (isInCollection(movie.id, 'watchlist')) {
+            watchlistBtn.innerHTML = '✓ Watchlist';
+            watchlistBtn.style.borderColor = '#2ecc71';
+            watchlistBtn.style.color = '#2ecc71';
+        }
+    }
+    
+    container.style.display = 'block';
+}
+
+// (Προαιρετικό) Συνάρτηση για χειροκίνητη αλλαγή από κονσόλα
+async function setFeaturedMovie(movieId) {
+    const movie = moviesData.find(m => m.id === movieId);
+    if (!movie) {
+        showToast('Δεν βρέθηκε ταινία με αυτό το ID', '#e50914');
+        return false;
+    }
+    // Αποθήκευση στο localStorage για προσωρινή χρήση (μόνο για εσένα)
+    localStorage.setItem('featuredMovieIdTemp', movieId);
+    showToast(`⚠️ Προσωρινή αλλαγή: ${movie.title} (μόνο για εσάς)`, '#e67e22');
+    loadFeaturedMovie();
+    return true;
 }
 
 // ============ CRUD OPERATIONS ============
@@ -2058,6 +2174,7 @@ function attachEventListeners() {
     const modalDirector = document.getElementById('modalDirector'); if (modalDirector) modalDirector.addEventListener('click', (e) => { const value = e.target.innerText; if (value && value !== '-') searchMoviesByDirectorOrWriter(value, 'director'); });
     const modalWriter = document.getElementById('modalWriter'); if (modalWriter) modalWriter.addEventListener('click', (e) => { const value = e.target.innerText; if (value && value !== '-') searchMoviesByDirectorOrWriter(value, 'writer'); });
     addEnrichButton(); initLegalModals();
+	addFeaturedButton();
     window.approveExistingMovie = approveExistingMovie; window.rejectAndDeleteMovie = rejectAndDeleteMovie;
 }
 

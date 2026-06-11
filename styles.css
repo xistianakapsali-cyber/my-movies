@@ -742,3 +742,83 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
     position: relative !important;
     cursor: pointer !important;
 }
+/* ============ ΠΡΟΤΕΙΝΟΜΕΝΗ ΤΑΙΝΙΑ - ΠΛΗΡΕΣ ΠΛΑΤΟΣ ============ */
+#featuredMovieContainer {
+    width: 100%;
+    margin: 0 0 30px 0 !important;
+}
+
+#featuredMovieContainer > div > div {
+    border-radius: 0 !important;
+}
+
+/* Responsive για κινητά */
+@media (max-width: 700px) {
+    #featuredMovieContainer > div > div > div {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px 15px;
+    }
+    
+    #featuredPoster {
+        margin: 0 auto;
+    }
+    
+    #featuredTitle {
+        font-size: 24px !important;
+    }
+    
+    #featuredDesc {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    #featuredWatchBtn, #featuredWatchlistBtn {
+        flex: 1;
+    }
+}
+
+/* Hover effects για τα κουμπιά */
+#featuredWatchBtn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+#featuredWatchlistBtn:hover {
+    transform: translateY(-2px);
+    background: rgba(229,9,20,0.1);
+}
+/* ============ LIGHT THEME FIX FOR FEATURED MOVIE ============ */
+[data-theme="light"] #featuredDesc {
+    color: #1a1a1a !important;
+    text-shadow: none !important;
+}
+
+[data-theme="light"] #featuredMovieContainer p {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] #featuredHeroBg > div {
+    background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.7) 100%) !important;
+}
+
+[data-theme="light"] #featuredTitle {
+    text-shadow: none !important;
+}
+
+[data-theme="light"] #featuredYear,
+[data-theme="light"] #featuredQuality,
+[data-theme="light"] #featuredType {
+    color: #1a1a2e !important;
+    background: rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="light"] #featuredStars {
+    color: #e67e22 !important;
+}
+
+[data-theme="light"] #featuredWatchlistBtn {
+    background: rgba(0,0,0,0.05) !important;
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+}

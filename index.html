@@ -86,6 +86,40 @@
         <select id="studioFilter"><option value="All">Ολες οι Πλατφορμες</option></select>
     </div>
 </div>
+
+<!-- ΠΡΟΤΕΙΝΟΜΕΝΗ ΤΑΙΝΙΑ ΤΗΣ ΗΜΕΡΑΣ - ΜΕ ΥΠΟΣΤΗΡΙΞΗ THEMES -->
+<div id="featuredMovieContainer" style="display: none; width: 100%; margin: 0 0 30px 0;">
+    <div id="featuredHeroBg" style="width: 100%; background: linear-gradient(135deg, #1a1a2e, #e50914); border-bottom: 3px solid var(--primary);">
+        <div style="background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.6) 100%); width: 100%;" data-theme-overlay>
+            <div style="max-width: 1400px; margin: 0 auto; padding: 35px 20px; display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
+                <!-- POSTER -->
+                <div style="position: relative; flex-shrink: 0;">
+                    <img id="featuredPoster" src="" alt="Poster" style="width: 150px; height: 225px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
+                </div>
+                
+                <!-- ΠΛΗΡΟΦΟΡΙΕΣ -->
+                <div style="flex: 1; min-width: 250px;">
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 8px;">
+                        <h2 id="featuredTitle" style="margin: 0; font-size: 32px; color: var(--primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Τίτλος</h2>
+                        <div style="background: #1e7e34; color: white; padding: 6px 14px; border-radius: 30px; font-size: 12px; font-weight: bold;">Προτεινόμενο</div>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <span id="featuredYear" style="background: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; color: white;">2024</span>
+                        <span id="featuredQuality" style="background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px; font-size: 13px; color: white;">HD</span>
+                        <span id="featuredType" style="background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px; font-size: 13px; color: white;">Ταινία</span>
+                    </div>
+                    <div id="featuredStars" style="margin-bottom: 12px; font-size: 20px; color: var(--gold);">★★★★★</div>
+                    <p id="featuredDesc" style="color: var(--text); margin-bottom: 20px; font-size: 14px; line-height: 1.6;">Περιγραφή...</p>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <button id="featuredWatchBtn" style="background: var(--primary); color: white; border: none; padding: 12px 28px; border-radius: 40px; cursor: pointer; font-weight: bold;">► ΠΡΟΒΟΛΗ</button>
+                        <button id="featuredWatchlistBtn" style="background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 26px; border-radius: 40px; cursor: pointer; font-weight: bold;">➕ Watchlist</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Loading overlay -->
 <div id="initialLoadingOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column;">
     <div style="text-align:center;">
@@ -163,29 +197,12 @@
         <div class="legal-scroll">
             <h3>1. Αποδοχή Όρων</h3>
             <p>Χρησιμοποιώντας το YIOIO, αποδέχεστε τους παρόντες όρους χρήσης.</p>
-            
             <h3>2. Υπευθυνότητα Χρήστη</h3>
-            <p>Ο χρήστης είναι αποκλειστικά υπεύθυνος για:</p>
-            <ul>
-                <li>Τα αρχεία βίντεο που διαχειρίζεται μέσω της εφαρμογής</li>
-                <li>Τα links που αποθηκεύει στις συλλογές του</li>
-                <li>Την τήρηση των πνευματικών δικαιωμάτων</li>
-            </ul>
-            
+            <p>Ο χρήστης είναι αποκλειστικά υπεύθυνος για τα αρχεία βίντεο που διαχειρίζεται και τα links που αποθηκεύει.</p>
             <h3>3. Απαγόρευση Παράνομου Περιεχομένου</h3>
-            <p>Απαγορεύεται αυστηρά η χρήση του YIOIO για:</p>
-            <ul>
-                <li>Διανομή ή αποθήκευση πειρατικού υλικού</li>
-                <li>Links που οδηγούν σε παράνομο περιεχόμενο</li>
-                <li>Παραβίαση πνευματικών δικαιωμάτων τρίτων</li>
-            </ul>
-            
+            <p>Απαγορεύεται η χρήση του YIOIO για διανομή πειρατικού υλικού.</p>
             <h3>4. Αποποίηση Ευθύνης</h3>
-            <p>Το YIOIO είναι ένα εργαλείο οργάνωσης προσωπικών συλλογών. Δεν φιλοξενούμε, δεν διανέμουμε και δεν συνδέουμε άμεσα με παράνομο περιεχόμενο. Οι χρήστες είναι αποκλειστικά υπεύθυνοι για το πώς χρησιμοποιούν την εφαρμογή.</p>
-            
-            <h3>5. Αλλαγές Όρων</h3>
-            <p>Διατηρούμε το δικαίωμα να τροποποιούμε τους όρους ανά πάσα στιγμή. Η συνεχής χρήση της εφαρμογής αποτελεί αποδοχή των νέων όρων.</p>
-            
+            <p>Το YIOIO είναι εργαλείο οργάνωσης προσωπικών συλλογών. Οι χρήστες είναι υπεύθυνοι για το περιεχόμενό τους.</p>
             <p class="legal-date">Τελευταία ενημέρωση: 31 Μαΐου 2026</p>
         </div>
     </div>
@@ -197,31 +214,7 @@
         <span class="legal-close">&times;</span>
         <h2>Πολιτική Απορρήτου (GDPR)</h2>
         <div class="legal-scroll">
-            <h3>1. Ποια δεδομένα συλλέγουμε</h3>
-            <p>Το YIOIO αποθηκεύει τοπικά (στο πρόγραμμα περιήγησής σας):</p>
-            <ul>
-                <li>Τις λίστες ταινιών και σειρών σας</li>
-                <li>Τις συλλογές σας (Favorites, Watchlist)</li>
-                <li>Τα metadata των ταινιών που προσθέτετε</li>
-                <li>Τα αιτήματα ταινιών που υποβάλλετε</li>
-            </ul>
-            
-            <h3>2. Πού αποθηκεύονται τα δεδομένα</h3>
-            <p>Όλα τα δεδομένα σας αποθηκεύονται αποκλειστικά στο <strong>localStorage</strong> του browser σας. Δεν διατηρούμε server, δεν συλλέγουμε προσωπικά δεδομένα, και δεν στέλνουμε δεδομένα σε τρίτους (εκτός από τα αιτήματα στο TMDB API για αναζήτηση ταινιών).</p>
-            
-            <h3>3. Δικαίωμα Πρόσβασης & Διαγραφής (GDPR)</h3>
-            <p>Έχετε το δικαίωμα να:</p>
-            <ul>
-                <li>Εξαγάγετε όλα τα δεδομένα σας (κουμπί "Εξαγωγή Δεδομένων" στο προφίλ σας)</li>
-                <li>Διαγράψετε οριστικά όλα τα δεδομένα σας (κουμπί "Διαγραφή Λογαριασμού")</li>
-            </ul>
-            
-            <h3>4. Cookies</h3>
-            <p>Χρησιμοποιούμε μόνο essential cookies (localStorage) για τη λειτουργία της εφαρμογής. Δεν χρησιμοποιούμε tracking cookies ή analytics.</p>
-            
-            <h3>5. Επικοινωνία</h3>
-            <p>Για αιτήματα GDPR, επικοινωνήστε στο: <strong>yioiorequests@gmail.com</strong></p>
-            
+            <p>Το YIOIO αποθηκεύει τοπικά τις λίστες ταινιών και τις συλλογές σας. Δεν συλλέγουμε προσωπικά δεδομένα.</p>
             <p class="legal-date">Τελευταία ενημέρωση: 31 Μαΐου 2026</p>
         </div>
     </div>
@@ -233,25 +226,7 @@
         <span class="legal-close">&times;</span>
         <h2>Πολιτική Πνευματικών Δικαιωμάτων (DMCA)</h2>
         <div class="legal-scroll">
-            <h3>1. Σεβασμός στα Πνευματικά Δικαιώματα</h3>
-            <p>Το YIOIO σέβεται απόλυτα τα πνευματικά δικαιώματα. Αν πιστεύετε ότι περιεχόμενο που εμφανίζεται μέσω της εφαρμογής μας παραβιάζει τα δικαιώματά σας, παρακαλούμε επικοινωνήστε μαζί μας.</p>
-            
-            <h3>2. Υποβολή Καταγγελίας (DMCA Notice)</h3>
-            <p>Για να υποβάλετε καταγγελία, στείλτε email με τα εξής στοιχεία:</p>
-            <ul>
-                <li>Ταυτοποίηση του έργου που παραβιάζεται</li>
-                <li>Ταυτοποίηση του υλικού που πρέπει να αφαιρεθεί (title, year, link)</li>
-                <li>Στοιχεία επικοινωνίας σας (email, τηλέφωνο)</li>
-                <li>Δήλωση καλής πίστης ότι η χρήση δεν επιτρέπεται</li>
-                <li>Υπογραφή (ηλεκτρονική ή φυσική)</li>
-            </ul>
-            
-            <h3>3. Αποστολή Καταγγελίας</h3>
-            <p><strong>Email DMCA Agent:</strong> yioiorequests@gmail.com</p>
-            
-            <h3>4. Διαδικασία Αφαίρεσης</h3>
-            <p>Μόλις λάβουμε έγκυρη καταγγελία, θα αφαιρέσουμε το επίμαχο περιεχόμενο εντός 48 ωρών. Οι χρήστες που επανειλημμένα παραβιάζουν τα πνευματικά δικαιώματα θα αποκλείονται.</p>
-            
+            <p>Για καταγγελίες DMCA, επικοινωνήστε στο yioiorequests@gmail.com</p>
             <p class="legal-date">Τελευταία ενημέρωση: 31 Μαΐου 2026</p>
         </div>
     </div>
@@ -263,20 +238,8 @@
         <span class="legal-close">&times;</span>
         <h2>Διαχείριση Δεδομένων (GDPR)</h2>
         <div class="legal-scroll">
-            <p>Εδώ μπορείτε να ασκήσετε τα δικαιώματά σας βάσει του Γενικού Κανονισμού Προστασίας Δεδομένων (GDPR).</p>
-            
-            <div style="margin: 20px 0;">
-                <button id="gdprExportBtn" style="background: #2196f3; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 10px;">
-                    📥 Εξαγωγή όλων των δεδομένων μου (JSON)
-                </button>
-                <button id="gdprDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%;">
-                    🗑️ Διαγραφή όλων των δεδομένων μου (ανεπιστρεπτί)
-                </button>
-            </div>
-            
-            <p style="font-size: 12px; opacity: 0.7;">
-            ⚠️ Η διαγραφή δεδομένων είναι μόνιμη και δεν μπορεί να ανακληθεί.
-            </p>
+            <button id="gdprExportBtn" style="background:#2196f3;color:white;padding:12px;border-radius:8px;width:100%;margin-bottom:10px;">Εξαγωγή Δεδομένων</button>
+            <button id="gdprDeleteBtn" style="background:#e74c3c;color:white;padding:12px;border-radius:8px;width:100%;">Διαγραφή Δεδομένων</button>
         </div>
     </div>
 </div>
@@ -290,8 +253,7 @@
         <a href="#" id="gdprLink">GDPR (Δεδομένα)</a>
     </div>
     <div class="footer-disclaimer">
-        ⚠️ Το YIOIO είναι εργαλείο οργάνωσης προσωπικών συλλογών. Οι χρήστες είναι υπεύθυνοι για τη νομιμότητα του περιεχομένου τους. 
-        Τα metadata προέρχονται από το <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDB</a> (CC BY-NC 4.0).
+        ⚠️ Το YIOIO είναι εργαλείο οργάνωσης προσωπικών συλλογών. Οι χρήστες είναι υπεύθυνοι για τη νομιμότητα του περιεχομένου τους.
     </div>
     <div class="footer-copyright">
         © 2026 YIOIO - Με επιφύλαξη παντός δικαιώματος
@@ -300,62 +262,6 @@
 
 <script src="config.js"></script>
 <script src="app_fixed.js"></script>
-
-<!-- ΜΟΝΙΜΟ FIX ΓΙΑ ΟΛΑ ΤΑ ΚΟΥΜΠΙΑ -->
-<script>
-(function() {
-    setTimeout(function() {
-        // FIX for OSCAR button
-        var oscar = document.getElementById('enrichOscarBtn');
-        if (oscar && !oscar._fixed) {
-            oscar._fixed = true;
-            oscar.onclick = function() {
-                var title = prompt('Εισάγετε τον ΑΚΡΙΒΗ τίτλο της ταινίας για προσθήκη ετικέτας OSCAR Winner:');
-                if (!title) return;
-                if (typeof moviesData === 'undefined') { alert('Η βάση δεδομένων δεν είναι ακόμα έτοιμη.'); return; }
-                var movie = moviesData.find(function(m) { return m.title.toLowerCase() === title.toLowerCase(); });
-                if (!movie) { alert('Δεν βρέθηκε ταινία με τίτλο: ' + title); return; }
-                if (movie.genre && movie.genre.includes('Oscar Winner')) { alert('Η ταινία "' + movie.title + '" έχει ήδη ετικέτα OSCAR!'); return; }
-                movie.genre = movie.genre ? movie.genre + ', Oscar Winner' : 'Oscar Winner';
-                if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-                if (typeof initFilters === 'function') initFilters();
-                if (typeof applyFilters === 'function') applyFilters();
-                alert('✅ Επιτυχία! Προστέθηκε "Oscar Winner" στην ταινία: ' + movie.title);
-            };
-            console.log('OSCAR button fixed');
-        }
-        
-        // FIX for Biography button
-        var bio = document.getElementById('enrichBiographiesBtn');
-        if (bio && !bio._fixed) {
-            bio._fixed = true;
-            bio.onclick = function() {
-                if (typeof AdminAuth === 'undefined' || !AdminAuth.isSessionValid()) {
-                    if (typeof showToast === 'function') showToast('Μόνο διαχειριστής!', '#e50914');
-                    else alert('Μόνο διαχειριστής!');
-                    return;
-                }
-                if (typeof addBiographyTag === 'function') addBiographyTag();
-                else alert('addBiographyTag function not found');
-            };
-            console.log('Biography button fixed');
-        }
-        
-        // FIX for Import button
-        var imp = document.getElementById('importBtn');
-        if (imp && !imp._fixed) {
-            imp._fixed = true;
-            imp.onclick = function() {
-                var fileInput = document.getElementById('importFile');
-                if (fileInput) fileInput.click();
-            };
-            console.log('Import button fixed');
-        }
-        
-        console.log('✅ ALL BUTTONS PERMANENTLY FIXED');
-    }, 2000);
-})();
-</script>
 
 </body>
 </html>
