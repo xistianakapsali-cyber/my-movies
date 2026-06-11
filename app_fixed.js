@@ -224,7 +224,7 @@ let recentMovieIds = [];
 let mainPlatforms = [
     'Netflix', 'Disney+', 'Max (HBO)', 'Amazon Prime Video', 'Apple TV+', 
     'Paramount+', 'Peacock', 'Hulu', 'YouTube', 'Starz', 
-    'Crunchyroll', 'Discovery+', 'Ελληνικες Ταινιες', 'Αλλες Πλατφορμες'
+    'Crunchyroll', 'Discovery+', 'Ελληνικές Ταινίες', 'Αλλες Πλατφορμες'
 ];
 
 function updateMainPlatformsDropdown() {
@@ -390,7 +390,9 @@ function renderCollectionButtons(movieId) {
 
 // ============ LOAD MOVIES ============
 function saveToLocalStorage() { 
-    localStorage.setItem('yioio_movies_data', JSON.stringify(moviesData)); 
+    // Αποθήκευση ΜΟΝΟ των συλλογών - ΟΧΙ των 5000+ ταινιών
+    saveCollections();
+    console.log('✅ Συλλογές αποθηκεύτηκαν (ταινίες όχι για εξοικονόμηση χώρου)');
 }
 
 let CURRENT_VERSION = "2.1.1";
@@ -1152,9 +1154,8 @@ function showSuggestionResult(movie, platforms) {
                 border-radius: 12px; text-decoration: none; color: var(--text);
                 transition: all 0.2s; border: 1px solid var(--border); margin-bottom: 8px;
                 cursor: pointer;">
-                <span style="font-size: 24px;">${platform.icon}</span>
                 <span style="flex: 1; font-weight: 500;">${platform.name}</span>
-                <span style="color: var(--primary);">🔗 Προβολή →</span>
+                <span style="color: var(--primary);">Προβολή →</span>
             </a>
         `;
     }
@@ -1169,13 +1170,14 @@ function showSuggestionResult(movie, platforms) {
     
     // Έλεγχος αν υπάρχει link για Terra Box
     const hasTerraBoxLink = movie.link && movie.link !== '';
+    const terraBoxLink = hasTerraBoxLink ? movie.link : '';
     
     resultModal.innerHTML = `
         <div style="background: var(--card); border-radius: 20px; padding: 25px; 
                     max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto;
                     border: 2px solid var(--primary);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--primary); margin: 0;">🎬 Δωρεάν Προβολή</h2>
+                <h2 style="color: var(--primary); margin: 0;">Δωρεάν Προβολή</h2>
                 <button id="closeResultModalBtn" style="background: #e74c3c; border: none; color: white;
                     font-size: 20px; cursor: pointer; width: 36px; height: 36px;
                     border-radius: 50%; font-weight: bold;">✕</button>
@@ -1189,7 +1191,7 @@ function showSuggestionResult(movie, platforms) {
             
             <div style="margin-bottom: 20px;">
                 <p style="margin-bottom: 15px; font-size: 14px; opacity: 0.8;">
-                    📌 Παρακάτω μπορείς να ψάξεις σε δωρεάν πλατφόρμες:
+                    Παρακάτω μπορείς να ψάξεις σε δωρεάν πλατφόρμες:
                 </p>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     ${platformsHtml}
@@ -1199,25 +1201,31 @@ function showSuggestionResult(movie, platforms) {
             <!-- ΞΕΧΩΡΙΣΤΟ ΚΟΥΜΠΙ ΓΙΑ TERRA BOX -->
             ${hasTerraBoxLink ? `
             <div style="margin: 15px 0;">
-                <a id="terraBoxDirectLink" href="${movie.link}" target="_blank" style="display: flex; align-items: center;
+                <a id="terraBoxDirectLink" href="${terraBoxLink}" target="_blank" style="display: flex; align-items: center;
                     justify-content: center; gap: 12px; padding: 14px; background: linear-gradient(135deg, #1a472a, #2ecc71);
                     border-radius: 12px; text-decoration: none; color: white; font-weight: bold;
                     transition: all 0.2s; border: 2px solid #2ecc71; font-size: 16px;">
-                    <span style="font-size: 28px;">📦</span>
                     <span>ΜΕΤΑΦΟΡΑ ΣΤΟ TERRA BOX</span>
-                    <span>🚀</span>
                 </a>
+            </div>
+            
+            <!-- Πλαίσιο με το URL και κουμπί αντιγραφής -->
+            <div style="margin: 10px 0 15px 0; padding: 12px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="terraBoxUrlInput" value="${escapeHtml(terraBoxLink)}" readonly style="flex: 3; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; font-family: monospace;">
+                    <button id="copyUrlBtn" style="flex: 1; background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">Αντιγραφή</button>
+                </div>
             </div>
             ` : ''}
             
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button id="googleSearchBtnModal" style="flex: 1; background: #4285f4; color: white; border: none;
                     padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    🔍 Google
+                    Google
                 </button>
                 <button id="justwatchBtnModal" style="flex: 1; background: #e67e22; color: white; border: none;
                     padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    🎯 JustWatch
+                    JustWatch
                 </button>
             </div>
         </div>
@@ -1229,6 +1237,8 @@ function showSuggestionResult(movie, platforms) {
     const closeBtn = resultModal.querySelector('#closeResultModalBtn');
     const googleBtn = resultModal.querySelector('#googleSearchBtnModal');
     const justwatchBtn = resultModal.querySelector('#justwatchBtnModal');
+    const copyBtn = resultModal.querySelector('#copyUrlBtn');
+    const urlInput = resultModal.querySelector('#terraBoxUrlInput');
     
     if (closeBtn) {
         closeBtn.onclick = function(e) {
@@ -1251,7 +1261,18 @@ function showSuggestionResult(movie, platforms) {
         };
     }
     
-    // Links
+    // Λειτουργία αντιγραφής URL
+    if (copyBtn && urlInput) {
+        copyBtn.onclick = function(e) {
+            e.preventDefault();
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            showToast('Το link αντιγράφηκε!', '#2ecc71');
+        };
+    }
+    
+    // Links (για τις πλατφόρμες)
     const allLinks = resultModal.querySelectorAll('a');
     allLinks.forEach(link => {
         link.onclick = function(e) {
