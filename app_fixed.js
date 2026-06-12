@@ -1656,7 +1656,7 @@ async function selectTMDBTvResultForAdd(tvId, tvTitle, tvYear, posterPath) {
     }
 }
 
-function saveNewMovie() {
+async function saveNewMovie() {
     if (!isUserLoggedIn) { showToast('Πρέπει να συνδεθείτε για να προσθέσετε ταινία!', '#e50914'); return; }
     
     const title = document.getElementById('newTitle').value.trim();
@@ -1668,7 +1668,9 @@ function saveNewMovie() {
     
     const linkValue = document.getElementById('newLink').value || '';
     const newId = moviesData.length ? Math.max(...moviesData.map(m => m.id)) + 1 : 4;
+    const mediaType = document.getElementById('newType').value === 'Series' ? 'tv' : 'movie';
     
+    // Δημιουργία της νέας ταινίας (χωρίς backdrop_url ακόμα)
     const newMovie = { 
         id: newId, title, year, type: document.getElementById('newType').value, quality: document.getElementById('newQuality').value,
         actors: document.getElementById('newActors').value || 'N/A', link: linkValue,
@@ -1681,6 +1683,44 @@ function saveNewMovie() {
         createdBy: currentUserName || 'Χρήστης', status: linkValue ? 'active' : 'pending'
     };
     
+    // Προσπάθεια αυτόματης συμπλήρωσης backdrop_url από TMDB (αν υπάρχει tmdb link ή μπορούμε να το βρούμε)
+    let backdropUrl = null;
+    let tmdbId = null;
+    
+    // Αν υπάρχει tmdb link, βγάλε το id
+    if (newMovie.tmdb) {
+        const match = newMovie.tmdb.match(/\/(movie|tv)\/(\d+)/);
+        if (match) tmdbId = match[2];
+    }
+    
+    // Αν δεν υπάρχει tmdb id, κάνε αναζήτηση με τίτλο και έτος
+    if (!tmdbId && TMDB_API_KEY) {
+        try {
+            const searchUrl = `https://api.themoviedb.org/3/search/${mediaType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&year=${year}`;
+            const searchRes = await fetch(searchUrl);
+            const searchData = await searchRes.json();
+            if (searchData.results && searchData.results.length > 0) {
+                tmdbId = searchData.results[0].id;
+                // Αν βρήκαμε id, ενημέρωσε και το tmdb link
+                newMovie.tmdb = `https://www.themoviedb.org/${mediaType}/${tmdbId}`;
+            }
+        } catch(e) { console.warn('Search failed for backdrop'); }
+    }
+    
+    // Αν έχουμε tmdbId, πάρε το backdrop_path
+    if (tmdbId && TMDB_API_KEY) {
+        try {
+            const detailsUrl = `https://api.themoviedb.org/3/${mediaType}/${tmdbId}?api_key=${TMDB_API_KEY}`;
+            const detailsRes = await fetch(detailsUrl);
+            const details = await detailsRes.json();
+            if (details.backdrop_path) {
+                backdropUrl = `https://image.tmdb.org/t/p/w1280${details.backdrop_path}`;
+            }
+        } catch(e) { console.warn('Could not fetch backdrop'); }
+    }
+    
+    if (backdropUrl) newMovie.backdrop_url = backdropUrl;
+    
     moviesData.push(newMovie);
     saveToLocalStorage();
     updateRecentMoviesList();
@@ -1689,7 +1729,7 @@ function saveNewMovie() {
     applyFilters();
     closeAddMovieForm();
     tempPoster = null;
-    showToast(`Προστέθηκε: ${title}${linkValue ? '' : ' (ΣΕ ΑΝΑΜΟΝΗ)'}`, linkValue ? '#2ecc71' : '#e67e22');
+    showToast(`Προστέθηκε: ${title}${backdropUrl ? ' (με backdrop)' : ''}${linkValue ? '' : ' (ΣΕ ΑΝΑΜΟΝΗ)'}`, linkValue ? '#2ecc71' : '#e67e22');
 }
 
 let currentEditingMovieId = null;
