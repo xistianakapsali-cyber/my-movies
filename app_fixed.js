@@ -1145,11 +1145,27 @@ async function suggestFreeMovie(movie) {
 }
 
 function showSuggestionResult(movie, platforms) {
-    // Φιλτράρισμα για να μην υπάρχει Terra Box μέσα στις πλατφόρμες
-    const filteredPlatforms = platforms.filter(p => p.name !== 'Terra Box');
+    // Προσθήκη Google και JustWatch στις πλατφόρμες (αν δεν υπάρχουν)
+    const enhancedPlatforms = [...platforms];
+    if (!enhancedPlatforms.some(p => p.name === 'Google Αναζήτηση')) {
+        enhancedPlatforms.push({ 
+            name: 'Google Αναζήτηση', 
+            url: `https://www.google.com/search?q=${encodeURIComponent(movie.title + ' ' + movie.year + ' full movie free')}`,
+            icon: '🔍'
+        });
+    }
+    if (!enhancedPlatforms.some(p => p.name === 'JustWatch')) {
+        enhancedPlatforms.push({ 
+            name: 'JustWatch', 
+            url: `https://www.justwatch.com/us/search?q=${encodeURIComponent(movie.title)}`,
+            icon: '🎯'
+        });
+    }
+    
+    // Φιλτράρισμα για να μην υπάρχει Terra Box μέσα στις πλατφόρμες (θα το βάλουμε ξεχωριστά)
+    const filteredPlatforms = enhancedPlatforms.filter(p => p.name !== 'Terra Box');
     
     let platformsHtml = '';
-    
     for (const platform of filteredPlatforms) {
         platformsHtml += `
             <a href="${platform.url}" target="_blank" style="display: flex; align-items: center; 
@@ -1171,7 +1187,6 @@ function showSuggestionResult(movie, platforms) {
         display: flex; align-items: center; justify-content: center;
     `;
     
-    // Έλεγχος αν υπάρχει link για Terra Box
     const hasTerraBoxLink = movie.link && movie.link !== '';
     const terraBoxLink = hasTerraBoxLink ? movie.link : '';
     
@@ -1192,55 +1207,43 @@ function showSuggestionResult(movie, platforms) {
                 <p style="margin: 0; opacity: 0.7;">${movie.year} • ${movie.quality || 'HD'}</p>
             </div>
             
-            <div style="margin-bottom: 20px;">
-                <p style="margin-bottom: 15px; font-size: 14px; opacity: 0.8;">
-                    Παρακάτω μπορείς να ψάξεις σε δωρεάν πλατφόρμες:
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    ${platformsHtml}
-                </div>
-            </div>
-            
-            <!-- ΞΕΧΩΡΙΣΤΟ ΚΟΥΜΠΙ ΓΙΑ TERRA BOX -->
+            <!-- ΠΡΩΤΟ: TERRA BOX (αν υπάρχει link) -->
             ${hasTerraBoxLink ? `
             <div style="margin: 15px 0;">
+                <div style="background: #1e7e34; color: white; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 10px; font-weight: bold;">✅ Η ταινία είναι διαθέσιμη στο Terra Box</div>
                 <a id="terraBoxDirectLink" href="${terraBoxLink}" target="_blank" style="display: flex; align-items: center;
                     justify-content: center; gap: 12px; padding: 14px; background: linear-gradient(135deg, #1a472a, #2ecc71);
                     border-radius: 12px; text-decoration: none; color: white; font-weight: bold;
                     transition: all 0.2s; border: 2px solid #2ecc71; font-size: 16px;">
-                    <span>ΜΕΤΑΦΟΡΑ ΣΤΟ TERRA BOX</span>
+                    <span>Μεταφορά στο Terra Box</span>
                 </a>
-            </div>
-            
-            <!-- Πλαίσιο με το URL και κουμπί αντιγραφής -->
-            <div style="margin: 10px 0 15px 0; padding: 12px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border);">
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" id="terraBoxUrlInput" value="${escapeHtml(terraBoxLink)}" readonly style="flex: 3; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; font-family: monospace;">
-                    <button id="copyUrlBtn" style="flex: 1; background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">Αντιγραφή</button>
+                <div style="margin: 10px 0 15px 0; padding: 12px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" id="terraBoxUrlInput" value="${escapeHtml(terraBoxLink)}" readonly style="flex: 3; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; font-family: monospace;">
+                        <button id="copyUrlBtn" style="flex: 1; background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">Αντιγραφή</button>
+                    </div>
                 </div>
             </div>
             ` : ''}
             
-            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button id="googleSearchBtnModal" style="flex: 1; background: #4285f4; color: white; border: none;
-                    padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    Google
-                </button>
-                <button id="justwatchBtnModal" style="flex: 1; background: #e67e22; color: white; border: none;
-                    padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    JustWatch
-                </button>
+            <!-- ΕΠΙΚΕΦΑΛΙΔΑ ΓΙΑ ΤΙΣ ΥΠΟΛΟΙΠΕΣ ΠΛΑΤΦΟΡΜΕΣ -->
+            <div style="margin: 10px 0 5px 0;">
+                <p style="font-size: 14px; font-weight: bold; color: var(--primary); border-left: 3px solid var(--primary); padding-left: 10px;">🎬 Εναλλακτικά, μπορείτε να δείτε δωρεάν την ταινία σε αυτά τα site:</p>
+            </div>
+            
+            <!-- ΛΙΣΤΑ ΥΠΟΛΟΙΠΩΝ ΠΛΑΤΦΟΡΜΩΝ (συμπεριλαμβανομένων Google και JustWatch) -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    ${platformsHtml}
+                </div>
             </div>
         </div>
     `;
     
     document.body.appendChild(resultModal);
-
     
     // Event listeners
     const closeBtn = resultModal.querySelector('#closeResultModalBtn');
-    const googleBtn = resultModal.querySelector('#googleSearchBtnModal');
-    const justwatchBtn = resultModal.querySelector('#justwatchBtnModal');
     const copyBtn = resultModal.querySelector('#copyUrlBtn');
     const urlInput = resultModal.querySelector('#terraBoxUrlInput');
     
@@ -1251,21 +1254,6 @@ function showSuggestionResult(movie, platforms) {
         };
     }
     
-    if (googleBtn) {
-        googleBtn.onclick = function(e) {
-            e.preventDefault();
-            window.open(`https://www.google.com/search?q=${encodeURIComponent(movie.title + ' ' + movie.year + ' full movie free')}`, '_blank');
-        };
-    }
-    
-    if (justwatchBtn) {
-        justwatchBtn.onclick = function(e) {
-            e.preventDefault();
-            window.open(`https://www.justwatch.com/us/search?q=${encodeURIComponent(movie.title)}`, '_blank');
-        };
-    }
-    
-    // Λειτουργία αντιγραφής URL
     if (copyBtn && urlInput) {
         copyBtn.onclick = function(e) {
             e.preventDefault();
@@ -1276,7 +1264,6 @@ function showSuggestionResult(movie, platforms) {
         };
     }
     
-    // Links (για τις πλατφόρμες)
     const allLinks = resultModal.querySelectorAll('a');
     allLinks.forEach(link => {
         link.onclick = function(e) {
@@ -1342,11 +1329,17 @@ async function loadFeaturedMovie() {
     posterImg.onerror = () => { posterImg.src = generateFallbackPoster(movie.title); };
     
     // Background image
-    const heroBg = document.getElementById('featuredHeroBg');
+        const heroBg = document.getElementById('featuredHeroBg');
     if (heroBg) {
-    heroBg.style.background = "linear-gradient(135deg, #1a1a2e, #e50914)";
-    heroBg.style.backgroundSize = 'cover';
-}
+        if (movie.backdrop_url && movie.backdrop_url !== '') {
+            heroBg.style.backgroundImage = `url('${movie.backdrop_url}')`;
+            heroBg.style.backgroundSize = 'cover';
+            heroBg.style.backgroundPosition = 'center';
+        } else {
+            heroBg.style.background = "linear-gradient(135deg, #1a1a2e, #e50914)";
+            heroBg.style.backgroundSize = 'cover';
+        }
+    }
     
     const watchBtn = document.getElementById('featuredWatchBtn');
     const watchlistBtn = document.getElementById('featuredWatchlistBtn');
@@ -2235,4 +2228,17 @@ window.addEventListener('DOMContentLoaded', async () => {
             console.log('✅ Κουμπί Προβολής ενεργοποιήθηκε (interval)');
         }
     }, 2000);
+	// ============ ΜΟΝΙΜΟ FIX ΓΙΑ OSCAR BUTTON ============
+function fixOscarButtonPermanently() {
+    const btn = document.getElementById('enrichOscarBtn');
+    if (btn && !btn.hasAttribute('data-fixed-oscar')) {
+        btn.setAttribute('data-fixed-oscar', 'true');
+        btn.onclick = function(e) {
+            e.preventDefault();
+            manualOscar();
+        };
+    }
+}
+fixOscarButtonPermanently();
+setInterval(fixOscarButtonPermanently, 2000);
 })();
