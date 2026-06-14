@@ -915,3 +915,13 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
 [data-theme="light"] #featuredHeroBg > div {
     background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%) !important;
 }
+/* Τίτλος προτεινόμενης ταινίας – λευκός στο dark, μαύρος στο light */
+#featuredTitle {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+[data-theme="light"] #featuredTitle {
+    color: #1a1a1a !important;
+    text-shadow: none;
+}
