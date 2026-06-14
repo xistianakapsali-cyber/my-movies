@@ -898,3 +898,20 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
 }
 
 /* Αν θέλεις ακόμα μεγαλύτερη, π.χ. 18px, άλλαξε την τιμή */
+
+/* Κάνει το backdrop πιο ζωντανό, μειώνοντας το μαύρο overlay */
+#featuredHeroBg > div {
+    background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.3) 100%) !important;
+}
+
+/* Για ακόμα πιο ανοιχτό (ζωντανό) αποτέλεσμα, χρησιμοποίησε αυτό: */
+/*
+#featuredHeroBg > div {
+    background: linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.15) 100%) !important;
+}
+*/
+
+/* Στο light theme, κάνε το overlay ακόμα πιο ανοιχτόχρωμο (λευκό διάφανο) */
+[data-theme="light"] #featuredHeroBg > div {
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%) !important;
+}
