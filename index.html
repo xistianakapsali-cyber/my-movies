@@ -30,7 +30,31 @@
         </div>
     </div>
 </header>
-
+<!-- Φίλτρα (επαναφορά) -->
+<div class="filter-group">
+    <select id="genreFilter">
+        <option value="All">Ολες οι Κατηγορίες</option>
+        <option value="Biography">Βιογραφικές</option>
+        <option value="Oscar Winner">Νικητές Οσκαρ</option>
+    </select>
+    <select id="sortSelect">
+        <option value="title">Τίτλος (Α-Ω)</option>
+        <option value="idDesc">ID (Νεότερα πρώτα)</option>
+        <option value="idAsc">ID (Παλαιότερα πρώτα)</option>
+        <option value="yearDesc">Νεότερες πρώτα</option>
+        <option value="ratingDesc">Βαθμολογία (Υψηλή-Χαμηλή)</option>
+        <option value="yearAsc">Παλαιότερες πρώτα</option>
+        <option value="latest">Πρόσφατες Προσθήκες</option>
+        <option value="qualityHD">Ποιότητα (HD/4K πρώτα)</option>
+        <option value="qualitySD">Ποιότητα (SD πρώτα)</option>
+        <option value="pendingOnly">Σε Αναμονή</option>
+        <option value="collection_favorites">Favorites</option>
+        <option value="collection_watchlist">Watchlist</option>
+    </select>
+    <select id="yearFilter"><option value="All">Ολα τα ετη</option></select>
+    <select id="countryFilter"><option value="All">Ολες οι Χωρες</option></select>
+    <select id="studioFilter"><option value="All">Ολες οι Πλατφορμες</option></select>
+</div>
 <div class="dashboard" id="dashboard" style="display:none;">
     <div class="dashboard-header"><h3>Στατιστικά</h3><button class="close-dash-btn">X</button></div>
     <div class="dashboard-stats">
