@@ -83,13 +83,23 @@
         </select>
         <select id="yearFilter"><option value="All">Ολα τα ετη</option></select>
         <select id="countryFilter"><option value="All">Ολες οι Χωρες</option></select>
-        <select id="studioFilter"><option value="All">Ολες οι Πλατφορμες</option></select>
+        <select id="studioFilter">
+            <option value="All">Όλες οι Πλατφόρμες</option>
+            <option value="Netflix">🔴 Netflix</option>
+            <option value="Disney+">🏰 Disney+</option>
+            <option value="HBO Max / Max">🟣 HBO Max / Max</option>
+            <option value="Amazon Prime Video">🟦 Amazon Prime Video</option>
+            <option value="Apple TV+">🍏 Apple TV+</option>
+            <option value="Crunchyroll">🟠 Crunchyroll</option>
+            <option value="Rakuten Viki">💛 Rakuten Viki</option>
+            <option value="Άλλες Πλατφόρμες">🌐 Άλλες Πλατφόρμες</option>
+        </select>
     </div>
 </div>
 
 <!-- ΠΡΟΤΕΙΝΟΜΕΝΗ ΤΑΙΝΙΑ ΤΗΣ ΗΜΕΡΑΣ - ΜΕ ΥΠΟΣΤΗΡΙΞΗ THEMES -->
 <div id="featuredMovieContainer" style="display: none; width: 100%; margin: 0 0 30px 0;">
-    <div id="featuredHeroBg" style="width: 100%; background: linear-gradient(135deg, #1a1a2e, #e50914); border-bottom: 3px solid var(--primary);">
+    <div id="featuredHeroBg" style="width: 100%; min-height: 450px; background-size: cover; background-position: center; border-bottom: 3px solid var(--primary);">
         <div style="background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.6) 100%); width: 100%;" data-theme-overlay>
             <div style="max-width: 1400px; margin: 0 auto; padding: 35px 20px; display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
                 <!-- POSTER -->

@@ -822,3 +822,35 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
     border-color: var(--primary) !important;
     color: var(--primary) !important;
 }
+/* Απόκρυψη της μικρής αφίσας στο banner της προτεινόμενης ταινίας */
+#featuredPoster {
+    display: none !important;
+}
+/* Διόρθωση backdrop - κάλυψη όλου του banner */
+#featuredHeroBg {
+    position: relative;
+    width: 100%;
+    min-height: 450px;
+    background-size: cover !important;
+    background-position: center 25% !important;
+    background-repeat: no-repeat !important;
+}
+
+#featuredHeroBg > div {
+    position: relative;
+    width: 100%;
+    min-height: 450px;
+    display: flex;
+    align-items: center;
+    backdrop-filter: brightness(0.7);
+}
+
+/* Για κινητά */
+@media (max-width: 768px) {
+    #featuredHeroBg {
+        min-height: 550px;
+    }
+    #featuredHeroBg > div {
+        min-height: 550px;
+    }
+}
