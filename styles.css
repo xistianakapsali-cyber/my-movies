@@ -854,3 +854,40 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
         min-height: 550px;
     }
 }
+/* Μετακίνηση μπάρας αναζήτησης στο header */
+.header-controls .search-wrapper {
+    width: 220px;
+    margin-right: 5px;
+}
+.header-controls .search-wrapper input {
+    width: 100%;
+    padding: 6px 28px 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+.header-controls .clear-search-btn {
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+}
+@media (max-width: 850px) {
+    .header-controls .search-wrapper {
+        width: 100%;
+        order: 2;
+        margin: 5px 0;
+    }
+}
+/* Απόκρυψη του παλιού search-section (αν υπάρχει) */
+.search-section {
+    display: none;
+}
+/* Τα φίλτρα τα αφήνουμε όπως είναι, αλλά αν θες μπορείς να τα στοιχίσεις */
+.filter-group {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
