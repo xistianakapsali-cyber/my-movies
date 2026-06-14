@@ -891,3 +891,10 @@ header { padding: 15px 5%; background: var(--card); position: sticky; top: 0; z-
     margin-top: 10px;
     margin-bottom: 20px;
 }
+/* Μεγαλύτερη γραμματοσειρά για την περίληψη στο banner */
+#featuredDesc {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+}
+
+/* Αν θέλεις ακόμα μεγαλύτερη, π.χ. 18px, άλλαξε την τιμή */
