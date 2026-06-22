@@ -9,162 +9,103 @@
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
 
 <style>
-    /* Προστασία - αποτροπή επιλογής κειμένου */
-    * {
+    /* Προστασία - μόνο εκτός inputs */
+    *:not(input):not(textarea):not(select) {
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
     }
-    body {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    ::selection {
-        background: transparent;
-        color: inherit;
-    }
-    ::-moz-selection {
-        background: transparent;
-        color: inherit;
-    }
-    /* Εξαίρεση για inputs */
     input, textarea, select {
         -webkit-user-select: text !important;
         -moz-user-select: text !important;
         -ms-user-select: text !important;
         user-select: text !important;
     }
-    /* Καμουφλάζ για devtools */
-    ._hidden_protect { display: none !important; }
-    ._fake_element { opacity: 0; position: absolute; pointer-events: none; }
+    ::selection {
+        background: transparent;
+        color: inherit;
+    }
+    input::selection, textarea::selection, select::selection {
+        background: #0055ff !important;
+        color: white !important;
+    }
 </style>
 
 <script>
 // ============================================
-// ΠΡΟΣΤΑΣΙΑ - Anti-Copy / Anti-Inspect / Anti-Devtools
+// ΠΡΟΣΤΑΣΙΑ - Με εξαιρέσεις για inputs
 // ============================================
-
 (function() {
     'use strict';
 
-    // 1. Απενεργοποίηση δεξιού κλικ
+    // 1. Απενεργοποίηση δεξιού κλικ (εκτός inputs)
     document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        return false;
+        const tag = e.target.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+            e.preventDefault();
+            return false;
+        }
     });
 
-    // 2. Μπλοκάρισμα πλήκτρων
+    // 2. Μπλοκάρισμα πλήκτρων (εκτός inputs)
     document.addEventListener('keydown', function(e) {
-        // F12
-        if (e.key === 'F12') {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+Shift+I (Inspect)
-        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+Shift+J (Console)
-        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+U (View Source)
-        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+C (Copy)
+        const tag = e.target.tagName.toLowerCase();
+        const isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
+        
+        if (e.key === 'F12') { e.preventDefault(); return false; }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
+        if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) { e.preventDefault(); return false; }
+        if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+        
+        // Copy, Paste, Cut - επιτρέπονται ΜΟΝΟ σε inputs
         if (e.ctrlKey && (e.key === 'C' || e.key === 'c')) {
-            e.preventDefault();
-            return false;
+            if (!isInput) { e.preventDefault(); return false; }
         }
-        // Ctrl+V (Paste)
         if (e.ctrlKey && (e.key === 'V' || e.key === 'v')) {
-            e.preventDefault();
-            return false;
+            if (!isInput) { e.preventDefault(); return false; }
         }
-        // Ctrl+X (Cut)
         if (e.ctrlKey && (e.key === 'X' || e.key === 'x')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+S (Save)
-        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+P (Print)
-        if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+Shift+C (Inspect Element)
-        if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+Shift+E (Performance)
-        if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+Shift+K (Console - Firefox)
-        if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) {
-            e.preventDefault();
-            return false;
-        }
-        // F12 for IE/Edge
-        if (e.key === 'F12') {
-            e.preventDefault();
-            return false;
-        }
-        // Alt+Command+I (Mac)
-        if (e.altKey && e.metaKey && (e.key === 'I' || e.key === 'i')) {
-            e.preventDefault();
-            return false;
+            if (!isInput) { e.preventDefault(); return false; }
         }
     });
 
-    // 3. Αποτροπή επιλογής κειμένου
+    // 3. Αποτροπή επιλογής κειμένου (εκτός inputs)
     document.addEventListener('selectstart', function(e) {
-        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
+        const tag = e.target.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
             e.preventDefault();
             return false;
         }
     });
 
-    // 4. Αποτροπή copy, cut, paste
+    // 4. Αποτροπή copy/paste (εκτός inputs)
     document.addEventListener('copy', function(e) {
-        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
-            e.preventDefault();
-            return false;
-        }
-    });
-    document.addEventListener('cut', function(e) {
-        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
+        const tag = e.target.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
             e.preventDefault();
             return false;
         }
     });
     document.addEventListener('paste', function(e) {
-        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'SELECT') {
+        const tag = e.target.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+            e.preventDefault();
+            return false;
+        }
+    });
+    document.addEventListener('cut', function(e) {
+        const tag = e.target.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
             e.preventDefault();
             return false;
         }
     });
 
-    // 5. Αποτροπή drag
-    document.addEventListener('dragstart', function(e) {
-        e.preventDefault();
-        return false;
-    });
-
-    // 6. Απενεργοποίηση console
+    // 5. Απενεργοποίηση console
     if (window.console) {
         console.log = function() {};
         console.info = function() {};
@@ -173,63 +114,19 @@
         console.debug = function() {};
         console.table = function() {};
         console.trace = function() {};
-        console.group = function() {};
-        console.groupEnd = function() {};
-        console.time = function() {};
-        console.timeEnd = function() {};
     }
 
-    // 7. Προστασία από ανίχνευση devtools
-    let devtoolsOpen = false;
+    // 6. Προστασία από devtools
     setInterval(function() {
         const threshold = 160;
-        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-        if (widthThreshold || heightThreshold) {
-            if (!devtoolsOpen) {
-                devtoolsOpen = true;
-                document.body.style.opacity = '0.01';
-                setTimeout(function() {
-                    document.body.style.opacity = '1';
-                    devtoolsOpen = false;
-                }, 500);
-            }
+        if (window.outerWidth - window.innerWidth > threshold || 
+            window.outerHeight - window.innerHeight > threshold) {
+            document.body.style.opacity = '0.01';
+            setTimeout(function() {
+                document.body.style.opacity = '1';
+            }, 500);
         }
-    }, 1000);
-
-    // 8. Προστασία από αντιγραφή HTML μέσω view-source
-    // Το Ctrl+U μπλοκαρίστηκε παραπάνω
-
-    // 9. Αποτροπή αλλαγής του console
-    Object.defineProperty(window, 'console', {
-        value: console,
-        writable: false,
-        configurable: false
-    });
-
-    // 10. Αποτροπή right-click σε εικόνες
-    document.addEventListener('mousedown', function(e) {
-        if (e.button === 2) {
-            e.preventDefault();
-            return false;
-        }
-    });
-
-    // 11. Προστασία από αποθήκευση σελίδας (Ctrl+S)
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-
-    // 12. Αποτροπή μεγέθυνσης με Ctrl+/- (δεν επηρεάζει τη λειτουργικότητα)
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
-            e.preventDefault();
-            return false;
-        }
-    });
+    }, 2000);
 
     console.log('🔒 Προστασία ενεργοποιημένη');
 })();
@@ -258,7 +155,8 @@
         </div>
     </div>
 </header>
-<!-- Φίλτρα (επαναφορά) -->
+
+<!-- Φίλτρα -->
 <div class="filter-group">
     <select id="genreFilter">
         <option value="All">Ολες οι Κατηγορίες</option>
@@ -283,6 +181,8 @@
     <select id="countryFilter"><option value="All">Ολες οι Χωρες</option></select>
     <select id="studioFilter"><option value="All">Ολες οι Πλατφορμες</option></select>
 </div>
+
+<!-- Dashboard -->
 <div class="dashboard" id="dashboard" style="display:none;">
     <div class="dashboard-header"><h3>Στατιστικά</h3><button class="close-dash-btn">X</button></div>
     <div class="dashboard-stats">
@@ -353,17 +253,14 @@
     </div>
 </div>
 
-<!-- ΠΡΟΤΕΙΝΟΜΕΝΗ ΤΑΙΝΙΑ ΤΗΣ ΗΜΕΡΑΣ - ΜΕ ΥΠΟΣΤΗΡΙΞΗ THEMES -->
+<!-- Featured Movie -->
 <div id="featuredMovieContainer" style="display: none; width: 100%; margin: 0 0 30px 0;">
     <div id="featuredHeroBg" style="width: 100%; min-height: 450px; background-size: cover; background-position: center; border-bottom: 3px solid var(--primary);">
         <div style="background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.6) 100%); width: 100%;" data-theme-overlay>
             <div style="max-width: 1400px; margin: 0 auto; padding: 35px 20px; display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
-                <!-- POSTER -->
                 <div style="position: relative; flex-shrink: 0;">
                     <img id="featuredPoster" src="" alt="Poster" style="width: 150px; height: 225px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
                 </div>
-                
-                <!-- ΠΛΗΡΟΦΟΡΙΕΣ -->
                 <div style="flex: 1; min-width: 250px;">
                     <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 8px;">
                         <h2 id="featuredTitle" style="margin: 0; font-size: 32px; color: var(--primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Τίτλος</h2>
@@ -453,9 +350,7 @@
 <button id="backToTop">↑</button>
 <div class="version-badge" id="versionBadge">Εκδοση: 2.1.1</div>
 
-<!-- ============ ΝΟΜΙΚΕΣ ΣΕΛΙΔΕΣ (MODALS) ============ -->
-
-<!-- Terms of Service Modal -->
+<!-- Legal Modals -->
 <div id="termsModal" class="legal-modal">
     <div class="legal-modal-content">
         <span class="legal-close">&times;</span>
@@ -474,7 +369,6 @@
     </div>
 </div>
 
-<!-- Privacy Policy Modal -->
 <div id="privacyModal" class="legal-modal">
     <div class="legal-modal-content">
         <span class="legal-close">&times;</span>
@@ -486,7 +380,6 @@
     </div>
 </div>
 
-<!-- DMCA / Copyright Modal -->
 <div id="dmcaModal" class="legal-modal">
     <div class="legal-modal-content">
         <span class="legal-close">&times;</span>
@@ -498,7 +391,6 @@
     </div>
 </div>
 
-<!-- GDPR Data Management Modal -->
 <div id="gdprModal" class="legal-modal">
     <div class="legal-modal-content">
         <span class="legal-close">&times;</span>
