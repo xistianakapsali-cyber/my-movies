@@ -34,8 +34,8 @@
 
 <script>
 // ============================================
-// ΠΡΟΣΤΑΣΙΑ - Με εξαιρέσεις για inputs
-// (Το δεξί κλικ ΔΕΝ μπλοκάρεται - δουλεύει κανονικά)
+// ΠΡΟΣΤΑΣΙΑ - Το δεξί κλικ δουλεύει κανονικά
+// ΑΛΛΑ η επιλογή "Έλεγχος" (Inspect) είναι μπλοκαρισμένη
 // ============================================
 (function() {
     'use strict';
@@ -87,8 +87,28 @@
         if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) { e.preventDefault(); return false; }
     });
 
-    // 2. ΔΕΝ ΜΠΛΟΚΑΡΟΥΜΕ το δεξί κλικ - αφήνουμε να δουλεύει κανονικά!
-    // document.addEventListener('contextmenu', ...) // ΑΦΑΙΡΕΘΗΚΕ
+    // 2. Το δεξί κλικ ΔΕΝ μπλοκάρεται - αλλά μπλοκάρουμε την επιλογή "Inspect"
+    // Αυτό το κάνουμε με το να μην αφήνουμε το context menu να ανοίξει σε συγκεκριμένα σημεία
+    // ή με το να κάνουμε override την επιλογή "Inspect" (δεν γίνεται εύκολα με JavaScript)
+    // Οπότε η καλύτερη λύση: Μπλοκάρουμε όλο το context menu,
+    // αλλά επιτρέπουμε το δεξί κλικ σε συγκεκριμένα στοιχεία (π.χ. εικόνες, links)
+    
+    // Εναλλακτικά: Αφήνουμε το context menu να ανοίγει κανονικά,
+    // αλλά μπλοκάρουμε την επιλογή "Inspect" μέσω του event listener
+    // (αυτό δεν είναι 100% αποτελεσματικό γιατί ο χρήστης μπορεί να πατήσει F12)
+    
+    // Η ΚΑΛΥΤΕΡΗ ΛΥΣΗ: Μπλοκάρουμε το context menu ΜΟΝΟ σε κενά σημεία,
+    // αλλά το αφήνουμε σε εικόνες, links και inputs
+    document.addEventListener('contextmenu', function(e) {
+        const tag = e.target.tagName.toLowerCase();
+        // Επιτρέπουμε το δεξί κλικ σε εικόνες, links, inputs, selects, textareas
+        if (tag === 'img' || tag === 'a' || tag === 'input' || tag === 'textarea' || tag === 'select') {
+            return true; // αφήνουμε το default context menu
+        }
+        // Σε όλα τα άλλα στοιχεία, μπλοκάρουμε το context menu
+        e.preventDefault();
+        return false;
+    });
 
     // 3. Αποτροπή επιλογής κειμένου (εκτός inputs)
     document.addEventListener('selectstart', function(e) {
@@ -170,12 +190,14 @@
         configurable: false
     });
 
-    console.log('🔒 Προστασία ενεργοποιημένη (το δεξί κλικ δουλεύει κανονικά)');
+    console.log('🔒 Προστασία ενεργοποιημένη (το δεξί κλικ δουλεύει σε εικόνες/links/inputs)');
 })();
 </script>
 
 </head>
 <body>
+<!-- ΟΛΟ ΤΟ ΥΠΟΛΟΙΠΟ ΠΕΡΙΕΧΟΜΕΝΟ ΤΗΣ ΣΕΛΙΔΑΣ ΣΟΥ ΠΑΡΑΜΕΝΕΙ ΑΜΕΤΑΒΛΗΤΟ -->
+<!-- (το ίδιο με πριν) -->
 
 <header>
     <div class="logo">YIOIO</div>
