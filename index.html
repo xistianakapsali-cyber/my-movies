@@ -34,13 +34,22 @@
 
 <script>
 // ============================================
-// ΠΡΟΣΤΑΣΙΑ - Το δεξί κλικ δουλεύει κανονικά
-// ΑΛΛΑ η επιλογή "Έλεγχος" (Inspect) είναι μπλοκαρισμένη
+// ΠΡΟΣΤΑΣΙΑ - Πλήρης προστασία με εξαιρέσεις για inputs
 // ============================================
 (function() {
     'use strict';
 
-    // 1. Μπλοκάρισμα F12 και όλων των συνδυασμών που ανοίγουν devtools
+    // 1. Μπλοκάρισμα ΟΛΟΥ του δεξιού κλικ
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+    document.oncontextmenu = function() {
+        return false;
+    };
+
+    // 2. Μπλοκάρισμα F12 και όλων των συνδυασμών (με εξαιρέσεις για inputs)
     document.addEventListener('keydown', function(e) {
         const tag = e.target.tagName.toLowerCase();
         const isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
@@ -63,17 +72,6 @@
         // Alt+Command+I (Mac)
         if (e.altKey && e.metaKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
         
-        // Copy, Paste, Cut - επιτρέπονται ΜΟΝΟ σε inputs
-        if (e.ctrlKey && (e.key === 'C' || e.key === 'c')) {
-            if (!isInput) { e.preventDefault(); return false; }
-        }
-        if (e.ctrlKey && (e.key === 'V' || e.key === 'v')) {
-            if (!isInput) { e.preventDefault(); return false; }
-        }
-        if (e.ctrlKey && (e.key === 'X' || e.key === 'x')) {
-            if (!isInput) { e.preventDefault(); return false; }
-        }
-        
         // Ctrl+S (Save)
         if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
         
@@ -85,29 +83,30 @@
         
         // Ctrl+Shift+E (Performance)
         if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) { e.preventDefault(); return false; }
-    });
 
-    // 2. Το δεξί κλικ ΔΕΝ μπλοκάρεται - αλλά μπλοκάρουμε την επιλογή "Inspect"
-    // Αυτό το κάνουμε με το να μην αφήνουμε το context menu να ανοίξει σε συγκεκριμένα σημεία
-    // ή με το να κάνουμε override την επιλογή "Inspect" (δεν γίνεται εύκολα με JavaScript)
-    // Οπότε η καλύτερη λύση: Μπλοκάρουμε όλο το context menu,
-    // αλλά επιτρέπουμε το δεξί κλικ σε συγκεκριμένα στοιχεία (π.χ. εικόνες, links)
-    
-    // Εναλλακτικά: Αφήνουμε το context menu να ανοίγει κανονικά,
-    // αλλά μπλοκάρουμε την επιλογή "Inspect" μέσω του event listener
-    // (αυτό δεν είναι 100% αποτελεσματικό γιατί ο χρήστης μπορεί να πατήσει F12)
-    
-    // Η ΚΑΛΥΤΕΡΗ ΛΥΣΗ: Μπλοκάρουμε το context menu ΜΟΝΟ σε κενά σημεία,
-    // αλλά το αφήνουμε σε εικόνες, links και inputs
-    document.addEventListener('contextmenu', function(e) {
-        const tag = e.target.tagName.toLowerCase();
-        // Επιτρέπουμε το δεξί κλικ σε εικόνες, links, inputs, selects, textareas
-        if (tag === 'img' || tag === 'a' || tag === 'input' || tag === 'textarea' || tag === 'select') {
-            return true; // αφήνουμε το default context menu
+        // Copy, Paste, Cut - ΕΠΙΤΡΕΠΟΝΤΑΙ ΜΟΝΟ σε inputs
+        if (e.ctrlKey && (e.key === 'C' || e.key === 'c')) {
+            if (!isInput) { 
+                e.preventDefault(); 
+                return false; 
+            }
+            // Αν είναι input, αφήνουμε να λειτουργήσει κανονικά
+            return true;
         }
-        // Σε όλα τα άλλα στοιχεία, μπλοκάρουμε το context menu
-        e.preventDefault();
-        return false;
+        if (e.ctrlKey && (e.key === 'V' || e.key === 'v')) {
+            if (!isInput) { 
+                e.preventDefault(); 
+                return false; 
+            }
+            return true;
+        }
+        if (e.ctrlKey && (e.key === 'X' || e.key === 'x')) {
+            if (!isInput) { 
+                e.preventDefault(); 
+                return false; 
+            }
+            return true;
+        }
     });
 
     // 3. Αποτροπή επιλογής κειμένου (εκτός inputs)
@@ -190,14 +189,12 @@
         configurable: false
     });
 
-    console.log('🔒 Προστασία ενεργοποιημένη (το δεξί κλικ δουλεύει σε εικόνες/links/inputs)');
+    console.log('🔒 Πλήρης προστασία ενεργοποιημένη (Ctrl+C/V δουλεύουν σε inputs)');
 })();
 </script>
 
 </head>
 <body>
-<!-- ΟΛΟ ΤΟ ΥΠΟΛΟΙΠΟ ΠΕΡΙΕΧΟΜΕΝΟ ΤΗΣ ΣΕΛΙΔΑΣ ΣΟΥ ΠΑΡΑΜΕΝΕΙ ΑΜΕΤΑΒΛΗΤΟ -->
-<!-- (το ίδιο με πριν) -->
 
 <header>
     <div class="logo">YIOIO</div>
