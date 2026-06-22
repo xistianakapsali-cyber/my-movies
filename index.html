@@ -35,31 +35,33 @@
 <script>
 // ============================================
 // ΠΡΟΣΤΑΣΙΑ - Με εξαιρέσεις για inputs
+// (Το δεξί κλικ ΔΕΝ μπλοκάρεται - δουλεύει κανονικά)
 // ============================================
 (function() {
     'use strict';
 
-    // 1. Απενεργοποίηση δεξιού κλικ (εκτός inputs)
-    document.addEventListener('contextmenu', function(e) {
-        const tag = e.target.tagName.toLowerCase();
-        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
-            e.preventDefault();
-            return false;
-        }
-    });
-
-    // 2. Μπλοκάρισμα πλήκτρων (εκτός inputs)
+    // 1. Μπλοκάρισμα F12 και όλων των συνδυασμών που ανοίγουν devtools
     document.addEventListener('keydown', function(e) {
         const tag = e.target.tagName.toLowerCase();
         const isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
         
+        // F12
         if (e.key === 'F12') { e.preventDefault(); return false; }
+        
+        // Ctrl+Shift+I (Inspect)
         if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
+        
+        // Ctrl+Shift+J (Console)
         if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
+        
+        // Ctrl+U (View Source)
         if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
-        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
-        if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) { e.preventDefault(); return false; }
+        
+        // Ctrl+Shift+C (Inspect Element)
         if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
+        
+        // Alt+Command+I (Mac)
+        if (e.altKey && e.metaKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
         
         // Copy, Paste, Cut - επιτρέπονται ΜΟΝΟ σε inputs
         if (e.ctrlKey && (e.key === 'C' || e.key === 'c')) {
@@ -71,7 +73,22 @@
         if (e.ctrlKey && (e.key === 'X' || e.key === 'x')) {
             if (!isInput) { e.preventDefault(); return false; }
         }
+        
+        // Ctrl+S (Save)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
+        
+        // Ctrl+P (Print)
+        if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) { e.preventDefault(); return false; }
+        
+        // Ctrl+Shift+K (Console - Firefox)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) { e.preventDefault(); return false; }
+        
+        // Ctrl+Shift+E (Performance)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) { e.preventDefault(); return false; }
     });
+
+    // 2. ΔΕΝ ΜΠΛΟΚΑΡΟΥΜΕ το δεξί κλικ - αφήνουμε να δουλεύει κανονικά!
+    // document.addEventListener('contextmenu', ...) // ΑΦΑΙΡΕΘΗΚΕ
 
     // 3. Αποτροπή επιλογής κειμένου (εκτός inputs)
     document.addEventListener('selectstart', function(e) {
@@ -105,7 +122,16 @@
         }
     });
 
-    // 5. Απενεργοποίηση console
+    // 5. Αποτροπή drag (εκτός inputs)
+    document.addEventListener('dragstart', function(e) {
+        const tag = e.target.tagName.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // 6. Απενεργοποίηση console
     if (window.console) {
         console.log = function() {};
         console.info = function() {};
@@ -114,21 +140,37 @@
         console.debug = function() {};
         console.table = function() {};
         console.trace = function() {};
+        console.group = function() {};
+        console.groupEnd = function() {};
+        console.time = function() {};
+        console.timeEnd = function() {};
     }
 
-    // 6. Προστασία από devtools
+    // 7. Προστασία από devtools (ανίχνευση ανοίγματος)
+    let devtoolsOpen = false;
     setInterval(function() {
         const threshold = 160;
         if (window.outerWidth - window.innerWidth > threshold || 
             window.outerHeight - window.innerHeight > threshold) {
-            document.body.style.opacity = '0.01';
-            setTimeout(function() {
-                document.body.style.opacity = '1';
-            }, 500);
+            if (!devtoolsOpen) {
+                devtoolsOpen = true;
+                document.body.style.opacity = '0.01';
+                setTimeout(function() {
+                    document.body.style.opacity = '1';
+                    devtoolsOpen = false;
+                }, 500);
+            }
         }
     }, 2000);
 
-    console.log('🔒 Προστασία ενεργοποιημένη');
+    // 8. Προστασία από αντιγραφή HTML
+    Object.defineProperty(window, 'console', {
+        value: console,
+        writable: false,
+        configurable: false
+    });
+
+    console.log('🔒 Προστασία ενεργοποιημένη (το δεξί κλικ δουλεύει κανονικά)');
 })();
 </script>
 
