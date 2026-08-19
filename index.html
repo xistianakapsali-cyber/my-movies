@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="el">
 <head>
 <meta charset="UTF-8">
@@ -34,77 +34,46 @@
 
 <script>
 // ============================================
-// ΠΡΟΣΤΑΣΙΑ - Πλήρης προστασία με εξαιρέσεις για inputs
+// ΠΡΟΣΤΑΣΙΑ - ΔΙΟΡΘΩΜΕΝΗ (χωρίς αναβοσβήσιμο σε κινητά)
 // ============================================
 (function() {
     'use strict';
 
-    // 1. Μπλοκάρισμα ΟΛΟΥ του δεξιού κλικ
+    // 1. Μπλοκάρισμα δεξιού κλικ
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         e.stopPropagation();
         return false;
     });
-    document.oncontextmenu = function() {
-        return false;
-    };
+    document.oncontextmenu = function() { return false; };
 
-    // 2. Μπλοκάρισμα F12 και όλων των συνδυασμών (με εξαιρέσεις για inputs)
+    // 2. Μπλοκάρισμα πλήκτρων (F12, Ctrl+U, κλπ.)
     document.addEventListener('keydown', function(e) {
         const tag = e.target.tagName.toLowerCase();
         const isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
         
-        // F12
         if (e.key === 'F12') { e.preventDefault(); return false; }
-        
-        // Ctrl+Shift+I (Inspect)
         if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
-        
-        // Ctrl+Shift+J (Console)
         if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) { e.preventDefault(); return false; }
-        
-        // Ctrl+U (View Source)
         if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
-        
-        // Ctrl+Shift+C (Inspect Element)
         if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); return false; }
-        
-        // Alt+Command+I (Mac)
         if (e.altKey && e.metaKey && (e.key === 'I' || e.key === 'i')) { e.preventDefault(); return false; }
-        
-        // Ctrl+S (Save)
         if (e.ctrlKey && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
-        
-        // Ctrl+P (Print)
         if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) { e.preventDefault(); return false; }
-        
-        // Ctrl+Shift+K (Console - Firefox)
         if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) { e.preventDefault(); return false; }
-        
-        // Ctrl+Shift+E (Performance)
         if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) { e.preventDefault(); return false; }
 
-        // Copy, Paste, Cut - ΕΠΙΤΡΕΠΟΝΤΑΙ ΜΟΝΟ σε inputs
+        // Copy, Paste, Cut - ΕΠΙΤΡΕΠΟΝΤΑΙ σε inputs
         if (e.ctrlKey && (e.key === 'C' || e.key === 'c')) {
-            if (!isInput) { 
-                e.preventDefault(); 
-                return false; 
-            }
-            // Αν είναι input, αφήνουμε να λειτουργήσει κανονικά
+            if (!isInput) { e.preventDefault(); return false; }
             return true;
         }
         if (e.ctrlKey && (e.key === 'V' || e.key === 'v')) {
-            if (!isInput) { 
-                e.preventDefault(); 
-                return false; 
-            }
+            if (!isInput) { e.preventDefault(); return false; }
             return true;
         }
         if (e.ctrlKey && (e.key === 'X' || e.key === 'x')) {
-            if (!isInput) { 
-                e.preventDefault(); 
-                return false; 
-            }
+            if (!isInput) { e.preventDefault(); return false; }
             return true;
         }
     });
@@ -150,7 +119,7 @@
         }
     });
 
-    // 6. Απενεργοποίηση console
+    // 6. Απενεργοποίηση console (προαιρετικό)
     if (window.console) {
         console.log = function() {};
         console.info = function() {};
@@ -165,22 +134,45 @@
         console.timeEnd = function() {};
     }
 
-    // 7. Προστασία από devtools (ανίχνευση ανοίγματος)
+    // 7. ΠΡΟΣΤΑΣΙΑ ΑΠΟ DEVTOOLS - ΔΙΟΡΘΩΜΕΝΗ (χωρίς αναβοσβήσιμο σε κινητά)
     let devtoolsOpen = false;
+    let orientationChanging = false;
+    
+    // Ανίχνευση αλλαγής προσανατολισμού
+    window.addEventListener('orientationchange', function() {
+        orientationChanging = true;
+        setTimeout(function() {
+            orientationChanging = false;
+        }, 1000);
+    });
+    
     setInterval(function() {
+        // Αν αλλάζει προσανατολισμός, ΜΗΝ κάνεις τίποτα
+        if (orientationChanging) {
+            return;
+        }
+        
         const threshold = 160;
-        if (window.outerWidth - window.innerWidth > threshold || 
-            window.outerHeight - window.innerHeight > threshold) {
+        const widthDiff = window.outerWidth - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+        
+        if (widthDiff > threshold || heightDiff > threshold) {
             if (!devtoolsOpen) {
                 devtoolsOpen = true;
-                document.body.style.opacity = '0.01';
+                // Αντί να κάνει fade, απλά μπλοκάρουμε το context menu
+                document.body.style.pointerEvents = 'none';
                 setTimeout(function() {
-                    document.body.style.opacity = '1';
+                    document.body.style.pointerEvents = '';
                     devtoolsOpen = false;
-                }, 500);
+                }, 300);
+            }
+        } else {
+            if (devtoolsOpen) {
+                devtoolsOpen = false;
+                document.body.style.pointerEvents = '';
             }
         }
-    }, 2000);
+    }, 3000);
 
     // 8. Προστασία από αντιγραφή HTML
     Object.defineProperty(window, 'console', {
@@ -189,7 +181,7 @@
         configurable: false
     });
 
-    console.log('🔒 Πλήρης προστασία ενεργοποιημένη (Ctrl+C/V δουλεύουν σε inputs)');
+    console.log('🔒 Πλήρης προστασία ενεργοποιημένη (διορθωμένη για κινητά)');
 })();
 </script>
 
